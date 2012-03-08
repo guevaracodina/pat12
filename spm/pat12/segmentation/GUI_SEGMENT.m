@@ -675,26 +675,30 @@ for i_frame = 1:handles.acq.n_frames
             x_new_coords = slope_x*x_pos + x0_vector;
             
             bw = poly2mask(x_new_coords, y_new_coords, sizeVoxZ, sizeVoxX);
-            figure; imshow(bw);
-            [bw_indexes_x, bw_indexes_y] = find(bw);
+%             figure; imshow(bw);
+            bw_indexes = find(bw);
             
             switch (i_roi)
                 case 1
-                    segmented_volume(bw_indexes_y,i_frame,bw_indexes_x) = 1;
-                 figure; imagesc(squeeze(segmented_volume(:,i_frame,:)));
-                 axis equal
+                    bw(bw_indexes) = 1;
+                    segmented_volume(:,i_frame,:) = bw';
+                    figure; imshow(squeeze(segmented_volume(:,i_frame,:)));
+                    axis equal
                 case 2
-                    segmented_volume(bw_indexes_y,i_frame,bw_indexes_x) = 2;
-                 figure; imshow(squeeze(segmented_volume(:,i_frame,:)));
-                 axis equal
+                    bw(bw_indexes) = 2;
+                    segmented_volume(:,i_frame,:) = bw';
+                    figure; imshow(squeeze(segmented_volume(:,i_frame,:)));
+                    axis equal
                 case 3
-                    segmented_volume(bw_indexes_y,i_frame,bw_indexes_x) = 3;
-                 figure; imshow(squeeze(segmented_volume(:,i_frame,:)));
-                 axis equal
+                    bw(bw_indexes) = 3;
+                    segmented_volume(:,i_frame,:) = bw';
+                    figure; imshow(squeeze(segmented_volume(:,i_frame,:)));
+                    axis equal
                 case 4
-                    segmented_volume(bw_indexes_y,i_frame,bw_indexes_x) = 4;
-                 figure; imshow(squeeze(segmented_volume(:,i_frame,:)));
-                 axis equal
+                    bw(bw_indexes) = 4;
+                    segmented_volume(:,i_frame,:) = bw';
+                    figure; imshow(squeeze(segmented_volume(:,i_frame,:)));
+                    axis equal
             end        
             
         end
