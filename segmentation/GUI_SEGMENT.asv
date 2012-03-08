@@ -22,7 +22,7 @@ function varargout = GUI_SEGMENT(varargin)
 
 % Edit the above text to modify the response to help GUI_SEGMENT
 
-% Last Modified by GUIDE v2.5 07-Mar-2012 15:18:16
+% Last Modified by GUIDE v2.5 08-Mar-2012 12:33:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -94,7 +94,9 @@ if (open_FileName)
     if (str_temp)
         
         short_data_path = data_path(1:str_temp-1);
+        shortest_data_path = data_path(1:str_temp-4);
         handles.acq.short_data_path = short_data_path;
+        handles.acq.shortest_data_path = shortest_data_path;
         
         xml_data_path = [data_path(1:str_temp) 'xml'];
 
@@ -116,6 +118,13 @@ if (open_FileName)
         set(handles.next_copy_button,'enable','on');
         set(handles.display_filename, 'string', open_FileName);
         set(handles.segment_button,'enable','on');
+        set(handles.open_segmentation,'enable','on');
+        set(handles.save_segmentation,'enable','on');
+        set(handles.ROI1,'enable','on');
+        set(handles.ROI2,'enable','on');
+        set(handles.ROI3,'enable','on');
+        set(handles.ROI4,'enable','on');
+        set(handles.duplicate_all,'enable','on');
     end
 end
 
@@ -643,8 +652,13 @@ segmented_volume = zeros(sizeVoxX, sizeVoxY, sizeVoxZ);
 image_dimY = handles.acq.image_dims(1);
 image_dimX = handles.acq.image_dims(2);
 
+
 % Parcourir chaque frame; pour chaque type de ROI : obtenir BW segmenté (0, 1, 2, 3)
 for i_frame = 1:handles.acq.n_frames
+    
+    % Réinitialisation pour chaque frame
+    bw_cumulative = zeros(sizeVoxZ, sizeVoxX);
+    
     for i_roi = 1:4
         if (~isempty(handles.acq.roi_positions{i_frame, i_roi}))
             pos = handles.acq.roi_positions{i_frame,i_roi};
@@ -661,34 +675,60 @@ for i_frame = 1:handles.acq.n_frames
             x0 = BmodeDepth - slope_y*image_dimY;
 
             x0_vector = ones(size(y_pos))*x0;
-            y_new_coords = slope_y*y_pos + x0_vector;
+            y_new_coords = (slope_y*y_pos + x0_vector)/resolution;
             
             
             % Changement de coordonnées en y
             midX_new_coords = ceil((sizeVoxX-1)/2);
             midX_old_coords = ceil((image_dimX-1)/2);
                         
-            slope_x = BmodeWidth / (2*midX_old_coords-2);
+            slope_x = BmodeWidth / (2*resolution*(midX_old_coords-1));
             x0 = midX_new_coords - slope_x*midX_old_coords;
             x0_vector = ones(size(x_pos))*x0;
             
             x_new_coords = slope_x*x_pos + x0_vector;
             
-            bw = poly2mask(x_pos, y_pos, sizeVoxX, sizeVoxZ);            
-            bw = poly2mask(x_pos, y_pos, image_dimY, image_dimX);
+            bw = poly2mask(x_new_coords, y_new_coords, sizeVoxZ, sizeVoxX);
+%             figure; imshow(bw);
+            bw_indexes = find(bw);
             
-%             switch (i_roi)
-%                 case 1
-%                     segmented_
-%             end
-            figure; imshow(bw);
-           
+            switch (i_roi)
+                case 1
+                    bw(bw_indexes) = 1;
+                    bw_cumulative = bw;
+
+                case 2
+                    bw(bw_indexes) = 2;
+                    bw_cumulative = bw + bw_cumulative;
+                    
+                    bw_cumulative(find(bw & bw_cumulative)) = 2;  
+                case 3
+                    bw(bw_indexes) = 3;
+                    bw_cumulative = bw + bw_cumulative;
+                    
+                    bw_cumulative(find(bw & bw_cumulative)) = 3;                     
+                case 4
+                    bw(bw_indexes) = 4;
+                    bw_cumulative = bw + bw_cumulative;
+                    
+                    bw_cumulative(find(bw & bw_cumulative)) = 4;  
+            end  
             
         end
     end
+    
+    segmented_volume(:,i_frame,:) = bw_cumulative';
+    
+    if i_frame == 1
+         figure; imagesc(squeeze(segmented_volume(:,i_frame,:)));
+         axis equal
+    end
+
 end
 
-
+volume_filename = [handles.acq.shortest_data_path '_segmented.mat'];
+save(volume_filename,'segmented_volume');
+guidata(hObject, handles);
 
 
 function dimX_Callback(hObject, eventdata, handles)
@@ -780,3 +820,180 @@ function resolution_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in open_segmentation.
+function open_segmentation_Callback(hObject, eventdata, handles)
+% hObject    handle to open_segmentation (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+ 
+open_filename = uigetfile('*.mat','Ouvrir un fichier de segmentation');
+
+load(open_filename, 'roi_positions');
+
+handles.acq.roi_positions = roi_positions;
+
+% Update les ROIs affichées
+frame_number = str2num(get(handles.frame_number,'string'));
+
+if (frame_number >= 1 && frame_number <= handles.acq.n_frames)
+    handles = VsiBModeReconstructRFExtended(handles, handles.acq.short_data_path, frame_number);
+
+    handles.acq.frame_number = frame_number;
+    
+    % Va chercher les positions des ROIs du frame
+    for index = 1:4
+        if (~isempty(handles.acq.roi_positions{frame_number,index}))
+            pos = handles.acq.roi_positions{frame_number,index};
+            
+            % Cree un nouveau ROI
+            h = impoly(handles.axes1, pos);
+            
+            % Le stocke
+            handles.acq.hrois{index} = h;
+            
+            
+            switch (index)
+                case 1
+                    setColor(h,'yellow');
+                case 2
+                    setColor(h,'red');
+                case 3
+                    setColor(h,'blue');
+                case 4
+                    setColor(h,'green');
+            end
+            
+        end
+    end
+    
+    if frame_number == handles.acq.n_frames
+        set(handles.next_button,'enable','off');
+        set(handles.next_copy_button,'enable','off');
+        set(handles.previous_button,'enable','on');
+    end
+    
+    if frame_number == 1
+        set(handles.previous_button,'enable','off');
+        set(handles.next_button,'enable','on');
+        set(handles.next_copy_button,'enable','on');
+    end
+end
+
+guidata(hObject, handles);
+
+% --- Executes on button press in save_segmentation.
+function save_segmentation_Callback(hObject, eventdata, handles)
+% hObject    handle to save_segmentation (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Stocker les ROIs de la frame actuelle
+frame_number = handles.acq.frame_number;
+
+% Stocke les positions des ROIs du frame actuel
+for index = 1:4
+    % Si le handle de la ROI existe
+    if (~isempty(handles.acq.hrois{index}))
+        temp_h = handles.acq.hrois{index};
+        
+        % Si la ROI existe
+        if (isvalid(temp_h))
+            
+            % Copie la position
+            pos = getPosition(temp_h);
+
+            % Le stocke
+            handles.acq.roi_positions{frame_number,index} = pos;
+        else
+            handles.acq.roi_positions{frame_number,index} = [];            
+        end
+        
+        % Detruit le handle de toute facon
+        handles.acq.hrois{index} = [];
+        
+    else
+        handles.acq.roi_positions{frame_number,index} = [];
+    end
+end
+
+
+[filename, pathname] = uiputfile('segment.mat', 'Save Segmentation as');
+
+complete_filename = [pathname filename]
+
+roi_positions = handles.acq.roi_positions;
+
+save(complete_filename,'roi_positions');
+guidata(hObject, handles);
+
+
+% --- Executes on button press in duplicate_all.
+function duplicate_all_Callback(hObject, eventdata, handles)
+% hObject    handle to duplicate_all (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Stocker les ROIs de la frame actuelle
+frame_number = handles.acq.frame_number;
+
+% Stocke les positions des ROIs du frame actuel
+for index = 1:4
+    % Si le handle de la ROI existe
+    if (~isempty(handles.acq.hrois{index}))
+        temp_h = handles.acq.hrois{index};
+        
+        % Si la ROI existe
+        if (isvalid(temp_h))
+            
+            % Copie la position
+            pos = getPosition(temp_h);
+
+            % Le stocke
+            handles.acq.roi_positions{frame_number,index} = pos;
+        else
+            handles.acq.roi_positions{frame_number,index} = [];            
+        end
+        
+        % Detruit le handle de toute facon
+        handles.acq.hrois{index} = [];
+        
+    else
+        handles.acq.roi_positions{frame_number,index} = [];
+    end
+end
+
+
+for i_frame = 1:handles.acq.n_frames
+    
+    for i_roi = 1:4
+        handles.acq.roi_positions{i_frame, i_roi} = handles.acq.roi_positions{frame_number, i_roi};
+    end
+    
+end
+
+% Recrée les handles
+for i_roi = 1:4
+    % Si le handle de la ROI existe
+    if (~isempty(handles.acq.roi_positions{frame_number, i_roi}))
+
+        
+           % Copie la position
+            pos = getPosition(temp_h);
+
+            % Le stocke
+            handles.acq.roi_positions{frame_number,index} = pos;
+        else
+            handles.acq.roi_positions{frame_number,index} = [];            
+        end
+        
+        % Detruit le handle de toute facon
+        handles.acq.hrois{index} = [];
+        
+    else
+        handles.acq.roi_positions{frame_number,index} = [];
+    end
+end
+
+guidata(hObject, handles);
