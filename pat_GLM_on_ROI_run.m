@@ -29,8 +29,11 @@ for scanIdx=1:size(PATmat,1)
         SPM.xX.name=cellstr(['ICA1';'ICA2';'ICA3']);
         SPM.xX.X=PAT.ICA.sig(1:3,:)'; % regression is along first dimension
         % A revoir
-        SPM.xX.iB=[];
         SPM.xX.iG=[];
+        SPM.xX.iH= [];
+        SPM.xX.iC= 1:size(SPM.xX,2);    % Indices of regressors of interest
+        SPM.xX.iB= [];              % Indices of confound regressors
+
         SPM.xVi.Vi = {speye(size(SPM.xX.X,1))}; % Time correlation
         % GLM is performed here
         SPM = spm_spm(SPM);
@@ -39,11 +42,10 @@ for scanIdx=1:size(PATmat,1)
         PAT.SPM.spmmat_file=spmmat_file;
         save(PAT.SPM.spmmat_file,'SPM');
         
-        
-        %spm_conman(SPM)
-        
-        % Creer les contrastes et faire les stats (module separe?)
-        % spm get spm xcon
+        [Ic, xCon] = spm_conman(SPM, 'T|F', Inf, 'Select contrasts...', 'Contrasts amongst spectral regressors', 1);
+
+        SPM.xCon = xCon;
+        [SPM,xSPM]=spm_getSPM(SPM,[]);
         
         out.PATmat{scanIdx} = PATmat;
         
