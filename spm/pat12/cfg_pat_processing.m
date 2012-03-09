@@ -27,7 +27,7 @@ preproc.help   = {'All functions used for data preprocessing are collected in th
 proc        = cfg_repeat; % A repeat collects a variable number of items from its .values field in its .val field
 proc.name   = 'Processing';
 proc.tag    = 'proc';
-proc.values = {pat_pca_cfg pat_choose_pc_cfg pat_ica_cfg pat_reg_cfg pat_simu_montecarlo_cfg}; % Config files for all preprocessing modules
+proc.values = {pat_pca_cfg pat_choose_pc_cfg pat_ica_cfg pat_reg_cfg pat_simu_montecarlo_cfg pat_GLM_on_ROI_cfg}; % Config files for all preprocessing modules
 proc.forcestruct = true; % There is a speciality in cfg_repeat harvest behaviour that makes a difference depending on the number of elements in values. forcestruct == true forces the repeat to behave as if there are more than one distinct values, even if there is only one.
 proc.help   = {'All functions used for data per-se processing are collected in this module'};
 
