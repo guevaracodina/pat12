@@ -98,7 +98,7 @@ for scanIdx=1:size(PATmat,1)
                 
                 % Creation du fichier de simulation `src.cfg` qui est utilise pour la
                 % simulation monte-carlo
-                make_simulation_cfg_GPU(src_pos,det_pos,dir,param.rad,param.dx,...
+                make_simucfg_GPU(src_pos,det_pos,dir,param.rad,param.dx,...
                     param.dim_psf(1),param.dim_psf(2),param.dim_psf(3),param.mua, param.mus);
                 
                 % Nous pouvons maintenant faire la simulation monte-carlo... plus long,
