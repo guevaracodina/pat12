@@ -1,6 +1,5 @@
-function make_geom_GPU(seg_volume)
+function make_geom_uniform_GPU(nx,ny,nz)
 
-% function make_geom_GPU(nx,ny,nz)
 % Brique homogène visant à modéliser un slab. La brique est ensuite sauvee
 % dans un fichier nomme `homogene.bin` qui est utilise comme entree par le
 % programme de simluation monte-carlo (tMCimg.exe).
@@ -15,8 +14,9 @@ function make_geom_GPU(seg_volume)
 % Donc nous prenons des dimensions nx+2, ny+2 et nz+2 pour ensuite aller
 % lire la fluence que dans le volume (et non pas dans l'air)
 
-seg_volume = seg_volume + 1; % Layers indexed from 1
+homog = uint8(ones(ny,nx,nz));
+
 fid = fopen('homogene.bin', 'wb');
-fwrite(fid, seg_volume, 'uint8');
+fwrite(fid, homog, 'uint8');
 fclose(fid);
 disp('make geom');

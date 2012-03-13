@@ -654,7 +654,7 @@ image_dimX = handles.acq.image_dims(2);
 
 
 % Parcourir chaque frame; pour chaque type de ROI : obtenir BW segmenté (0, 1, 2, 3)
-for i_frame = 1:handles.acq.n_frames
+for i_frame = 1:sizeVoxY
     
     % Réinitialisation pour chaque frame
     bw_cumulative = zeros(sizeVoxZ, sizeVoxX);
