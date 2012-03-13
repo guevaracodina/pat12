@@ -25,16 +25,17 @@ for scanIdx=1:size(PATmat,1)
         param.dx = PAT.MonteCarlo.vox_size;
         % Parametre du modele pour le coefficient d'absorption
         PAT.MonteCarlo.scat_params = job.scat_params;
-
+        % Longueurs d'onde 
+        PAT.MonteCarlo.wavelengths = job.wavelengths;
         % Nombre de voxels dans le volume en x,y,z
         param.dim_psf = [floor(PAT.MonteCarlo.dims(1)/param.dx)+2 floor(PAT.MonteCarlo.dims(2)/param.dx)+2 floor(PAT.MonteCarlo.dims(3)/param.dx)+2];
         
         % Rayon de la source (en mm)
-        param.rad = 0.8;
+        param.rad = 0.8;      
+
         
-        make_geom_GPU(param.dim_psf(1),param.dim_psf(2),param.dim_psf(3));
-        
-        
+        make_geom_uniform_GPU(param.dim_psf(1),param.dim_psf(2),param.dim_psf(3));
+
         % Matrice des sources
         central_pos = [ param.dx*param.dim_psf(1)/2 param.dx*param.dim_psf(2)/2 0.01;];
         matrix_src_pos = zeros(24,3);
@@ -70,23 +71,24 @@ for scanIdx=1:size(PATmat,1)
         matrix_dir(13:24,2) = 3;
         matrix_dir(:,3) =  11;
         
-        % A deriver des lois
-        
-        % Pour l'absorption
-        PAT.MonteCarlo.wavelengths=job.wavelengths;
+        % Spectre du sang (région par défaut)    
         [ext_hbo ext_hbr] = pat_get_extinctions(PAT.MonteCarlo.wavelengths);
         
-        for i_wav=1:length(PAT.MonteCarlo.wavelengths)
+        for i_wav = 1:length(PAT.MonteCarlo.wavelengths)
+            
             % Hypothese (devrait etre une entree)
             blood_volume = 100e-6; % 100 uM
             saturation = 0.8; % En pourcent
-            hbo=saturation*blood_volume;
-            hbr=(1-saturation)*blood_volume;
-            param.mua=ext_hbo(i_wav)*hbo+ext_hbr(i_wav)*hbr;
+            hbo = saturation*blood_volume;
+            hbr = (1-saturation)*blood_volume;
+            param.mua = ext_hbo(i_wav)*hbo+ext_hbr(i_wav)*hbr;
             
             % Pour le scatter a venir
             param.musp = PAT.MonteCarlo.scat_params(1) * (PAT.MonteCarlo.wavelengths(i_wav)/750)^(-PAT.MonteCarlo.scat_params(2));
-            param.mus = param.musp;
+            
+            % Faire correction par g (a implementer)
+            param.mus = param.musp(1);     
+            
             
             % Simulation Monte-Carlo
             psf_mcx=zeros(param.dim_psf(1),param.dim_psf(2),param.dim_psf(3));
