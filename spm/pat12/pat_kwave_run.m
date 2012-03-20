@@ -1,5 +1,5 @@
 function out = pat_kwave_run(job)
-% Entree: Path du volume segmente et PAT.mat
+% Entree: Path du volume segmenté et PAT.mat
 
 
 %Code
@@ -8,6 +8,8 @@ function out = pat_kwave_run(job)
 
 % Loop over acquisitions
 PATmat=job.PATmat;
+nvox = job.nvox;
+
 for scanIdx=1:size(PATmat,1)
     try
         load(PATmat{scanIdx});
@@ -32,7 +34,7 @@ for scanIdx=1:size(PATmat,1)
         % Spectres relatifs des inclusions
         pat_spectrums = pat_get_spectrums(PAT.MonteCarlo.wavelengths, 1:n_regions);
         
-        % Aborption volume
+        % Absorption volume
         absorption_volume = ones(size(segmented_volume));
         
         
@@ -53,8 +55,73 @@ for scanIdx=1:size(PATmat,1)
              
         end
         
+        % =========================================================================
+        % KWAVE
+        % =========================================================================
+        
+        % =========================================================================
+        % SETTINGS
+        % =========================================================================
 
-%         PAT.jobsdone.kwave = 1;
+% size of the computational grid
+Nx = nvox(1);  
+Ny = nvox(2);  
+Nz = nvox(3);  
+x = PAT.MonteCarlo.dims(1);   % size of the domain in the x direction [m]
+dx = x/Nx;  % grid point spacing in the x direction [m]
+dy = dx;
+dz = dx;
+
+% define the properties of the propagation medium
+medium.sound_speed = 1500;      % [m/s]
+
+% % size of the initial pressure distribution
+% source_radius = 2;              % [grid points]
+
+% % distance between the centre of the source and the sensor
+% source_sensor_distance = 10;    % [grid points]
+
+% time array
+dt = 2e-9;                      % [s]
+t_end = 1000e-9;                 % [s]
+
+% computation settings
+input_args = {'DataCast', 'single'};
+
+
+% =========================================================================
+% THREE DIMENSIONAL SIMULATION
+% =========================================================================
+
+% create the computational grid
+kgrid = makeGrid(Nx, dx, Ny, dy, Nz, dz);
+
+% create the time array
+kgrid.t_array = 0:dt:t_end;
+
+% create initial pressure distribution
+source.p0 = makeBall(Nx, Nx, Nx, Nx/2, Nx/2, Nx/2, source_radius);
+
+% define a single sensor point
+sensor.mask = zeros(Nx, Ny, Nz);
+sensor.mask(Nx/2, Ny/2, Nz/2) = 1;
+
+% run the simulation
+sensor_data_3D = kspaceFirstOrder3D(kgrid, medium, source, sensor, input_args{:});
+
+% =========================================================================
+% VISUALISATION
+% =========================================================================
+
+figure;
+[t_sc, t_scale, t_prefix] = scaleSI(t_end);
+plot(kgrid.t_array*t_scale, sensor_data_3D./max(abs(sensor_data_3D)), 'k-');
+xlabel(['Time [' t_prefix 's]']);
+ylabel('Recorded Pressure [au]');
+legend('3D');
+
+
+         PAT.jobsdone.kwave = 1;
 %         save(fullfile(PAT.output_dir, 'PAT.mat'),'PAT');
          out.PATmat{scanIdx} = PATmat{scanIdx};
     catch exception
