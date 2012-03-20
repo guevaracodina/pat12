@@ -31,19 +31,19 @@ segvolmat.num     = [0 Inf];     % Number of inputs required
 segvolmat.help    = {'Select the Segmented Volume.'}; % help text displayed
 
 %% Input Items for display mask
-nvox1            = cfg_entry; % This is the generic data entry item
-nvox1.name    = 'Number of grid points'; % The displayed name
-nvox1.tag     = 'nvox';       % The name appearing in the harvested job structure. This name must be unique among all items in the val field of the superior node
-nvox1.strtype = 'e';       % No restriction on what type of data is entered. This could be used to restrict input to real numbers, integers ...
-nvox1.num     = [1 1 1];     % Number of inputs required (2D-array with exactly one row and two column)
-nvox1.val     = {[128 128 128]};
-nvox1.help    = {'Number of grid points in the [x y z] directions.'}; % help text displayed
+kwave_vsize1         = cfg_entry; % This is the generic data entry item
+kwave_vsize1.name    = 'Ultrasound Voxel size'; % The displayed name
+kwave_vsize1.tag     = 'kwave_vox_size';       % The name appearing in the harvested job structure. This name must be unique among all items in the val field of the superior node
+kwave_vsize1.strtype = 'e';       % No restriction on what type of data is entered. This could be used to restrict input to real numbers, integers ...
+kwave_vsize1.num     = [1 1];     % Number of inputs required (2D-array with exactly one row and two column)
+kwave_vsize1.val     = {[0.3906]};
+kwave_vsize1.help    = {'Dimensions in mm of the voxels for ultrasound propagation(isotropic).'}; % help text displayed
 
 % Executable Branch
 kwave1      = cfg_exbranch;       % This is the branch that has information about how to run this module
 kwave1.name = 'Ultrasound simulation';             % The display name
 kwave1.tag  = 'kwave1'; %Very important: tag is used when calling for execution
-kwave1.val  = {PATmat redo1 segvolmat nvox1};    % The items that belong to this branch. All items must be filled before this branch can run or produce virtual outputs
+kwave1.val  = {PATmat redo1 segvolmat kwave_vsize1};    % The items that belong to this branch. All items must be filled before this branch can run or produce virtual outputs
 kwave1.prog = @pat_kwave_run;  % A function handle that will be called with the harvested job to run the computation
 kwave1.vout = @pat_cfg_vout_kwave; % A function handle that will be called with the harvested job to determine virtual outputs
 kwave1.help = {'Multiplication of fluence by photoacoustique yield and ultrasound simulation (direct model)'};
