@@ -2,13 +2,11 @@ function out = pat_kwave_run(job)
 % Entree: Path du volume segmenté et PAT.mat
 
 
-%Code
-
-
-
 % Loop over acquisitions
-PATmat=job.PATmat;
-nvox = job.nvox;
+addpath('D:\Users\Carl\kwave');
+PATmat = job.PATmat;
+kwave_vox_size = job.kwave_vox_size;
+
 
 for scanIdx=1:size(PATmat,1)
     try
@@ -49,86 +47,80 @@ for scanIdx=1:size(PATmat,1)
             end
             
             PAT_source = absorption_volume .* psf_mcx;
+            PAT_source = PAT_source / 10^8;
             
             % Sauvegarde de la source de signal PAT dans un fichier matlab
+            % Pour debugging
             save(fullfile(PAT.output_dir, ['PAT_source_', num2str(PAT.MonteCarlo.wavelengths(i_wav)),'_nm.mat']),'PAT_source')
-             
+                     
+        
+            % =========================================================================
+            % KWAVE SIMULATION
+            % =========================================================================
+        
+            x = PAT.MonteCarlo.dims(1)*0.001;   % size of the domain in the x direction [m]
+            y = PAT.MonteCarlo.dims(2)*0.001; 
+            z = PAT.MonteCarlo.dims(3)*0.001;   
+        
+            dx = kwave_vox_size*0.001; % grid point spacing in the x direction [m]
+            dy = dx;
+            dz = dx;
+            
+            Nx = floor(x/dx);
+            Ny = floor(y/dy);
+            Nz = floor(z/dz);
+
+            % define the properties of the propagation medium
+            % a deplacer dans línterface un jour
+            medium.sound_speed = 1500;      % [m/s]
+            
+            % time array
+            dt = 2e-9;                      % [s]
+            t_end = 300e-9;                 % [s]
+            
+            % computation settings
+            input_args = {'DataCast', 'single', 'PlotSim', false};
+            
+            % Create initial pressure distribution
+            % Interpolation de la fluence de la source PAT sur la nouvelle
+            % grille
+            [X,Y,Z] = meshgrid(1:1:size(PAT_source,1), 1:1:size(PAT_source,2),1:1:size(PAT_source,3));
+            
+            XI_vec = linspace(1,size(PAT_source,1),Nx);
+            YI_vec = linspace(1,size(PAT_source,2),Ny);
+            ZI_vec = linspace(1,size(PAT_source,3),Nz);
+            
+            [XI,YI,ZI] = meshgrid(XI_vec, YI_vec, ZI_vec);
+            
+            source.p0 = interp3(X,Y,Z,PAT_source,XI,YI,ZI);
+           
+            % create the computational grid
+            kgrid = makeGrid(Nx, dx, Ny, dy, Nz, dz);
+            
+            % create the time array
+            kgrid.t_array = 0:dt:t_end;
+            
+            % define transducer points
+            sensor.mask = zeros(Nx, Ny, Nz);
+            sensor.mask(Nx/2+10, Ny/2, 1) = 1;
+            sensor.mask(Nx/2+10, Ny/2, 1) = 1;
+            
+            % run the simulation
+            sensor_data_3D = kspaceFirstOrder3D(kgrid, medium, source, sensor, input_args{:});
+         
+            % Sauvegarde de la source de signal PAT dans un fichier matlab
+            % Pour debugging
+            save(fullfile(PAT.output_dir, ['sensor_data_3D', num2str(PAT.MonteCarlo.wavelengths(i_wav)),'_nm.mat']),'sensor_data_3D')
+            
         end
         
-        % =========================================================================
-        % KWAVE
-        % =========================================================================
+        PAT.jobsdone.kwave = 1;
+        %         save(fullfile(PAT.output_dir, 'PAT.mat'),'PAT');
+        out.PATmat{scanIdx} = PATmat{scanIdx};
         
-        % =========================================================================
-        % SETTINGS
-        % =========================================================================
-
-% size of the computational grid
-Nx = nvox(1);  
-Ny = nvox(2);  
-Nz = nvox(3);  
-x = PAT.MonteCarlo.dims(1);   % size of the domain in the x direction [m]
-dx = x/Nx;  % grid point spacing in the x direction [m]
-dy = dx;
-dz = dx;
-
-% define the properties of the propagation medium
-medium.sound_speed = 1500;      % [m/s]
-
-% % size of the initial pressure distribution
-% source_radius = 2;              % [grid points]
-
-% % distance between the centre of the source and the sensor
-% source_sensor_distance = 10;    % [grid points]
-
-% time array
-dt = 2e-9;                      % [s]
-t_end = 1000e-9;                 % [s]
-
-% computation settings
-input_args = {'DataCast', 'single'};
-
-
-% =========================================================================
-% THREE DIMENSIONAL SIMULATION
-% =========================================================================
-
-% create the computational grid
-kgrid = makeGrid(Nx, dx, Ny, dy, Nz, dz);
-
-% create the time array
-kgrid.t_array = 0:dt:t_end;
-
-% create initial pressure distribution
-source.p0 = makeBall(Nx, Nx, Nx, Nx/2, Nx/2, Nx/2, source_radius);
-
-% define a single sensor point
-sensor.mask = zeros(Nx, Ny, Nz);
-sensor.mask(Nx/2, Ny/2, Nz/2) = 1;
-
-% run the simulation
-sensor_data_3D = kspaceFirstOrder3D(kgrid, medium, source, sensor, input_args{:});
-
-% =========================================================================
-% VISUALISATION
-% =========================================================================
-
-figure;
-[t_sc, t_scale, t_prefix] = scaleSI(t_end);
-plot(kgrid.t_array*t_scale, sensor_data_3D./max(abs(sensor_data_3D)), 'k-');
-xlabel(['Time [' t_prefix 's]']);
-ylabel('Recorded Pressure [au]');
-legend('3D');
-
-
-         PAT.jobsdone.kwave = 1;
-%         save(fullfile(PAT.output_dir, 'PAT.mat'),'PAT');
-         out.PATmat{scanIdx} = PATmat{scanIdx};
     catch exception
         disp(exception.identifier)
         disp(exception.stack(1))
         out.PATmat{scanIdx} = PATmat{scanIdx};
     end
-end
-
 end
