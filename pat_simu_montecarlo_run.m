@@ -33,7 +33,6 @@ for scanIdx=1:size(PATmat,1)
         % Rayon de la source (en mm)
         param.rad = 0.8;      
 
-        
         make_geom_uniform_GPU(param.dim_psf(1),param.dim_psf(2),param.dim_psf(3));
 
         % Matrice des sources
@@ -94,8 +93,8 @@ for scanIdx=1:size(PATmat,1)
             psf_mcx=zeros(param.dim_psf(1),param.dim_psf(2),param.dim_psf(3));
             for iSource = 1:24
                 
-                src_pos = matrix_src_pos(iSource,:);
-                det_pos = src_pos;%src_pos+[1.0 1.0 0.0 ];
+                src_pos = matrix_src_pos(iSource,:);                
+                det_pos = src_pos;
                 dir = matrix_dir(iSource,:);
                 
                 % Creation du fichier de simulation `src.cfg` qui est utilise pour la

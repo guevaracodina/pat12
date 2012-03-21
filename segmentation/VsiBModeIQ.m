@@ -20,7 +20,7 @@ line_header = 4; % bytes
 frame_header = 56; % bytes  
 Nlines= BmodeNumFocalZones*BmodeNumLines;
 
-fid = fopen(fname,'r')
+fid = fopen(fname,'r');
 % Initialize data
 Idata = zeros(BmodeNumSamples, Nlines);
 Qdata = zeros(BmodeNumSamples, Nlines);

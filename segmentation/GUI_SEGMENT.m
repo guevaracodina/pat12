@@ -611,6 +611,21 @@ function segment_button_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 
+%Verification pour le bon nombre de voxel en Y
+resolution = str2num( get(handles.resolution,'string'));
+sizeVoxY = floor( str2num(get(handles.dimY, 'string')) / resolution );
+n_frames = handles.acq.n_frames;
+
+
+if (n_frames/2 == sizeVoxY && mod(n_frames,sizeVoxY) == 0)
+        
+elseif (mod(sizeVoxY,n_frames) == 0)
+
+else
+    h = errordlg('Number of voxels in Y must be a multiple of N_Frames or N_frames/2' );
+    return;    
+end
+
 % Stocker les ROIs de la frame actuelle
 frame_number = handles.acq.frame_number;
 
@@ -642,7 +657,6 @@ end
 
 
 % Génère le nouveau volume
-resolution = str2num( get(handles.resolution,'string'));
 sizeVoxX = floor( str2num(get(handles.dimX, 'string')) / resolution );
 sizeVoxY = floor( str2num(get(handles.dimY, 'string')) / resolution );
 sizeVoxZ = floor( str2num(get(handles.dimZ, 'string')) / resolution );
@@ -652,15 +666,16 @@ segmented_volume = zeros(sizeVoxX, sizeVoxY, sizeVoxZ);
 image_dimY = handles.acq.image_dims(1);
 image_dimX = handles.acq.image_dims(2);
 
-
 % Parcourir chaque frame; pour chaque type de ROI : obtenir BW segmenté (0, 1, 2, 3)
-for i_frame = 1:sizeVoxY
+% for i_frame = 1:sizeVoxY
+for i_frame = 1:n_frames
     
     % Réinitialisation pour chaque frame
     bw_cumulative = zeros(sizeVoxZ, sizeVoxX);
     
     for i_roi = 1:4
         if (~isempty(handles.acq.roi_positions{i_frame, i_roi}))
+            
             pos = handles.acq.roi_positions{i_frame,i_roi};
             
             x_pos = pos(:,1);
@@ -717,17 +732,38 @@ for i_frame = 1:sizeVoxY
         end
     end
     
-    segmented_volume(:,i_frame,:) = bw_cumulative';
-    
-    if i_frame == 1
-         figure; imagesc(squeeze(segmented_volume(:,i_frame,:)));
-         axis equal
+    % cas 1/2
+    if (n_frames/2 == sizeVoxY && mod(n_frames,sizeVoxY) == 0)
+        
+        % Seuls les frames pairs sont gardés
+        if mod(i_frame,2) == 0
+           segmented_volume(:,i_frame/2,:) = bw_cumulative'; 
+        end
+       
+    % cas 1/1
+    elseif (n_frames == sizeVoxY)
+        segmented_volume(:,i_frame,:) = bw_cumulative';
+        
+    % autres cas multiples
+    elseif (mod(sizeVoxY,n_frames) == 0)
+        
+        ratio = sizeVoxY/n_frames;
+        % Les frames sont repetes
+        for i_ratio = 1:ratio
+            ratio_index = ratio*i_frame - (i_ratio - 1);
+            segmented_volume(:,ratio_index,:) = bw_cumulative';       
+        end
     end
+    
+    
+%     segmented_volume(:,i_frame,:) = bw_cumulative';
+    
+%     if i_frame == 1
+%          figure; imagesc(squeeze(segmented_volume(:,i_frame,:)));
+%          axis equal
+%     end
 
 end
-
-% volume_filename = [handles.acq.shortest_data_path '_segmented.mat'];
-% save(volume_filename,'segmented_volume');
 
 complete_filename = uiputfile('volume.mat', 'Save Volume as');
 save(complete_filename,'segmented_volume');

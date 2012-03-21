@@ -79,7 +79,7 @@ for scanIdx=1:size(PATmat,1)
             t_end = 10e-6;                 % [s]
             
             % computation settings
-            input_args = {'DataCast', 'single', 'PlotSim', false};
+            input_args = {'DataCast', 'single', 'PlotSim', false,'PMLInside',false};
             
             % Create initial pressure distribution
             % Interpolation de la fluence de la source PAT sur la nouvelle
