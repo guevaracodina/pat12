@@ -75,8 +75,8 @@ for scanIdx=1:size(PATmat,1)
             medium.sound_speed = 1500;      % [m/s]
             
             % time array
-            dt = 2e-9;                      % [s]
-            t_end = 300e-9;                 % [s]
+            dt = 0.05e-6;                      % [s]
+            t_end = 10e-6;                 % [s]
             
             % computation settings
             input_args = {'DataCast', 'single', 'PlotSim', false};
@@ -102,15 +102,14 @@ for scanIdx=1:size(PATmat,1)
             
             % define transducer points
             sensor.mask = zeros(Nx, Ny, Nz);
-            sensor.mask(Nx/2+10, Ny/2, 1) = 1;
-            sensor.mask(Nx/2+10, Ny/2, 1) = 1;
+            sensor.mask(:,:,1) = 1;
             
             % run the simulation
             sensor_data_3D = kspaceFirstOrder3D(kgrid, medium, source, sensor, input_args{:});
          
             % Sauvegarde de la source de signal PAT dans un fichier matlab
             % Pour debugging
-            save(fullfile(PAT.output_dir, ['sensor_data_3D', num2str(PAT.MonteCarlo.wavelengths(i_wav)),'_nm.mat']),'sensor_data_3D')
+            save(fullfile(PAT.output_dir, ['sensor_data_', num2str(PAT.MonteCarlo.wavelengths(i_wav)),'_nm.mat']),'sensor_data_3D')
             
         end
         
