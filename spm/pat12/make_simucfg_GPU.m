@@ -1,4 +1,4 @@
-function make_simulation_cfg_GPU(src_pos, det_pos, dir, rad,dx,nx,ny,nz,mua1,mus1)
+function make_simulation_cfg_GPU(src_pos, det_pos, dir, rad, dx, nx, ny, nz, mua1, mus1)
 % This script generate all cfg files for the LOT system in order to compute
 % the sensitivity matrices.
 
@@ -10,7 +10,7 @@ filename=['qtest.inp'];
 fid = fopen(filename,'w');
 fprintf(fid,'1000000              # total photon (not used)\n');
 fprintf(fid,'29012392             # RNG seed, negative to generate\n');
-fprintf(fid,'%d %d %.2f 1             # source position (mm)\n',...
+fprintf(fid,'%d %d %.2f 1       # source position (mm)\n',...
     src_pos(1),src_pos(2),src_pos(3) );
 fprintf(fid,'%.2f %.2f %.2f                # initial directional vector\n',...
     dir(1), dir(2), dir(3));

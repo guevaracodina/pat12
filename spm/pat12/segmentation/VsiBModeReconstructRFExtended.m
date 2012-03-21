@@ -71,7 +71,7 @@ handles.acq.image_dims = size(Idata);
 axes(handles.axes1);
 handles.acq.himage = imagesc(10*log10(Idata.^2 + Qdata.^2)); 
 title(fnameBase,'interpreter','none');
-colormap('gray'); colorbar
+colormap('gray'); colorbar;
 % fig2= figure('units','normalized','position',[.01 .10 .4 .35]);
 % plot(sampleWindow,RfData(sampleWindow,lineNumber)); grid;
 % title(fnameBase,'interpreter','none');
