@@ -13,16 +13,23 @@ function out = pat_simu_montecarlo_run(job)
 % PSF Monte Carlo. (MCX.exe)
 
 % Loop over acquisitions
-PATmat=job.PATmat;
-for scanIdx=1:size(PATmat,1)
+PATmat = job.PATmat;
+for scanIdx = 1:size(PATmat,1)
     try
         load(PATmat{scanIdx});
         
-        % Dimensions en mm (pour nous)
-        PAT.MonteCarlo.dims=job.dims;
-        PAT.MonteCarlo.vox_size=job.vox_size;
-        % Dimension des voxels (en mm)
-        param.dx = PAT.MonteCarlo.vox_size;
+        % Dimensions en mm
+        PAT.MonteCarlo.dims = job.dims;
+        PAT.MonteCarlo.vox_size = job.vox_size;
+        if (PAT.MonteCarlo.vox_size < 1.0)
+            param.dx = PAT.MonteCarlo.vox_size;
+            vox_scale_factor = 1/PAT.MonteCarlo.vox_size;
+        else
+            % Dimension des voxels (en mm)
+            param.dx = PAT.MonteCarlo.vox_size;
+            vox_scale_factor = 1;
+        end
+
         % Parametre du modele pour le coefficient d'absorption
         PAT.MonteCarlo.scat_params = job.scat_params;
         % Longueurs d'onde 
@@ -31,23 +38,24 @@ for scanIdx=1:size(PATmat,1)
         param.dim_psf = [floor(PAT.MonteCarlo.dims(1)/param.dx)+2 floor(PAT.MonteCarlo.dims(2)/param.dx)+2 floor(PAT.MonteCarlo.dims(3)/param.dx)+2];
         
         % Rayon de la source (en mm)
-        param.rad = 0.8;      
+        param.rad = 0.8*vox_scale_factor;      
 
         make_geom_uniform_GPU(param.dim_psf(1),param.dim_psf(2),param.dim_psf(3));
 
         % Matrice des sources
-        central_pos = [ param.dx*param.dim_psf(1)/2 param.dx*param.dim_psf(2)/2 0.01;];
+        central_pos = [ param.dim_psf(1)/2 param.dim_psf(2)/2 0.01;];
         matrix_src_pos = zeros(24,3);
         
         matrix_src_pos_x = zeros(12,1);
         matrix_src_pos_x(:) = -11:2:11;
+        matrix_src_pos_x = matrix_src_pos_x.*vox_scale_factor;
         
         % Definition du transducteur 20Mhz
         for i = 1:12
             matrix_src_pos(i,1) = matrix_src_pos_x(i) + central_pos(1);
             matrix_src_pos(i+12,1) = matrix_src_pos_x(i) + central_pos(1);
-            matrix_src_pos(i,2) = central_pos(2) + 3;
-            matrix_src_pos(i+12,2) = central_pos(2) - 3;
+            matrix_src_pos(i,2) = central_pos(2) + 3*vox_scale_factor;
+            matrix_src_pos(i+12,2) = central_pos(2) - 3*vox_scale_factor;
         end
         
         matrix_src_pos(:,3) = 0.01;
@@ -55,11 +63,11 @@ for scanIdx=1:size(PATmat,1)
         
         % %% Validation des positions
         %
-        % test = zeros(50,50);
-        % figure; plot(matrix_src_pos(:,1),matrix_src_pos(:,2),'o');
-        % axis equal;
-        % xlabel('mm')
-        % ylabel('mm')
+        test = zeros(100,100);
+        figure; plot(matrix_src_pos(:,1),matrix_src_pos(:,2),'o');
+        axis equal;
+        xlabel('mm')
+        ylabel('mm')
         
         
         %% Matrice de direction
@@ -90,7 +98,17 @@ for scanIdx=1:size(PATmat,1)
             
             
             % Simulation Monte-Carlo
-            psf_mcx=zeros(param.dim_psf(1),param.dim_psf(2),param.dim_psf(3));
+            psf_mcx = zeros(param.dim_psf(1),param.dim_psf(2),param.dim_psf(3));
+            
+            
+            % Correction si vox size < 1 mm
+            param.musp = param.musp / vox_scale_factor;
+            param.mus = param.mus / vox_scale_factor;
+            param.mua = param.mua / vox_scale_factor;
+            
+            % Vox size pour mcx doit etre 1mm
+            vox_size_for_mcx = 1;
+            
             for iSource = 1:24
                 
                 src_pos = matrix_src_pos(iSource,:);                
@@ -99,7 +117,8 @@ for scanIdx=1:size(PATmat,1)
                 
                 % Creation du fichier de simulation `src.cfg` qui est utilise pour la
                 % simulation monte-carlo
-                make_simucfg_GPU(src_pos,det_pos,dir,param.rad,param.dx,...
+                
+                make_simucfg_GPU(src_pos,det_pos,dir,param.rad,vox_size_for_mcx,...
                     param.dim_psf(1),param.dim_psf(2),param.dim_psf(3),param.mua, param.mus);
                 
                 % Nous pouvons maintenant faire la simulation monte-carlo... plus long,
