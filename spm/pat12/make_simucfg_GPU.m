@@ -1,4 +1,4 @@
-function make_simulation_cfg_GPU(src_pos, det_pos, dir, rad, dx, nx, ny, nz, mua1, mus1)
+function make_simucfg_GPU(src_pos, det_pos, dir, rad, dx, nx, ny, nz, mua1, mus1)
 % This script generate all cfg files for the LOT system in order to compute
 % the sensitivity matrices.
 
