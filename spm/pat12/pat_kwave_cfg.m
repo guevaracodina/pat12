@@ -26,7 +26,7 @@ segvolmat         = cfg_files; %Select NIRS.mat for this subject
 segvolmat.name    = 'Segmented Volume'; % The displayed name
 segvolmat.tag     = 'seg_volume';       %file names
 segvolmat.filter  = 'mat';
-segvolmat.ufilter = '*.';    
+segvolmat.ufilter = '*.mat';    
 segvolmat.num     = [0 Inf];     % Number of inputs required 
 segvolmat.help    = {'Select the Segmented Volume.'}; % help text displayed
 

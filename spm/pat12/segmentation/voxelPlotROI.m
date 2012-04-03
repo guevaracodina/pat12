@@ -92,7 +92,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROI 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % threshold and select the voxels to display
-voxel_num = (mat == 1);  
+voxel_num = (mat == 2);  
 voxel_face_num = IMAGE_3D_DATA.voxel_patch_face_numbers(voxel_num, :);  
 M_faces = IMAGE_3D_DATA.voxel_patch_faces(voxel_face_num, :);  
 M_vertices = IMAGE_3D_DATA.corner_coordinates_columns_XYZ;  
@@ -132,7 +132,7 @@ hold on
 
 % color_map = [0, 1,0;1, 1, 0.4];    % green
 % threshold and select the voxels to display
-voxel_num = (mat == 2);  
+voxel_num = (mat == 3);  
 voxel_face_num = IMAGE_3D_DATA.voxel_patch_face_numbers(voxel_num, :);  
 M_faces = IMAGE_3D_DATA.voxel_patch_faces(voxel_face_num, :);  
 M_vertices = IMAGE_3D_DATA.corner_coordinates_columns_XYZ;  
@@ -168,7 +168,7 @@ hold on
 
 % color_map = [0, 1,0;1, 1, 0.4];    % green
 % threshold and select the voxels to display
-voxel_num = (mat == 3);  
+voxel_num = (mat == 4);  
 voxel_face_num = IMAGE_3D_DATA.voxel_patch_face_numbers(voxel_num, :);  
 M_faces = IMAGE_3D_DATA.voxel_patch_faces(voxel_face_num, :);  
 M_vertices = IMAGE_3D_DATA.corner_coordinates_columns_XYZ;  
@@ -204,7 +204,7 @@ hold on
 
 % color_map = [1, 1, 0.4; 1, 0, 0; 0, 0, 1; 0, 1, 0;0.5 0.5 0];    % green
 % threshold and select the voxels to display
-voxel_num = (mat == 4);  
+voxel_num = (mat == 5);  
 voxel_face_num = IMAGE_3D_DATA.voxel_patch_face_numbers(voxel_num, :);  
 M_faces = IMAGE_3D_DATA.voxel_patch_faces(voxel_face_num, :);  
 M_vertices = IMAGE_3D_DATA.corner_coordinates_columns_XYZ;  
@@ -239,9 +239,9 @@ end
 
 % transparency = 0.8;
 
-color_map = [1, 1, 0.4; 1, 0, 0; 0, 0, 1; 0, 1, 0;0.7 0.7 0.7];    % green
+color_map = [0.7 0.7 0.7; 1, 1, 0.4; 1, 0, 0; 0, 0, 1; 0, 1, 0];    % green
 % threshold and select the voxels to display
-voxel_num = (mat == 5);  
+voxel_num = (mat == 1);  
 voxel_face_num = IMAGE_3D_DATA.voxel_patch_face_numbers(voxel_num, :);  
 M_faces = IMAGE_3D_DATA.voxel_patch_faces(voxel_face_num, :);  
 M_vertices = IMAGE_3D_DATA.corner_coordinates_columns_XYZ;  
