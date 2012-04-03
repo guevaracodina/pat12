@@ -929,30 +929,39 @@ for i_frame = 1:n_frames
             x_new_coords = slope_x*x_pos + x0_vector;
             
             bw = poly2mask(x_new_coords, y_new_coords, sizeVoxZ, sizeVoxX);
+            bw_double = zeros(size(bw));
+            bw_double = double(bw);
             bw_indexes = find(bw);
             
             switch (i_roi)
                 case 1
-                    bw(bw_indexes) = 1;
-                    bw_cumulative = bw;
+                    bw_double(bw_indexes) = 2;
+                    bw_cumulative = bw_double;
 
                 case 2
-                    bw(bw_indexes) = 2;
-                    bw_cumulative = bw + bw_cumulative;
-                    bw_cumulative(find(bw & bw_cumulative)) = 2;
+                    bw_double(bw_indexes) = 3;
+                    bw_cumulative = bw_double + bw_cumulative;
+                    bw_cumulative(find(bw_double & bw_cumulative)) = 3;
                     
                 case 3
-                    bw(bw_indexes) = 3;
-                    bw_cumulative = bw + bw_cumulative;
-                    bw_cumulative(find(bw & bw_cumulative)) = 3;
+                    bw_double(bw_indexes) = 4;
+                    bw_cumulative = bw_double + bw_cumulative;
+                    bw_cumulative(find(bw_double & bw_cumulative)) = 4;
                     
                 case 4
-                    bw(bw_indexes) = 4;
-                    bw_cumulative = bw + bw_cumulative;
-                    bw_cumulative(find(bw & bw_cumulative)) = 4;  
+                    bw_double(bw_indexes) = 5;
+                    bw_cumulative = bw_double + bw_cumulative;
+                    bw_cumulative(find(bw_double & bw_cumulative)) = 5;  
             end  
         end   
     end
+    
+%     segmented_volume(:,i_frame,:) = bw_cumulative';
+%     
+%     if i_frame == 1
+%          figure; imagesc(squeeze(segmented_volume(:,i_frame,:)));
+%          axis equal
+%     end
     
     %%%%%%%%%%%% Air %%%%%%%%%%%%%%%%
         
@@ -1032,9 +1041,9 @@ for i_frame = 1:n_frames
 
         
         bw_indexes = find(bw);
-        bw(bw_indexes) = 5;
+        bw(bw_indexes) = 1;
         bw_cumulative = bw + bw_cumulative;
-        bw_cumulative(find(bw & bw_cumulative)) = 5;  % Air has priority
+        bw_cumulative(find(bw & bw_cumulative)) = 1;  % Air has priority
                     
     end
     
@@ -1063,7 +1072,7 @@ for i_frame = 1:n_frames
     
     
 %     segmented_volume(:,i_frame,:) = bw_cumulative';
-    
+%     
 %     if i_frame == 1
 %          figure; imagesc(squeeze(segmented_volume(:,i_frame,:)));
 %          axis equal

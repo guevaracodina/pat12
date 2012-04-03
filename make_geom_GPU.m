@@ -15,8 +15,11 @@ function make_geom_GPU(seg_volume)
 % Donc nous prenons des dimensions nx+2, ny+2 et nz+2 pour ensuite aller
 % lire la fluence que dans le volume (et non pas dans l'air)
 
-seg_volume = seg_volume + 1; % Layers indexed from 1
+% seg_volume = seg_volume + 1; % Layers indexed from 1
+air_index = find(seg_volume ~= 1);
+byte_volume = zeros(size(seg_volume),'uint8');
+byte_volume(air_index) = 1;
 fid = fopen('homogene.bin', 'wb');
-fwrite(fid, seg_volume, 'uint8');
+fwrite(fid, byte_volume, 'uint8');
 fclose(fid);
 disp('make geom');

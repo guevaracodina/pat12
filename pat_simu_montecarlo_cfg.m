@@ -48,20 +48,39 @@ vsize1.num     = [1 1];     % Number of inputs required (2D-array with exactly o
 vsize1.val     = {[1]};
 vsize1.help    = {'Dimensions in mm of the voxels (isotropic).'}; % help text displayed
 
+%% Input Items
+segvolmat         = cfg_files; %Select NIRS.mat for this subject
+segvolmat.name    = 'Segmented Volume'; % The displayed name
+segvolmat.tag     = 'seg_volume';       %file names
+segvolmat.filter  = 'mat';
+segvolmat.ufilter = '^.mat$';    
+segvolmat.num     = [0 Inf];     % Number of inputs required 
+segvolmat.help    = {'Select the Segmented Volume.'}; % help text displayed
+
 %% Input Items for display mask
 param1         = cfg_entry; % This is the generic data entry item
 param1.name    = 'Scattering Model Parameters'; % The displayed name
 param1.tag     = 'scat_params';       % The name appearing in the harvested job structure. This name must be unique among all items in the val field of the superior node
 param1.strtype = 'e';       % No restriction on what type of data is entered. This could be used to restrict input to real numbers, integers ...
-param1.num     = [1 2];     % Number of inputs required (2D-array with exactly one row and two column)
-param1.val     = {[1.1 1.2]};
-param1.help    = {'Exponential Law Parameters [a b] for reduced scattering.'}; % help text displayed
+param1.num     = [1 3];     % Number of inputs required (2D-array with exactly one row and two column)
+param1.val     = {[750 1.1 1.2]};
+param1.help    = {'Exponential Law Parameters [lambda0 a b] for reduced scattering.'}; % help text displayed
+
+%% Input Items for display mask
+param2         = cfg_entry; % This is the generic data entry item
+param2.name    = 'Anisotropy'; % The displayed name
+param2.tag     = 'anisotropy';       % The name appearing in the harvested job structure. This name must be unique among all items in the val field of the superior node
+param2.strtype = 'e';       % No restriction on what type of data is entered. This could be used to restrict input to real numbers, integers ...
+param2.num     = [1];     % Number of inputs required (2D-array with exactly one row and two column)
+param2.val     = {[0.9]};
+param2.help    = {'Anisotropy.'}; % help text displayed
+
 
 % Executable Branch
 mc1      = cfg_exbranch;       % This is the branch that has information about how to run this module
 mc1.name = 'Monte Carlo Simulation';             % The display name
 mc1.tag  = 'mc1'; %Very important: tag is used when calling for execution
-mc1.val  = {PATmat redo1 wave1 dims1 vsize1 param1};    % The items that belong to this branch. All items must be filled before this branch can run or produce virtual outputs
+mc1.val  = {PATmat redo1 wave1 dims1 vsize1 segvolmat param1 param2};    % The items that belong to this branch. All items must be filled before this branch can run or produce virtual outputs
 mc1.prog = @pat_simu_montecarlo_run;  % A function handle that will be called with the harvested job to run the computation
 mc1.vout = @pat_cfg_vout_simu_montecarlo; % A function handle that will be called with the harvested job to determine virtual outputs
 mc1.help = {'Monte-Carlo simulation over wavelengths.'};
