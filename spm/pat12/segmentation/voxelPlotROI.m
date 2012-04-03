@@ -202,9 +202,46 @@ end
 
 hold on
 
-color_map = [1, 1, 0.4; 1, 0, 0; 0, 0, 1; 0, 1, 0];    % green
+% color_map = [1, 1, 0.4; 1, 0, 0; 0, 0, 1; 0, 1, 0;0.5 0.5 0];    % green
 % threshold and select the voxels to display
 voxel_num = (mat == 4);  
+voxel_face_num = IMAGE_3D_DATA.voxel_patch_face_numbers(voxel_num, :);  
+M_faces = IMAGE_3D_DATA.voxel_patch_faces(voxel_face_num, :);  
+M_vertices = IMAGE_3D_DATA.corner_coordinates_columns_XYZ;  
+
+% plot the voxels using patch
+hp2 = patch('Faces', M_faces, 'Vertices', M_vertices, 'EdgeColor', 'black', 'CData', IMAGE_3D_DATA.voxel_patch_CData(voxel_face_num,:), 'FaceColor', 'flat');  
+
+% set the tranparency
+set(hp2, 'FaceAlpha', transparency);
+
+% set the axes properties and colormap
+view(45,30); 
+axis equal;
+box on;
+% colormap(color_map); 
+% caxis([0 1]); 
+grid on;  
+
+% add the axes labels
+xlabel('y [pixels]');
+ylabel('x [pixels]');
+zlabel('z [pixels]');
+
+% force the display to be the same size as mat
+if ~axis_tight
+    sz = size(mat);
+    set(gca, 'XLim', [0.5, sz(2)+0.5], 'YLim', [0.5, sz(1)+0.5], 'ZLim', [0.5, sz(3)+0.5]);
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%% Air %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% transparency = 0.8;
+
+color_map = [1, 1, 0.4; 1, 0, 0; 0, 0, 1; 0, 1, 0;0.7 0.7 0.7];    % green
+% threshold and select the voxels to display
+voxel_num = (mat == 5);  
 voxel_face_num = IMAGE_3D_DATA.voxel_patch_face_numbers(voxel_num, :);  
 M_faces = IMAGE_3D_DATA.voxel_patch_faces(voxel_face_num, :);  
 M_vertices = IMAGE_3D_DATA.corner_coordinates_columns_XYZ;  
