@@ -1,4 +1,4 @@
-function [Idata,Qdata,param] = VsiBModeIQ(fnameBase, ModeName, iframe)
+function [Idata,Qdata,param] = VsiBModeIQModif(fnameBase, ModeName, iframe)
 % Authors: A. Needles, J. Mehi  
 % Copyright VisualSonics 1999-2010
 % Revision: 1.0 June 28 2010
@@ -8,7 +8,7 @@ fname = [fnameBase '.bmode'];
 fnameXml = [fnameBase '.xml'];
 
 % Parse the XML parameter file - DO NOT CHANGE
-param = VsiParseXml(fnameXml,ModeName);
+param = VsiParseXmlModif(fnameXml,ModeName);
 BmodeNumFocalZones = param.BmodeNumFocalZones;
 BmodeNumSamples = param.BmodeNumSamples; 
 BmodeNumLines = param.BmodeNumLines; 
