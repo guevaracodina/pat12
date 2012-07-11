@@ -51,11 +51,17 @@ switch ModeName
     case 'B-Mode/Focal-Zones-Count';
         javaNumFocalZones = node.getAttribute('value');
         BmodeNumFocalZones = str2num(char(javaNumFocalZones));  
+    case 'B-Mode/Y-Offset'
+        javaYOffset = node.getAttribute('value');
+        BmodeYOffset = str2num(char(javaYOffset));   
+    case 'B-Mode/V-Offset'
+        javaVOffset = node.getAttribute('value');
+        BmodeVOffset = str2num(char(javaVOffset));   
     end
  end
 ReturnParam = struct('BmodeNumSamples', BmodeNumSamples, 'BmodeNumLines', BmodeNumLines, 'BmodeDepthOffset', BmodeDepthOffset,...
     'BmodeDepth', BmodeDepth,'BmodeWidth', BmodeWidth, 'BmodeRxFrequency', BmodeRxFrequency, 'BmodeTxFrequency', BmodeTxFrequency,...
-    'BmodeQuad2x', BmodeQuad2x, 'BmodeNumFocalZones', BmodeNumFocalZones);
+    'BmodeQuad2x', BmodeQuad2x, 'BmodeNumFocalZones', BmodeNumFocalZones, 'BmodeYOffset', BmodeYOffset, 'BmodeVOffset', BmodeVOffset);
 
     case '.color'
             RxFreqModeName = 'Color-Mode';  Quad2x = 'null'; FocalZones = 1;
@@ -206,6 +212,32 @@ end
 ReturnParam = struct('PaNumSamples', PaNumSamples, 'PaNumLines', PaNumLines, 'PaDepthOffset', PaDepthOffset, ...
     'PaDepth', PaDepth, 'PaWidth', PaWidth, 'BmodeNumSamples', BmodeNumSamples, 'BmodeNumLines', BmodeNumLines, ...
     'BmodeDepthOffset', BmodeDepthOffset, 'BmodeDepth', BmodeDepth,'BmodeWidth', BmodeWidth, 'BmodeRxFrequency', BmodeRxFrequency);
+
+case '.3dmode'
+    
+for k = 0:AllParameters.getLength-1
+    node = AllParameters.item(k); 
+    switch char(node.getAttribute('name'));       
+    case '3D-Scan-Distance'
+        javaScanDistance = node.getAttribute('value');
+        ScanDistance = str2num(char(javaScanDistance));
+    case '3D-Step-Size'
+        javaStepSize = node.getAttribute('value');
+        StepSize = str2num(char(javaStepSize));
+    case 'B-Mode/Depth-Offset';
+        javaDepthOffset = node.getAttribute('value');
+        BmodeDepthOffset = str2num(char(javaDepthOffset));        
+    case 'B-Mode/Depth';
+        javaDepth = node.getAttribute('value');
+        BmodeDepth = str2num(char(javaDepth));  
+    case 'B-Mode/Width';
+        javaWidth = node.getAttribute('value');
+        BmodeWidth = str2num(char(javaWidth)); 
+    end  
+    
+end
+
+ReturnParam = struct('ScanDistance', ScanDistance, 'StepSize', StepSize, 'BmodeDepthOffset', BmodeDepthOffset, 'BmodeDepth', BmodeDepth, 'BmodeWidth', BmodeWidth);
 
 end
 

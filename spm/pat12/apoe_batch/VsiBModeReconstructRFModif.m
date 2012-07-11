@@ -5,7 +5,7 @@
 % Copyright VisualSonics 1999-2010
 % Revision: 1.0 June 28 2010
 % Revision: 1.1 July 22 2010: for software version 1.2 or higher
-function [handles] = VsiBModeReconstructRFExtended(handles,fnameBase, frameNumber)
+function [handles] = VsiBModeReconstructRFModif(handles,fnameBase, frameNumber)
 
 set(0,'defaultTextUnits','Normalized');
 
@@ -14,7 +14,7 @@ set(0,'defaultTextUnits','Normalized');
 % % specify frame number here ------------------
 % frameNumber = 100;
 % ------------------------------------------
-[Idata,Qdata,param] = VsiBModeIQ(fnameBase, '.bmode', frameNumber);
+[Idata,Qdata,param] = VsiBModeIQModif(fnameBase, '.bmode', frameNumber);
 % ------------------------------------------
 
 % BmodeNumSamples = param.BmodeNumSamples;
@@ -67,11 +67,64 @@ set(0,'defaultTextUnits','Normalized');
 % fig1= figure('units','normalized','position',[.01 .55 .4 .35]);
 handles.acq.image_dims = size(Idata);
 
+fnameXml = [fnameBase '.xml'];
+
+% MS250/LZ250 settings
+a = 0.25e-3; %m - lens thickness
+pitch = 90e-6; %m
+
+% Paramters not yet in the xml file but should be added - DO NOT CHANGE
+NumPulses = 1; 
+Quad2x = 'true';
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+param = VsiParseXmlModif(fnameXml, '.bmode');
+samples = param.BmodeNumSamples;
+lines = param.BmodeNumLines;
+DepthOffset = param.BmodeDepthOffset; %mm
+Depth =  param.BmodeDepth; %mm
+Width = pitch*lines*1e3; %mm
+fs = param.BmodeRxFrequency; %Hz
+YOffset = handles.acq.YOffset;
+VOffset = handles.acq.VOffset;
+
+% Setup the Rx axes
+DepthAxis = [DepthOffset:(Depth-DepthOffset)/(samples-1):Depth];
+WidthAxis = [0:Width/((lines/NumPulses)-1):Width];
+DR = 60; % Dynamic Range in dB 
+% Parse the XML parameter file - DO NOT CHANGE
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 axes(handles.axes1);
-handles.acq.himage = imagesc(10*log10(Idata.^2 + Qdata.^2)); 
-title(fnameBase,'interpreter','none');
-colormap('gray'); colorbar;
+% handles.acq.himage = imagesc(10*log10(Idata.^2 + Qdata.^2)); 
+% MaxVal = max(max(abs(BfData(:,:))));
+% handles.acq.himage = imagesc(WidthAxis, DepthAxis, 20.*log10(Idata.^2 + Qdata.^2));
+% handles.acq.himage = imagesc(WidthAxis, DepthAxis, 20.*log10(sqrt(Idata.^2 + Qdata.^2)));
+abs_data = Idata.^2 + Qdata.^2;
+abs_data = min(abs_data(:))+ abs_data+1;
+% VOffset = 64;  % 128
+% YOffset = 55;       % 55
+image_finale =  128/60*(20.*log10(sqrt(abs_data)) - YOffset) + VOffset;
+image_finale(find(image_finale < 0)) = 0;
+image_finale(find(image_finale > 128)) = 128;
+min(image_finale(:))
+max(image_finale(:))
+clims = [0 128];
+% handles.acq.himage = imagesc(WidthAxis, DepthAxis, image_finale, clims);
+handles.acq.himage = image(WidthAxis, DepthAxis, image_finale);
+
+axis equal 
+axis tight
+xlabel('Width (mm)')
+ylabel('Depth (mm)')
+		
+colormap(handles.acq.cmap);
+colorbar
+
+% title(fnameBase,'interpreter','none');
+% colormap('gray'); colorbar;
 % fig2= figure('units','normalized','position',[.01 .10 .4 .35]);
 % plot(sampleWindow,RfData(sampleWindow,lineNumber)); grid;
 % title(fnameBase,'interpreter','none');
