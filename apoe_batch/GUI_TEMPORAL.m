@@ -60,7 +60,7 @@ set(hObject,'toolbar','figure');
 % Build a colormap that consists of 2 separate
 % colormaps.
 cmap1 = gray(128);
-cmap2 = jet(128);
+cmap2 = hot(128);
 cmap = [cmap1;cmap2];
 colormap(cmap)
 handles.acq.cmap = cmap;
@@ -135,6 +135,12 @@ if (open_FileName)
         
         % Calculate number of frames in file
         handles.acq.n_frames = VsiFindNFrames(short_data_path, '.bmode');
+        
+        % Get the Time Stamp Data for all frames
+        handles.acq.TimeStampData = VsiBModeIQTimeFrame(short_data_path, '.bmode', handles.acq.n_frames);       
+        
+        
+        figure;plot( handles.acq.TimeStampData/1000);
         
         % Display US (for frame 1)
         handles = VsiBModeReconstructRFModif(handles, short_data_path, 1);
@@ -339,7 +345,7 @@ handles = VsiBModeReconstructRFModif(handles, handles.acq.short_data_path, frame
 
 % Display PA
 if (get(handles.checkbox_pa_display,'value'))
-    VsiBeamformPaModif(handles, short_data_path, frame_number, frame_number);
+    VsiBeamformPaModif(handles, handles.acq.short_data_path, frame_number, frame_number);
 end
 
 guidata(hObject, handles);
