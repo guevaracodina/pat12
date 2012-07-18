@@ -293,35 +293,30 @@ if Beamform == 1
 	% Display Beamformed IQ data
     if ShowBeamformedIQ == 1
         
-		        
-%         MaxVal = max(max(abs(BfData(:,:))));
-%         image_data = 20.*log10((abs(BfData(:,:))/MaxVal)) + 255;
-%         image(WidthAxis, DepthAxis,image_data);
+        DR = -60; % Dynamic Range in dB
         
-        MaxVal = max(max(abs(BfData(:,:))));
-        image_finale = 20.*log10((abs(BfData(:,:))/MaxVal));
-%         image_finale = abs(BfData(:,:));
-
-%         image_finale = image_finale + (-DR);
-%         image_finale(find(image_finale < 10)) = 0;
-%         image_finale(find(image_finale > -DR)) = -DR;
-%         image_finale = image_finale/max(image_finale(:))*128;
-%         image_finale = image_finale + 129;
+        DisplayMapLow = -40; %dB
+        DisplayMapHigh = -10; %dB
         
-        figure;plot(image_finale(:));
+        abs_data = abs(BfData);
+        abs_data = abs_data/max(abs_data(:));
+        
+        image_finale = 20.*log10(abs_data);
+        image_finale = image_finale + -(DisplayMapLow);
+        image_finale = image_finale/(DisplayMapHigh-DisplayMapLow)*128;
+        image_finale(find(image_finale < 0)) = 0;
+        image_finale(find(image_finale > 128)) = 128;
+        image_finale = image_finale + 129;
+        
         axes(handles.axes2);
-        imagesc(WidthAxis, DepthAxis, image_finale, [DR 0]);
-        image(WidthAxis, DepthAxis, image_finale);
-      
-        axis equal 
+        handles.acq.h_axes2 = image(WidthAxis, DepthAxis, image_finale);
+        
+        axis equal
         axis tight
         xlabel('Width (mm)')
-		ylabel('Depth (mm)')
-% 		colormap(gray);
-colormap(hot)
+        ylabel('Depth (mm)')
+        % colormap(jet);
         colorbar
-%  		colormap(handles.acq.cmap);
-% 		colorbar
 
     end
 end
