@@ -302,25 +302,26 @@ if Beamform == 1
         image_finale = 20.*log10((abs(BfData(:,:))/MaxVal));
 %         image_finale = abs(BfData(:,:));
 
-        image_finale = image_finale + (-DR);
-        image_finale(find(image_finale < 10)) = 0;
-        image_finale(find(image_finale > -DR)) = -DR;
-        image_finale = image_finale/max(image_finale(:))*128;
-        image_finale = image_finale + 129;
+%         image_finale = image_finale + (-DR);
+%         image_finale(find(image_finale < 10)) = 0;
+%         image_finale(find(image_finale > -DR)) = -DR;
+%         image_finale = image_finale/max(image_finale(:))*128;
+%         image_finale = image_finale + 129;
         
-%         figure;plot(image_finale(:));
-%         axes(handles.axes2);
-% %         imagesc(WidthAxis, DepthAxis, image_finale, [DR 0]);
-%         image(WidthAxis, DepthAxis, image_finale);
-%       
-%         axis equal 
-%         axis tight
-%         xlabel('Width (mm)')
-% 		ylabel('Depth (mm)')
-% % 		colormap(gray);
-%         colorbar
-% %  		colormap(handles.acq.cmap);
-% % 		colorbar
+        figure;plot(image_finale(:));
+        axes(handles.axes2);
+        imagesc(WidthAxis, DepthAxis, image_finale, [DR 0]);
+        image(WidthAxis, DepthAxis, image_finale);
+      
+        axis equal 
+        axis tight
+        xlabel('Width (mm)')
+		ylabel('Depth (mm)')
+% 		colormap(gray);
+colormap(hot)
+        colorbar
+%  		colormap(handles.acq.cmap);
+% 		colorbar
 
     end
 end
