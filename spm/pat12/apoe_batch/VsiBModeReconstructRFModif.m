@@ -5,7 +5,7 @@
 % Copyright VisualSonics 1999-2010
 % Revision: 1.0 June 28 2010
 % Revision: 1.1 July 22 2010: for software version 1.2 or higher
-function [handles] = VsiBModeReconstructRFModif(handles,fnameBase, frameNumber)
+function [handles, abs_data] = VsiBModeReconstructRFModif(handles,fnameBase, frameNumber)
 
 set(0,'defaultTextUnits','Normalized');
 
@@ -103,25 +103,23 @@ axes(handles.axes1);
 % handles.acq.himage = imagesc(WidthAxis, DepthAxis, 20.*log10(Idata.^2 + Qdata.^2));
 % handles.acq.himage = imagesc(WidthAxis, DepthAxis, 20.*log10(sqrt(Idata.^2 + Qdata.^2)));
 abs_data = Idata.^2 + Qdata.^2;
-abs_data = min(abs_data(:))+ abs_data+1;
+rescaled_abs_data = min(abs_data(:))+ abs_data+1;
 % VOffset = 64;  % 128
 % YOffset = 55;       % 55
-image_finale =  128/60*(20.*log10(sqrt(abs_data)) - YOffset) + VOffset;
+image_finale =  128/60*(20.*log10(sqrt(rescaled_abs_data)) - YOffset) + VOffset;
 image_finale(find(image_finale < 0)) = 0;
 image_finale(find(image_finale > 128)) = 128;
-min(image_finale(:))
-max(image_finale(:))
-clims = [0 128];
-% handles.acq.himage = imagesc(WidthAxis, DepthAxis, image_finale, clims);
-handles.acq.himage = image(WidthAxis, DepthAxis, image_finale);
 
-axis equal 
-axis tight
-xlabel('Width (mm)')
-ylabel('Depth (mm)')
-		
-colormap(handles.acq.cmap);
-colorbar
+
+% handles.acq.himage = image(WidthAxis, DepthAxis, image_finale);
+% 
+% axis equal 
+% axis tight
+% xlabel('Width (mm)')
+% ylabel('Depth (mm)')
+% 		
+% colormap(handles.acq.cmap);
+% colorbar
 
 % title(fnameBase,'interpreter','none');
 % colormap('gray'); colorbar;

@@ -22,7 +22,7 @@ function varargout = GUI_TEMPORAL(varargin)
 
 % Edit the above text to modify the response to help GUI_TEMPORAL
 
-% Last Modified by GUIDE v2.5 11-Jul-2012 12:57:47
+% Last Modified by GUIDE v2.5 17-Jul-2012 08:40:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -83,9 +83,9 @@ function varargout = GUI_TEMPORAL_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 
-% --- Executes on button press in load_image.
-function load_image_Callback(hObject, eventdata, handles)
-% hObject    handle to load_image (see GCBO)
+% --- Executes on button press in load_iq.
+function load_iq_Callback(hObject, eventdata, handles)
+% hObject    handle to load_iq (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -93,14 +93,14 @@ function load_image_Callback(hObject, eventdata, handles)
 
 if isfield(handles, 'acq')
     if isfield(handles.acq, 'open_PathName');
-        [open_FileName,open_PathName] = uigetfile('*.iq.bmode','Ouvrir un fichier de données',handles.acq.open_PathName);
+        [open_FileName,open_PathName] = uigetfile('*.iq.pamode','Ouvrir un fichier de données',handles.acq.open_PathName);
     elseif isfield(handles.acq, 'working_directory')
-        [open_FileName,open_PathName] = uigetfile('*.iq.bmode','Ouvrir un fichier de données',handles.acq.working_directory);   
+        [open_FileName,open_PathName] = uigetfile('*.iq.pamode','Ouvrir un fichier de données',handles.acq.working_directory);   
     else
-        [open_FileName,open_PathName] = uigetfile('*.iq.bmode','Ouvrir un fichier de données');
+        [open_FileName,open_PathName] = uigetfile('*.iq.pamode','Ouvrir un fichier de données');
     end
 else
-   [open_FileName,open_PathName] = uigetfile('*.iq.bmode','Ouvrir un fichier de données');
+   [open_FileName,open_PathName] = uigetfile('*.iq.pamode','Ouvrir un fichier de données');
 end
 
 
@@ -111,7 +111,7 @@ if (open_FileName)
     handles.acq.open_FileName = open_FileName;
     handles.acq.open_PathName = open_PathName;
     
-    str_temp = strfind(data_path, '.bmode');
+    str_temp = strfind(data_path, '.pamode');
     
     if (str_temp)
         short_data_path = data_path(1:str_temp-1);
@@ -121,27 +121,39 @@ if (open_FileName)
         
         xml_data_path = [data_path(1:str_temp) 'xml'];
 
-        param = VsiParseXmlModif(xml_data_path,'.bmode');
+        param = VsiParseXmlModif(xml_data_path,'.pamode');
         handles.acq.param = param;
         
+        % Type of data
+        handles.acq.source_type = 'IQ';
+        
         % Set offsets in interface
-        set(handles.edit_yoffset,'string', num2str(param.BmodeYOffset));
-        set(handles.edit_voffset,'string', num2str(param.BmodeVOffset));
-        handles.acq.YOffset = param.BmodeYOffset;
-        handles.acq.VOffset = param.BmodeVOffset;        
+        handles.acq.YOffset = str2num(get(handles.edit_yoffset,'string'));
+        handles.acq.VOffset = str2num(get(handles.edit_voffset,'string'));      
         set(handles.edit_yoffset,'enable', 'on');
         set(handles.edit_voffset,'enable', 'on');    
-        
         
         % Calculate number of frames in file
         handles.acq.n_frames = VsiFindNFrames(short_data_path, '.bmode');
         
         % Get the Time Stamp Data for all frames
         handles.acq.TimeStampData = VsiBModeIQTimeFrame(short_data_path, '.bmode', handles.acq.n_frames);       
+%         figure;plot( handles.acq.TimeStampData/1000);
         
+        set(handles.display_status,'string', 'Loading IQ data...');
+        handles.acq.frame_number = 1;
+        set(handles.frame_number,'string',num2str(1));
+        set(handles.frame_number,'enable','on');
+        set(handles.total_frames,'string',num2str(handles.acq.n_frames));
+        set(handles.previous_button,'enable','off');
+        set(handles.next_button,'enable','on');
+        set(handles.display_filename_iq, 'string', open_FileName);
+        set(handles.display_filename_preprocessed, 'string', '');        
+        set(handles.pushbutton_preprocess, 'enable','on');
         
-        figure;plot( handles.acq.TimeStampData/1000);
-        
+        handles = lock_interface(handles);
+        pause(0.5);
+
         % Display US (for frame 1)
         handles = VsiBModeReconstructRFModif(handles, short_data_path, 1);
         
@@ -150,30 +162,58 @@ if (open_FileName)
             VsiBeamformPaModif(handles, short_data_path, 1, 1);
         end
         
-        handles.acq.frame_number = 1;
-        set(handles.frame_number,'string',num2str(1));
-        set(handles.frame_number,'enable','on');
-        set(handles.total_frames,'string',num2str(handles.acq.n_frames));
-        set(handles.next_button,'enable','on');
-        set(handles.display_filename, 'string', open_FileName);
+        handles = unlock_interface(handles);
+        set(handles.display_status,'string', 'OK');
     end
 end
 
 guidata(hObject, handles);
 
+function handles = lock_interface(handles)
 
-function display_filename_Callback(hObject, eventdata, handles)
-% hObject    handle to display_filename (see GCBO)
+handles.acq.enable_edit_yoffset = get(handles.edit_yoffset,'enable');
+handles.acq.enable_edit_voffset = get(handles.edit_voffset,'enable'); 
+handles.acq.enable_frame_number = get(handles.frame_number,'enable');
+handles.acq.enable_previous_button = get(handles.previous_button,'enable'); 
+handles.acq.enable_next_button = get(handles.next_button,'enable');       
+handles.acq.enable_pushbutton_preprocess = get(handles.pushbutton_preprocess, 'enable');
+handles.acq.enable_load_iq = get(handles.load_iq,'enable');
+handles.acq.enable_load_preprocessed = get(handles.load_preprocessed,'enable');
+
+set(handles.edit_yoffset,'enable', 'off');
+set(handles.edit_voffset,'enable', 'off');  
+set(handles.frame_number,'enable','off');
+set(handles.previous_button,'enable','off'); 
+set(handles.next_button,'enable','off');   
+set(handles.pushbutton_preprocess, 'enable','off');
+set(handles.load_iq,'enable','off');
+set(handles.load_preprocessed,'enable','off');
+
+
+function handles = unlock_interface(handles)
+
+set(handles.edit_yoffset,'enable', handles.acq.enable_edit_yoffset);
+set(handles.edit_voffset,'enable',  handles.acq.enable_edit_voffset);  
+set(handles.frame_number,'enable', handles.acq.enable_frame_number);
+set(handles.previous_button,'enable', handles.acq.enable_previous_button);   
+set(handles.next_button,'enable', handles.acq.enable_next_button);       
+set(handles.pushbutton_preprocess, 'enable', handles.acq.enable_pushbutton_preprocess);
+set(handles.load_iq,'enable',handles.acq.enable_load_iq);
+set(handles.load_preprocessed,'enable',handles.acq.enable_load_preprocessed);
+
+
+function display_filename_iq_Callback(hObject, eventdata, handles)
+% hObject    handle to display_filename_iq (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of display_filename as text
-%        str2double(get(hObject,'String')) returns contents of display_filename as a double
+% Hints: get(hObject,'String') returns contents of display_filename_iq as text
+%        str2double(get(hObject,'String')) returns contents of display_filename_iq as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function display_filename_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to display_filename (see GCBO)
+function display_filename_iq_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to display_filename_iq (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -191,20 +231,11 @@ function next_button_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 frame_number = handles.acq.frame_number;
-
 frame_number = frame_number + 1;
 
 set(handles.frame_number, 'string', num2str(frame_number));
 handles.acq.frame_number = frame_number;
-
-% Display US
-handles = VsiBModeReconstructRFModif(handles, handles.acq.short_data_path, frame_number);
-
-% Display PA
-if (get(handles.checkbox_pa_display,'value'))
-    VsiBeamformPaModif(handles, handles.acq.short_data_path, frame_number, frame_number);
-end
-        
+  
 if frame_number >= handles.acq.n_frames
    set(handles.next_button, 'enable','off'); 
    set(handles.next_copy_button, 'enable','off'); 
@@ -212,7 +243,29 @@ else
    set(handles.previous_button, 'enable','on');
 end
 
+handles = lock_interface(handles);
+pause(0.5);
 
+if (strcmp(handles.acq.source_type, 'IQ'))
+    % Display US
+    handles = VsiBModeReconstructRFModif(handles, handles.acq.short_data_path, frame_number);
+
+    % Display PA
+    if (get(handles.checkbox_pa_display,'value'))
+        VsiBeamformPaModif(handles, handles.acq.short_data_path, frame_number, frame_number);
+    end
+else
+    abs_data = handles.acq.Bmode_data(:,:,frame_number);
+    BfData = handles.acq.PAmode_data(:,:,frame_number);
+    
+    % Display US
+    DisplayUSdata(handles, abs_data, handles.acq.param);
+    
+    % Display PA
+    handles = DisplayPAdata(handles, BfData, handles.acq.param);
+end
+      
+handles = unlock_interface(handles);
 guidata(hObject, handles);
 
 
@@ -225,18 +278,8 @@ function frame_number_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of frame_number as text
 %        str2double(get(hObject,'String')) returns contents of frame_number as a double
 
-
 frame_number = str2num(get(handles.frame_number, 'string'));
-
 handles.acq.frame_number = frame_number;
-
-% Display US
-handles = VsiBModeReconstructRFModif(handles, handles.acq.short_data_path, frame_number);
-
-% Display PA
-if (get(handles.checkbox_pa_display,'value'))
-    VsiBeamformPaModif(handles, handles.acq.short_data_path, frame_number, frame_number);
-end
 
 if frame_number == handles.acq.n_frames
     set(handles.next_button,'enable','off');
@@ -249,6 +292,29 @@ if frame_number == 1
     set(handles.next_button,'enable','on');
 end
 
+handles = lock_interface(handles);
+pause(0.5);
+
+if (strcmp(handles.acq.source_type, 'IQ'))
+    % Display US
+    handles = VsiBModeReconstructRFModif(handles, handles.acq.short_data_path, frame_number);
+
+    % Display PA
+    if (get(handles.checkbox_pa_display,'value'))
+        VsiBeamformPaModif(handles, handles.acq.short_data_path, frame_number, frame_number);
+    end
+else
+    abs_data = handles.acq.Bmode_data(:,:,frame_number);
+    BfData = handles.acq.PAmode_data(:,:,frame_number);
+    
+    % Display US
+    DisplayUSdata(handles, abs_data, handles.acq.param);
+    
+    % Display PA
+    handles = DisplayPAdata(handles, BfData, handles.acq.param);
+end
+
+handles = unlock_interface(handles);
 guidata(hObject, handles);
 
 
@@ -294,20 +360,12 @@ function previous_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-frame_number = handles.acq.frame_number;
 
+frame_number = handles.acq.frame_number;
 frame_number = frame_number - 1;
 
 set(handles.frame_number, 'string', num2str(frame_number));
 handles.acq.frame_number = frame_number;
-
-% Display US
-handles = VsiBModeReconstructRFModif(handles, handles.acq.short_data_path, frame_number);
-
-% Display PA
-if (get(handles.checkbox_pa_display,'value'))
-    VsiBeamformPaModif(handles, handles.acq.short_data_path, frame_number, frame_number);
-end
 
 if frame_number <= 1
    set(handles.previous_button, 'enable','off');
@@ -315,6 +373,29 @@ else
    set(handles.next_button, 'enable','on');
 end
 
+handles = lock_interface(handles);
+pause(0.5);
+
+if (strcmp(handles.acq.source_type, 'IQ'))
+    % Display US
+    handles = VsiBModeReconstructRFModif(handles, handles.acq.short_data_path, frame_number);
+
+    % Display PA
+    if (get(handles.checkbox_pa_display,'value'))
+        VsiBeamformPaModif(handles, handles.acq.short_data_path, frame_number, frame_number);
+    end
+else
+    abs_data = handles.acq.Bmode_data(:,:,frame_number);
+    BfData = handles.acq.PAmode_data(:,:,frame_number);
+    
+    % Display US
+    DisplayUSdata(handles, abs_data, handles.acq.param);
+    
+    % Display PA
+    handles = DisplayPAdata(handles, BfData, handles.acq.param);
+end
+
+handles = unlock_interface(handles);
 guidata(hObject, handles);
 
 
@@ -399,3 +480,289 @@ function edit_yoffset_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in load_preprocessed.
+function load_preprocessed_Callback(hObject, eventdata, handles)
+% hObject    handle to load_preprocessed (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+if isfield(handles, 'acq')
+    if isfield(handles.acq, 'open_PathName');
+        [open_FileName,open_PathName] = uigetfile('*.mat','Ouvrir un fichier de données',handles.acq.open_PathName);
+    elseif isfield(handles.acq, 'working_directory')
+        [open_FileName,open_PathName] = uigetfile('*.mat','Ouvrir un fichier de données',handles.acq.working_directory);   
+    else
+        [open_FileName,open_PathName] = uigetfile('*.mat','Ouvrir un fichier de données');
+    end
+else
+   [open_FileName,open_PathName] = uigetfile('*.mat','Ouvrir un fichier de données');
+end
+
+
+if (open_FileName)
+    
+    data_path = strcat([open_PathName open_FileName]);
+    handles.acq.data_path = data_path;
+    handles.acq.open_FileName = open_FileName;
+    handles.acq.open_PathName = open_PathName;
+    
+    % Load interface parameters
+    handles.acq.YOffset = str2num(get(handles.edit_yoffset,'string'));
+    handles.acq.VOffset = str2num(get(handles.edit_voffset,'string'));
+
+    % Create ROI
+    handles.acq.hrois = cell(1,1);
+    
+    % Type of data
+    handles.acq.source_type = 'MAT';
+        
+    % Load data
+    load(data_path);
+    handles.acq.Bmode_data = Bmode_data;
+    handles.acq.PAmode_data = PAmode_data;
+    handles.acq.param = param;
+    handles.acq.n_frames = processing_param.n_frames;
+    
+    abs_data = Bmode_data(:,:,1);
+    BfData = PAmode_data(:,:,1);
+            
+    handles.acq.frame_number = 1;
+    set(handles.frame_number,'string',num2str(1));
+    set(handles.frame_number,'enable','on');
+    set(handles.total_frames,'string',num2str(handles.acq.n_frames));
+    set(handles.previous_button,'enable','off');
+    set(handles.next_button,'enable','on');
+    set(handles.display_filename_preprocessed, 'string', open_FileName);
+    set(handles.display_filename_iq, 'string', '');
+    set(handles.pushbutton_preprocess, 'enable','off');
+    set(handles.pushbutton_define_roi, 'enable','on');
+    
+    handles = lock_interface(handles);
+    pause(0.5);
+    
+    % Display US
+    DisplayUSdata(handles, abs_data, param);
+    
+    % Display PA
+    handles = DisplayPAdata(handles, BfData, param);
+      
+    % Set offsets in interface
+    set(handles.edit_yoffset,'enable', 'on');
+    set(handles.edit_voffset,'enable', 'on');
+        
+    handles = unlock_interface(handles);
+end
+
+guidata(hObject, handles);
+
+function display_filename_preprocessed_Callback(hObject, eventdata, handles)
+% hObject    handle to display_filename_preprocessed (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of display_filename_preprocessed as text
+%        str2double(get(hObject,'String')) returns contents of display_filename_preprocessed as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function display_filename_preprocessed_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to display_filename_preprocessed (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton_preprocess.
+function pushbutton_preprocess_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_preprocess (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+set(handles.display_status,'string', 'Preprocessing data...');
+handles = lock_interface(handles);
+pause(0.5);
+
+[handles] = PreprocessData(handles, handles.acq.short_data_path, handles.acq.n_frames);
+
+set(handles.display_status,'string', 'Data preprocessed OK');
+handles = unlock_interface(handles);
+
+
+function display_status_Callback(hObject, eventdata, handles)
+% hObject    handle to display_status (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of display_status as text
+%        str2double(get(hObject,'String')) returns contents of display_status as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function display_status_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to display_status (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton_define_roi.
+function pushbutton_define_roi_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_define_roi (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+h = impoly;
+
+if (~isempty(handles.acq.hrois{1}))
+    temp_h = handles.acq.hrois{1};
+    
+    if (isvalid(temp_h))
+       delete(temp_h);
+    end
+end
+
+handles.acq.hrois{1} = h;
+setColor(h,'yellow');
+set(handles.pushbutton_extract_temporal,'enable','on');
+guidata(hObject, handles);
+
+
+% --- Executes on button press in pushbutton_extract_temporal.
+function pushbutton_extract_temporal_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_extract_temporal (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% Stocke les positions des ROIs du frame actuel
+
+index = 1;
+frame_number = 1;
+
+% Si le handle de la ROI existe
+if (~isempty(handles.acq.hrois{index}))
+    temp_h = handles.acq.hrois{index};
+    
+    % Si la ROI existe
+    if (isvalid(temp_h))
+        
+        % Copie la position
+        pos = getPosition(temp_h);
+        
+        % Le stocke
+        handles.acq.roi_positions{frame_number,index} = pos;
+    else
+        handles.acq.roi_positions{frame_number,index} = [];
+    end
+    
+    % Detruit le handle de toute facon
+    handles.acq.hrois{index} = [];
+    
+else
+    handles.acq.roi_positions{frame_number,index} = [];
+end
+
+dim1_PA_data = size(handles.acq.PAmode_data,1);
+dim2_PA_data = size(handles.acq.PAmode_data,2);
+xdata = get(handles.acq.h_axes2,'XData');
+pixelx = axes2pix(dim2_PA_data, xdata, pos(:,1));
+ydata = get(handles.acq.h_axes2,'YData');
+pixely = axes2pix(dim1_PA_data, ydata, pos(:,2));
+
+bw = poly2mask(pixelx, pixely, dim1_PA_data, dim2_PA_data);
+[I] = find(bw);
+            
+BfData = handles.acq.PAmode_data(:,:,handles.acq.frame_number);
+% BfData(I) = 0;
+% handles = DisplayPAdata(handles, BfData, handles.acq.param);
+
+data = extract_curves(handles,2, I);
+
+guidata(hObject, handles);
+
+
+% --- Executes on button press in wavelength1.
+function wavelength1_Callback(hObject, eventdata, handles)
+% hObject    handle to wavelength1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of wavelength1
+
+
+% --- Executes on button press in wavelength2.
+function wavelength2_Callback(hObject, eventdata, handles)
+% hObject    handle to wavelength2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of wavelength2
+
+
+% --- Executes on button press in wavelength3.
+function wavelength3_Callback(hObject, eventdata, handles)
+% hObject    handle to wavelength3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of wavelength3
+
+
+% --- Executes on button press in wavelength4.
+function wavelength4_Callback(hObject, eventdata, handles)
+% hObject    handle to wavelength4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of wavelength4
+
+
+% --- Executes on button press in wavelength5.
+function wavelength5_Callback(hObject, eventdata, handles)
+% hObject    handle to wavelength5 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of wavelength5
+
+
+
+function edit_acq_type_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_acq_type (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_acq_type as text
+%        str2double(get(hObject,'String')) returns contents of edit_acq_type as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_acq_type_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_acq_type (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton20.
+function pushbutton20_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton20 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+load_iq_Callback(hObject, eventdata, handles);
