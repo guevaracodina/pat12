@@ -33,7 +33,6 @@ DR = 60; % Dynamic Range in dB
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 axes(handles.axes1);
-
 rescaled_abs_data = min(abs_data(:))+ abs_data+1;
 image_finale =  128/60*(20.*log10(sqrt(rescaled_abs_data)) - YOffset) + VOffset;
 image_finale(find(image_finale < 0)) = 0;

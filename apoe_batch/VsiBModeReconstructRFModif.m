@@ -111,15 +111,15 @@ image_finale(find(image_finale < 0)) = 0;
 image_finale(find(image_finale > 128)) = 128;
 
 
-% handles.acq.himage = image(WidthAxis, DepthAxis, image_finale);
-% 
-% axis equal 
-% axis tight
-% xlabel('Width (mm)')
-% ylabel('Depth (mm)')
-% 		
-% colormap(handles.acq.cmap);
-% colorbar
+handles.acq.himage = image(WidthAxis, DepthAxis, image_finale);
+
+axis equal 
+axis tight
+xlabel('Width (mm)')
+ylabel('Depth (mm)')
+		
+colormap(handles.acq.cmap);
+colorbar
 
 % title(fnameBase,'interpreter','none');
 % colormap('gray'); colorbar;
