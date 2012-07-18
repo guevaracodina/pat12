@@ -1,4 +1,4 @@
-function [] = VsiBeamformPaModif(handles,fnameBase, StartFrame, EndFrame)
+function [handles, BfData] = VsiBeamformPaModif(handles,fnameBase, StartFrame, EndFrame)
 
 % VsiBeamformPa.m
 % Copyright VisualSonics 1999-2010
@@ -309,18 +309,18 @@ if Beamform == 1
         image_finale = image_finale + 129;
         
 %         figure;plot(image_finale(:));
-        axes(handles.axes2);
-%         imagesc(WidthAxis, DepthAxis, image_finale, [DR 0]);
-        image(WidthAxis, DepthAxis, image_finale);
-      
-        axis equal 
-        axis tight
-        xlabel('Width (mm)')
-		ylabel('Depth (mm)')
-% 		colormap(gray);
-        colorbar
-%  		colormap(handles.acq.cmap);
-% 		colorbar
+%         axes(handles.axes2);
+% %         imagesc(WidthAxis, DepthAxis, image_finale, [DR 0]);
+%         image(WidthAxis, DepthAxis, image_finale);
+%       
+%         axis equal 
+%         axis tight
+%         xlabel('Width (mm)')
+% 		ylabel('Depth (mm)')
+% % 		colormap(gray);
+%         colorbar
+% %  		colormap(handles.acq.cmap);
+% % 		colorbar
 
     end
 end

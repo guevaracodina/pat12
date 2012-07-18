@@ -100,7 +100,7 @@ if (open_FileName)
         
         xml_data_path = [data_path(1:str_temp) 'xml'];
 
-        param = VsiParseXmlExtended(xml_data_path,'.3dmode');
+        param = VsiParseXmlModif(xml_data_path,'.3dmode');
         handles.acq.param = param;
         handles.acq.n_frames = floor(param.ScanDistance/param.StepSize);
            
@@ -109,7 +109,7 @@ if (open_FileName)
         handles.acq.airline_positions = cell(handles.acq.n_frames,1);
         handles.acq.hairline = cell(1,1);
         
-        handles = VsiBModeReconstructRFExtended(handles, short_data_path, 1);
+        handles = VsiBModeReconstructRFModif(handles, short_data_path, 1);
         
         handles.acq.frame_number = 1;
         set(handles.frame_number,'string',num2str(1));

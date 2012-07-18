@@ -206,12 +206,56 @@ for k = 0:AllParameters.getLength-1
     case 'B-Mode/RX-Frequency'
         javaRxFrequency = node.getAttribute('value');
         BmodeRxFrequency = str2num(char(javaRxFrequency)); 
+    case 'Pa-Mode/Acquisition-Mode'
+        javaMode = node.getAttribute('value');
+        PaMode = char(javaMode); 
+    case 'Pa-Mode/Wavelength-1-Enable'
+        javaWavelength1Enable = node.getAttribute('value');
+        PaWavelength1Enable = str2num(char(javaWavelength1Enable)); 
+    case 'Pa-Mode/Wavelength-1'
+        javaWavelength1 = node.getAttribute('value');
+        PaWavelength1 = str2num(char(javaWavelength1));
+    case 'Pa-Mode/Wavelength-2-Enable'
+        javaWavelength2Enable = node.getAttribute('value');
+        PaWavelength2Enable = str2num(char(javaWavelength2Enable)); 
+    case 'Pa-Mode/Wavelength-2'
+        javaWavelength2 = node.getAttribute('value');
+        PaWavelength2 = str2num(char(javaWavelength2));
+    case 'Pa-Mode/Wavelength-3-Enable'
+        javaWavelength3Enable = node.getAttribute('value');
+        PaWavelength3Enable = str2num(char(javaWavelength3Enable)); 
+    case 'Pa-Mode/Wavelength-3'
+        javaWavelength3 = node.getAttribute('value');
+        PaWavelength3 = str2num(char(javaWavelength3));
+    case 'Pa-Mode/Wavelength-4-Enable'
+        javaWavelength4Enable = node.getAttribute('value');
+        PaWavelength4Enable = str2num(char(javaWavelength4Enable)); 
+    case 'Pa-Mode/Wavelength-4'
+        javaWavelength4 = node.getAttribute('value');
+        PaWavelength4 = str2num(char(javaWavelength4));
+    case 'Pa-Mode/Wavelength-5-Enable'
+        javaWavelength5Enable = node.getAttribute('value');
+        PaWavelength5Enable = str2num(char(javaWavelength5Enable)); 
+    case 'Pa-Mode/Wavelength-5'
+        javaWavelength5 = node.getAttribute('value');
+        PaWavelength5 = str2num(char(javaWavelength5));
     end
     
 end
 ReturnParam = struct('PaNumSamples', PaNumSamples, 'PaNumLines', PaNumLines, 'PaDepthOffset', PaDepthOffset, ...
     'PaDepth', PaDepth, 'PaWidth', PaWidth, 'BmodeNumSamples', BmodeNumSamples, 'BmodeNumLines', BmodeNumLines, ...
-    'BmodeDepthOffset', BmodeDepthOffset, 'BmodeDepth', BmodeDepth,'BmodeWidth', BmodeWidth, 'BmodeRxFrequency', BmodeRxFrequency);
+    'BmodeDepthOffset', BmodeDepthOffset, 'BmodeDepth', BmodeDepth,'BmodeWidth', BmodeWidth, 'BmodeRxFrequency', ...
+    BmodeRxFrequency, 'PaMode' ,PaMode,...
+    'PaWavelength1Enable', PaWavelength1Enable,...
+    'PaWavelength1', PaWavelength1,...
+    'PaWavelength2Enable', PaWavelength2Enable,...   
+    'PaWavelength2', PaWavelength2,...
+    'PaWavelength3Enable', PaWavelength3Enable,...   
+    'PaWavelength3', PaWavelength3,...
+    'PaWavelength4Enable', PaWavelength4Enable,...   
+    'PaWavelength4', PaWavelength4,...
+    'PaWavelength5Enable', PaWavelength5Enable,...   
+    'PaWavelength5', PaWavelength5);
 
 case '.3dmode'
     
