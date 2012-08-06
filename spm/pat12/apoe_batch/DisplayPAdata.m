@@ -76,7 +76,7 @@ abs_data = abs(BfData);
 abs_data = abs_data/max(abs_data(:));
 
 image_finale = 20.*log10(abs_data);
-image_finale = image_finale + -(DisplayMapLow);
+image_finale = image_finale -(DisplayMapLow);
 image_finale = image_finale/(DisplayMapHigh-DisplayMapLow)*128;
 image_finale(find(image_finale < 0)) = 0;
 image_finale(find(image_finale > 128)) = 128;
