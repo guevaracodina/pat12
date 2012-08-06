@@ -22,7 +22,7 @@ function varargout = GUI_TEMPORAL(varargin)
 
 % Edit the above text to modify the response to help GUI_TEMPORAL
 
-% Last Modified by GUIDE v2.5 18-Jul-2012 08:19:13
+% Last Modified by GUIDE v2.5 06-Aug-2012 15:28:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -139,6 +139,7 @@ if (open_FileName)
         % Get the Time Stamp Data for all frames
         handles.acq.TimeStampData = VsiBModeIQTimeFrame(short_data_path, '.bmode', handles.acq.n_frames);       
 %         figure;plot( handles.acq.TimeStampData/1000);
+             
         
         set(handles.display_status,'string', 'Loading IQ data...');
         handles.acq.frame_number = 1;
@@ -230,6 +231,39 @@ function next_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+
+frame_number = handles.acq.frame_number;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Stocke les positions des ROIs du frame actuel
+for index = 1:4
+    % Si le handle de la ROI existe
+    if (~isempty(handles.acq.hrois_us{index}))
+        temp_h = handles.acq.hrois_us{index};
+        
+        % Si la ROI existe
+        if (isvalid(temp_h))
+            
+            % Copie la position
+            pos = getPosition(temp_h);
+ 
+            % Le stocke
+            handles.acq.roi_positions{1,index} = pos;
+        else
+            handles.acq.roi_positions{1,index} = [];            
+        end
+        
+        % Detruit le handle de toute facon
+        handles.acq.hrois_us{index} = [];
+        
+    else
+        handles.acq.roi_positions{1,index} = [];
+    end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 frame_number = handles.acq.frame_number;
 frame_number = frame_number + 1;
 
@@ -246,6 +280,7 @@ end
 handles = lock_interface(handles);
 pause(0.5);
 
+
 if (strcmp(handles.acq.source_type, 'IQ'))
     % Display US
     handles = VsiBModeReconstructRFModif(handles, handles.acq.short_data_path, frame_number);
@@ -255,6 +290,7 @@ if (strcmp(handles.acq.source_type, 'IQ'))
         VsiBeamformPaModif(handles, handles.acq.short_data_path, frame_number, frame_number);
     end
 else
+    
     abs_data = handles.acq.Bmode_data(:,:,frame_number);
     BfData = handles.acq.PAmode_data(:,:,frame_number);
     
@@ -263,6 +299,42 @@ else
     
     % Display PA
     handles = DisplayPAdata(handles, BfData, handles.acq.param);
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Va chercher les positions des ROIs du frame
+    for index = 1:4
+        if (~isempty(handles.acq.roi_positions{1,index}))
+            pos = handles.acq.roi_positions{1,index};
+            
+            % Cree un nouveau ROI
+            h = impoly(handles.axes1, pos);
+            h_bis = impoly(handles.axes2, pos);
+            
+            % Le stocke
+            handles.acq.hrois_us{index} = h;
+            handles.acq.hrois_pa{index} = h_bis;            
+            
+            switch (index)
+                case 1
+                    setColor(h,'yellow');
+                    setColor(h_bis,'yellow');
+                case 2
+                    setColor(h,'red');
+                    setColor(h_bis,'red');
+                case 3
+                    setColor(h,'blue');
+                    setColor(h_bis,'blue');
+                case 4
+                    setColor(h,'green');
+                    setColor(h_bis,'green');
+            end
+            
+        end
+    end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 end
       
 handles = unlock_interface(handles);
@@ -277,6 +349,39 @@ function frame_number_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of frame_number as text
 %        str2double(get(hObject,'String')) returns contents of frame_number as a double
+
+
+frame_number = handles.acq.frame_number;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Stocke les positions des ROIs du frame actuel
+for index = 1:4
+    % Si le handle de la ROI existe
+    if (~isempty(handles.acq.hrois_us{index}))
+        temp_h = handles.acq.hrois_us{index};
+        
+        % Si la ROI existe
+        if (isvalid(temp_h))
+            
+            % Copie la position
+            pos = getPosition(temp_h);
+ 
+            % Le stocke
+            handles.acq.roi_positions{1,index} = pos;
+        else
+            handles.acq.roi_positions{1,index} = [];            
+        end
+        
+        % Detruit le handle de toute facon
+        handles.acq.hrois{index} = [];
+        
+    else
+        handles.acq.roi_positions{1,index} = [];
+    end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 frame_number = str2num(get(handles.frame_number, 'string'));
 handles.acq.frame_number = frame_number;
@@ -312,6 +417,41 @@ else
     
     % Display PA
     handles = DisplayPAdata(handles, BfData, handles.acq.param);
+    
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Va chercher les positions des ROIs du frame
+    for index = 1:4
+        if (~isempty(handles.acq.roi_positions{1,index}))
+            pos = handles.acq.roi_positions{1,index};
+            
+            % Cree un nouveau ROI
+            h = impoly(handles.axes1, pos);
+            h_bis = impoly(handles.axes2, pos);
+            
+            % Le stocke
+            handles.acq.hrois_us{index} = h;
+            handles.acq.hrois_pa{index} = h_bis;
+            
+            switch (index)
+                case 1
+                    setColor(h,'yellow');
+                    setColor(h_bis,'yellow');
+                case 2
+                    setColor(h,'red');
+                    setColor(h_bis,'red');
+                case 3
+                    setColor(h,'blue');
+                    setColor(h_bis,'blue');
+                case 4
+                    setColor(h,'green');
+                    setColor(h_bis,'green');
+            end
+            
+        end
+    end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
 end
 
 handles = unlock_interface(handles);
@@ -360,6 +500,37 @@ function previous_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+frame_number = handles.acq.frame_number;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Stocke les positions des ROIs du frame actuel
+for index = 1:4
+    % Si le handle de la ROI existe
+    if (~isempty(handles.acq.hrois_us{index}))
+        temp_h = handles.acq.hrois_us{index};
+        
+        % Si la ROI existe
+        if (isvalid(temp_h))
+            
+            % Copie la position
+            pos = getPosition(temp_h);
+ 
+            % Le stocke
+            handles.acq.roi_positions{1,index} = pos;
+        else
+            handles.acq.roi_positions{1,index} = [];            
+        end
+        
+        % Detruit le handle de toute facon
+        handles.acq.hrois_us{index} = [];
+        
+    else
+        handles.acq.roi_positions{1,index} = [];
+    end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 frame_number = handles.acq.frame_number;
 frame_number = frame_number - 1;
@@ -393,6 +564,41 @@ else
     
     % Display PA
     handles = DisplayPAdata(handles, BfData, handles.acq.param);
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Va chercher les positions des ROIs du frame
+    for index = 1:4
+        if (~isempty(handles.acq.roi_positions{1,index}))
+            pos = handles.acq.roi_positions{1,index};
+            
+            % Cree un nouveau ROI
+            h = impoly(handles.axes1, pos);
+            h_bis = impoly(handles.axes2, pos);
+            
+            % Le stocke
+            handles.acq.hrois_us{index} = h;
+            handles.acq.hrois_pa{index} = h_bis;
+            
+            
+            switch (index)
+                case 1
+                    setColor(h,'yellow');
+                    setColor(h_bis,'yellow');
+                case 2
+                    setColor(h,'red');
+                    setColor(h_bis,'red');
+                case 3
+                    setColor(h,'blue');
+                    setColor(h_bis,'blue');
+                case 4
+                    setColor(h,'green');
+                    setColor(h_bis,'green');
+            end
+            
+        end
+    end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
 handles = unlock_interface(handles);
@@ -513,8 +719,10 @@ if (open_FileName)
     handles.acq.VOffset = str2num(get(handles.edit_voffset,'string'));
 
     % Create ROI
-    handles.acq.hrois = cell(1,1);
-    
+    handles.acq.hrois_us = cell(4,1);
+    handles.acq.hrois_pa = cell(4,1);
+    handles.acq.roi_positions = cell(1,4);
+        
     % Type of data
     handles.acq.source_type = 'MAT';
         
@@ -537,7 +745,14 @@ if (open_FileName)
     set(handles.display_filename_preprocessed, 'string', open_FileName);
     set(handles.display_filename_iq, 'string', '');
     set(handles.pushbutton_preprocess, 'enable','off');
-    set(handles.pushbutton_define_roi, 'enable','on');
+%     set(handles.pushbutton_define_roi, 'enable','on');
+    
+    set(handles.open_segmentation,'enable','on');
+    set(handles.save_segmentation,'enable','on');
+    set(handles.ROI1,'enable','on');
+    set(handles.ROI2,'enable','on');
+    set(handles.ROI3,'enable','on');
+    set(handles.ROI4,'enable','on');
     
     handles = lock_interface(handles);
     pause(0.5);
@@ -617,76 +832,104 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in pushbutton_define_roi.
-function pushbutton_define_roi_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton_define_roi (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-h = impoly;
-
-if (~isempty(handles.acq.hrois{1}))
-    temp_h = handles.acq.hrois{1};
-    
-    if (isvalid(temp_h))
-       delete(temp_h);
-    end
-end
-
-handles.acq.hrois{1} = h;
-setColor(h,'yellow');
-set(handles.pushbutton_extract_temporal,'enable','on');
-guidata(hObject, handles);
-
-
 % --- Executes on button press in pushbutton_extract_temporal.
 function pushbutton_extract_temporal_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_extract_temporal (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+dim3_PA_data = size(handles.acq.PAmode_data,3);
+n_temporal_points = floor(dim3_PA_data/2);
+data_temporel = zeros(n_temporal_points, 2, 4);
+
 % Stocke les positions des ROIs du frame actuel
-
-index = 1;
-frame_number = 1;
-
-% Si le handle de la ROI existe
-if (~isempty(handles.acq.hrois{index}))
-    temp_h = handles.acq.hrois{index};
-    
-    % Si la ROI existe
-    if (isvalid(temp_h))
+for index = 1:4
+    % Si le handle de la ROI existe
+    if (~isempty(handles.acq.hrois_us{index}))
+        temp_h = handles.acq.hrois_us{index};
         
-        % Copie la position
-        pos = getPosition(temp_h);
+        % Si la ROI existe
+        if (isvalid(temp_h))
+            
+            % Copie la position
+            pos = getPosition(temp_h);
+ 
+            % Le stocke
+            handles.acq.roi_positions{1,index} = pos;
+            
+                    
+            dim1_PA_data = size(handles.acq.PAmode_data,1);
+            dim2_PA_data = size(handles.acq.PAmode_data,2);
+            xdata = get(handles.acq.h_axes2,'XData');
+            pixelx = axes2pix(dim2_PA_data, xdata, pos(:,1));
+            ydata = get(handles.acq.h_axes2,'YData');
+            pixely = axes2pix(dim1_PA_data, ydata, pos(:,2));
+            
+            bw = poly2mask(pixelx, pixely, dim1_PA_data, dim2_PA_data);
+            [I] = find(bw);
+            
+            BfData = handles.acq.PAmode_data(:,:,handles.acq.frame_number);
+            % BfData(I) = 0;
+            % handles = DisplayPAdata(handles, BfData, handles.acq.param);
+            
+            data_temporel(:,:,index) = extract_curves(handles, 2, I);
+            y = data_temporel(:,1,index);
+            figure;plot(y,':');
+            y_filtered = smooth(y, 5, 'moving');
+            hold on
+            plot(y_filtered,'k-','LineWidth',2);
         
-        % Le stocke
-        handles.acq.roi_positions{frame_number,index} = pos;
+        else
+            handles.acq.roi_positions{1,index} = [];            
+        end
+
+        % Detruit le handle de toute facon
+%         handles.acq.hrois_us{index} = [];
+        
     else
-        handles.acq.roi_positions{frame_number,index} = [];
+%         handles.acq.roi_positions{1,index} = [];
     end
-    
-    % Detruit le handle de toute facon
-    handles.acq.hrois{index} = [];
-    
-else
-    handles.acq.roi_positions{frame_number,index} = [];
 end
 
-dim1_PA_data = size(handles.acq.PAmode_data,1);
-dim2_PA_data = size(handles.acq.PAmode_data,2);
-xdata = get(handles.acq.h_axes2,'XData');
-pixelx = axes2pix(dim2_PA_data, xdata, pos(:,1));
-ydata = get(handles.acq.h_axes2,'YData');
-pixely = axes2pix(dim1_PA_data, ydata, pos(:,2));
 
-bw = poly2mask(pixelx, pixely, dim1_PA_data, dim2_PA_data);
-[I] = find(bw);
-            
-BfData = handles.acq.PAmode_data(:,:,handles.acq.frame_number);
-% BfData(I) = 0;
-% handles = DisplayPAdata(handles, BfData, handles.acq.param);
-
-data = extract_curves(handles,2, I);
+% % Si le handle de la ROI existe
+% if (~isempty(handles.acq.hrois_us{index}))
+%     temp_h = handles.acq.hrois_us{index};
+%     
+%     % Si la ROI existe
+%     if (isvalid(temp_h))
+%         
+%         % Copie la position
+%         pos = getPosition(temp_h);
+%         
+%         % Le stocke
+%         handles.acq.roi_positions{frame_number,index} = pos;
+%     else
+%         handles.acq.roi_positions{frame_number,index} = [];
+%     end
+%     
+%     % Detruit le handle de toute facon
+%     handles.acq.hrois_us{index} = [];
+%     
+% else
+%     handles.acq.roi_positions{frame_number,index} = [];
+% end
+% 
+% dim1_PA_data = size(handles.acq.PAmode_data,1);
+% dim2_PA_data = size(handles.acq.PAmode_data,2);
+% xdata = get(handles.acq.h_axes2,'XData');
+% pixelx = axes2pix(dim2_PA_data, xdata, pos(:,1));
+% ydata = get(handles.acq.h_axes2,'YData');
+% pixely = axes2pix(dim1_PA_data, ydata, pos(:,2));
+% 
+% bw = poly2mask(pixelx, pixely, dim1_PA_data, dim2_PA_data);
+% [I] = find(bw);
+%             
+% BfData = handles.acq.PAmode_data(:,:,handles.acq.frame_number);
+% % BfData(I) = 0;
+% % handles = DisplayPAdata(handles, BfData, handles.acq.param);
+% 
+% data = extract_curves(handles, 2, I);
 
 guidata(hObject, handles);
 
@@ -766,3 +1009,489 @@ function pushbutton20_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 load_iq_Callback(hObject, eventdata, handles);
+
+
+% --- Executes on button press in open_segmentation.
+function open_segmentation_Callback(hObject, eventdata, handles)
+% hObject    handle to open_segmentation (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+if isfield(handles, 'acq')
+    if isfield(handles.acq, 'open_PathName');
+        data_path = strcat([handles.acq.open_PathName handles.acq.open_FileName]);
+        index_mat = findstr(data_path, '.mat');
+        data_path_to_open = strcat([data_path(1:(index_mat-1)) '.segment.mat']);
+        [open_FileName,open_PathName] = uigetfile('*.mat','Ouvrir un fichier de segmentation', data_path_to_open);
+    elseif isfield(handles.acq, 'working_directory')
+        [open_FileName,open_PathName] = uigetfile('*.mat','Ouvrir un fichier de segmentation',handles.acq.working_directory);   
+    else
+        [open_FileName,open_PathName] = uigetfile('*.mat','Ouvrir un fichier de segmentation');
+    end
+else
+   [open_FileName,open_PathName] = uigetfile('*.mat','Ouvrir un fichier de segmentation');
+end
+
+if (open_FileName)
+    
+    data_path = strcat([open_PathName open_FileName]);
+%     handles.acq.data_path = data_path;
+%     handles.acq.open_FileName = open_FileName;
+%     handles.acq.open_PathName = open_PathName;
+    
+    
+load(data_path, 'roi_positions');
+
+handles.acq.roi_positions = roi_positions;
+
+% Update les ROIs affichées
+frame_number = str2num(get(handles.frame_number,'string'));
+
+if (frame_number >= 1 && frame_number <= handles.acq.n_frames)
+%     handles = VsiBModeReconstructRFExtended(handles, handles.acq.short_data_path, frame_number);
+
+    handles.acq.frame_number = frame_number;
+    
+    abs_data = handles.acq.Bmode_data(:,:,frame_number);
+    BfData = handles.acq.PAmode_data(:,:,frame_number);
+    
+    % Display US
+    DisplayUSdata(handles, abs_data, handles.acq.param);
+    
+    % Display PA
+    handles = DisplayPAdata(handles, BfData, handles.acq.param);
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Va chercher les positions des ROIs du frame
+    for index = 1:4
+        if (~isempty(handles.acq.roi_positions{1,index}))
+            pos = handles.acq.roi_positions{1,index};
+            
+            % Cree un nouveau ROI
+            h = impoly(handles.axes1, pos);
+            h_bis = impoly(handles.axes2, pos);
+            
+            % Le stocke
+            handles.acq.hrois_us{index} = h;
+            handles.acq.hrois_pa{index} = h_bis;
+            
+            switch (index)
+                case 1
+                    setColor(h,'yellow');
+                    setColor(h_bis,'yellow');
+                case 2
+                    setColor(h,'red');
+                    setColor(h_bis,'red');
+                case 3
+                    setColor(h,'blue');
+                    setColor(h_bis,'blue');
+                case 4
+                    setColor(h,'green');
+                    setColor(h_bis,'green');
+            end
+            
+        end
+    end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    
+    
+    if frame_number == handles.acq.n_frames
+        set(handles.next_button,'enable','off');
+%         set(handles.next_copy_button,'enable','off');
+        set(handles.previous_button,'enable','on');
+    end
+    
+    if frame_number == 1
+        set(handles.previous_button,'enable','off');
+        set(handles.next_button,'enable','on');
+%         set(handles.next_copy_button,'enable','on');
+    end
+end
+
+end
+guidata(hObject, handles);
+
+
+% --- Executes on button press in save_segmentation.
+function save_segmentation_Callback(hObject, eventdata, handles)
+% hObject    handle to save_segmentation (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Stocker les ROIs de la frame actuelle
+% frame_number = handles.acq.frame_number;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROIs %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Stocke les positions des ROIs du frame actuel
+for index = 1:4
+    % Si le handle de la ROI existe
+    if (~isempty(handles.acq.hrois_us{index}))
+        temp_h = handles.acq.hrois_us{index};
+        
+        % Si la ROI existe
+        if (isvalid(temp_h))
+            
+            % Copie la position
+            pos = getPosition(temp_h);
+
+            % Le stocke
+            handles.acq.roi_positions{1,index} = pos;
+        else
+            handles.acq.roi_positions{1,index} = [];            
+        end
+        
+        % Detruit le handle de toute facon
+        handles.acq.hrois_us{index} = [];
+        
+    else
+        handles.acq.roi_positions{1,index} = [];
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%% Polyline for Air %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+% % Si le handle de la ROI existe
+% if (~isempty(handles.acq.hairline{1}))
+%     temp_h = handles.acq.hairline{1};
+%     
+%     % Si la ROI existe
+%     if (isvalid(temp_h))
+%         
+%         % Copie la position
+%         pos = getPosition(temp_h);
+%         
+%         % Le stocke
+%         handles.acq.airline_positions{frame_number} = pos;
+%     else
+%         handles.acq.airline_positions{frame_number} = [];
+%     end
+%     
+%     % Detruit le handle de toute facon
+%     handles.acq.hairline{1} = [];
+%     
+% else
+%     handles.acq.airline_positions{frame_number} = [];
+% end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Va chercher les positions des ROIs du frame
+    for index = 1:4
+        if (~isempty(handles.acq.roi_positions{1,index}))
+            pos = handles.acq.roi_positions{1,index};
+            
+            % Cree un nouveau ROI
+            h = impoly(handles.axes1, pos);
+            h_bis = impoly(handles.axes2, pos);
+            
+            % Le stocke
+            handles.acq.hrois_us{index} = h;
+            
+            
+            switch (index)
+                case 1
+                    setColor(h,'yellow');
+                    setColor(h_bis,'yellow');
+                case 2
+                    setColor(h,'red');
+                    setColor(h_bis,'red');
+                case 3
+                    setColor(h,'blue');
+                    setColor(h_bis,'blue');
+                case 4
+                    setColor(h,'green');
+                    setColor(h_bis,'green');
+            end
+            
+        end
+    end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    
+data_path = handles.acq.data_path;
+index_mat = findstr(data_path, '.mat');
+data_path_to_save = strcat([data_path(1:(index_mat-1)) '.segment.mat']);
+[filename, pathname] = uiputfile(data_path_to_save, 'Save Segmentation as');
+
+complete_filename = [pathname filename];
+
+if ~isempty(complete_filename)
+    roi_positions = handles.acq.roi_positions;
+    save(complete_filename,'roi_positions');
+    set(handles.pushbutton_extract_temporal,'enable','on');
+end
+guidata(hObject, handles);
+
+
+% --- Executes on button press in ROI1.
+function ROI1_Callback(hObject, eventdata, handles)
+% hObject    handle to ROI1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of ROI1
+
+frame_number = str2num(get(handles.frame_number,'string'));
+h = impoly;
+
+if (~isempty(handles.acq.hrois_us{1}))
+    temp_h = handles.acq.hrois_us{1};
+    
+    if (isvalid(temp_h))
+       delete(temp_h);
+    end
+end
+
+handles.acq.hrois_us{1} = h;
+handles.acq.hrois_pa{1} = h;
+setColor(h,'yellow');
+guidata(hObject, handles);
+
+
+% --- Executes on button press in ROI2.
+function ROI2_Callback(hObject, eventdata, handles)
+% hObject    handle to ROI2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of ROI2
+
+frame_number = str2num(get(handles.frame_number,'string'));
+h = impoly;
+
+if (~isempty(handles.acq.hrois_us{2}))
+    temp_h = handles.acq.hrois_us{2};
+    
+    if (isvalid(temp_h))
+       delete(temp_h);
+    end
+end
+
+handles.acq.hrois_us{2} = h;
+handles.acq.hrois_pa{2} = h;
+setColor(h,'red');
+guidata(hObject, handles);
+
+
+% --- Executes on button press in ROI3.
+function ROI3_Callback(hObject, eventdata, handles)
+% hObject    handle to ROI3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of ROI3
+frame_number = str2num(get(handles.frame_number,'string'));
+h = impoly;
+
+if (~isempty(handles.acq.hrois_us{3}))
+    temp_h = handles.acq.hrois_us{3};
+    
+    if (isvalid(temp_h))
+       delete(temp_h);
+    end
+end
+
+handles.acq.hrois_us{3} = h;
+handles.acq.hrois_pa{3} = h;
+setColor(h,'blue');
+guidata(hObject, handles);
+
+
+% --- Executes on button press in ROI4.
+function ROI4_Callback(hObject, eventdata, handles)
+% hObject    handle to ROI4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of ROI4
+frame_number = str2num(get(handles.frame_number,'string'));
+h = impoly;
+
+if (~isempty(handles.acq.hrois_us{4}))
+    temp_h = handles.acq.hrois_us{4};
+    
+    if (isvalid(temp_h))
+       delete(temp_h);
+    end
+end
+
+handles.acq.hrois_us{4} = h;
+handles.acq.hrois_pa{4} = h;
+setColor(h,'green');
+guidata(hObject, handles);
+
+
+% --- Executes on button press in roi_pa_master.
+function roi_pa_master_Callback(hObject, eventdata, handles)
+% hObject    handle to roi_pa_master (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+frame_number = handles.acq.frame_number;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Stocke les positions des ROIs du frame actuel
+for index = 1:4
+    % Si le handle de la ROI existe
+    if (~isempty(handles.acq.hrois_pa{index}))
+        temp_h = handles.acq.hrois_pa{index};
+        
+        % Si la ROI existe
+        if (isvalid(temp_h))
+            
+            % Copie la position
+            pos = getPosition(temp_h);
+ 
+            % Le stocke
+            handles.acq.roi_positions{1,index} = pos;
+        else
+            handles.acq.roi_positions{1,index} = [];            
+        end
+        
+        % Detruit le handle de toute facon
+        handles.acq.hrois_us{index} = [];
+        handles.acq.hrois_pa{index} = [];
+        
+    else
+        handles.acq.roi_positions{1,index} = [];
+    end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+abs_data = handles.acq.Bmode_data(:,:,frame_number);
+BfData = handles.acq.PAmode_data(:,:,frame_number);
+
+% Display US
+DisplayUSdata(handles, abs_data, handles.acq.param);
+
+% Display PA
+handles = DisplayPAdata(handles, BfData, handles.acq.param);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Va chercher les positions des ROIs du frame
+for index = 1:4
+    if (~isempty(handles.acq.roi_positions{1,index}))
+        pos = handles.acq.roi_positions{1,index};
+        
+        % Cree un nouveau ROI
+        h = impoly(handles.axes1, pos);
+        h_bis = impoly(handles.axes2, pos);
+        
+        % Le stocke
+        handles.acq.hrois_us{index} = h;
+        handles.acq.hrois_pa{index} = h_bis;
+        
+        switch (index)
+            case 1
+                setColor(h,'yellow');
+                setColor(h_bis,'yellow');
+            case 2
+                setColor(h,'red');
+                setColor(h_bis,'red');
+            case 3
+                setColor(h,'blue');
+                setColor(h_bis,'blue');
+            case 4
+                setColor(h,'green');
+                setColor(h_bis,'green');
+        end
+        
+    end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+guidata(hObject, handles);
+
+
+% --- Executes on button press in roi_us_master.
+function roi_us_master_Callback(hObject, eventdata, handles)
+% hObject    handle to roi_us_master (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+frame_number = handles.acq.frame_number;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Stocke les positions des ROIs du frame actuel
+for index = 1:4
+    % Si le handle de la ROI existe
+    if (~isempty(handles.acq.hrois_us{index}))
+        temp_h = handles.acq.hrois_us{index};
+        
+        % Si la ROI existe
+        if (isvalid(temp_h))
+            
+            % Copie la position
+            pos = getPosition(temp_h);
+ 
+            % Le stocke
+            handles.acq.roi_positions{1,index} = pos;
+        else
+            handles.acq.roi_positions{1,index} = [];            
+        end
+        
+        % Detruit le handle de toute facon
+        handles.acq.hrois_us{index} = [];
+        handles.acq.hrois_pa{index} = [];
+        
+    else
+        handles.acq.roi_positions{1,index} = [];
+    end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+abs_data = handles.acq.Bmode_data(:,:,frame_number);
+BfData = handles.acq.PAmode_data(:,:,frame_number);
+
+% Display US
+DisplayUSdata(handles, abs_data, handles.acq.param);
+
+% Display PA
+handles = DisplayPAdata(handles, BfData, handles.acq.param);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Va chercher les positions des ROIs du frame
+for index = 1:4
+    if (~isempty(handles.acq.roi_positions{1,index}))
+        pos = handles.acq.roi_positions{1,index};
+        
+        % Cree un nouveau ROI
+        h = impoly(handles.axes1, pos);
+        h_bis = impoly(handles.axes2, pos);
+        
+        % Le stocke
+        handles.acq.hrois_us{index} = h;
+        handles.acq.hrois_pa{index} = h_bis;
+        
+        switch (index)
+            case 1
+                setColor(h,'yellow');
+                setColor(h_bis,'yellow');
+            case 2
+                setColor(h,'red');
+                setColor(h_bis,'red');
+            case 3
+                setColor(h,'blue');
+                setColor(h_bis,'blue');
+            case 4
+                setColor(h,'green');
+                setColor(h_bis,'green');
+        end
+        
+    end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+guidata(hObject, handles);
