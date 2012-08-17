@@ -390,7 +390,6 @@ handles.acq.frame_number = frame_number;
 
 if frame_number == handles.acq.n_frames
     set(handles.next_button,'enable','off');
-    set(handles.next_copy_button,'enable','off');
     set(handles.previous_button,'enable','on');
 end
 
@@ -751,7 +750,6 @@ if (open_FileName)
     set(handles.display_filename_preprocessed, 'string', open_FileName);
     set(handles.display_filename_iq, 'string', '');
     set(handles.pushbutton_preprocess, 'enable','off');
-%     set(handles.pushbutton_define_roi, 'enable','on');
     
     set(handles.open_segmentation,'enable','on');
     set(handles.save_segmentation,'enable','on');
@@ -864,10 +862,9 @@ for index = 1:4
             % Copie la position
             pos = getPosition(temp_h);
  
-            % Le stocke
+            % La stocke
             handles.acq.roi_positions{1,index} = pos;
-            
-                    
+
             dim1_PA_data = size(handles.acq.PAmode_data,1);
             dim2_PA_data = size(handles.acq.PAmode_data,2);
             xdata = get(handles.acq.h_axes2,'XData');
@@ -879,8 +876,6 @@ for index = 1:4
             [I] = find(bw);
             
             BfData = handles.acq.PAmode_data(:,:,handles.acq.frame_number);
-            % BfData(I) = 0;
-            % handles = DisplayPAdata(handles, BfData, handles.acq.param);
             
             data_temporel(:,:,index) = extract_curves(handles, 2, I);
             
@@ -900,7 +895,7 @@ for index = 1:4
             y_filtered2 = smooth(y2, 5, 'moving');
             hold on
             plot(y_filtered2,'k-','LineWidth',2);
-%             curve_title = strcat([handles.acq.open_FileName '__950nm']);
+
             title(curve_title);            
             xlabel('sec');
             
