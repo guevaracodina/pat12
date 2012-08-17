@@ -85,8 +85,8 @@ DepthOffset = param.BmodeDepthOffset; %mm
 Depth =  param.BmodeDepth; %mm
 Width = pitch*lines*1e3; %mm
 fs = param.BmodeRxFrequency; %Hz
-YOffset = handles.acq.YOffset;
-VOffset = handles.acq.VOffset;
+YOffset = param.BmodeYOffset;
+VOffset = param.BmodeVOffset;
 
 % Setup the Rx axes
 DepthAxis = [DepthOffset:(Depth-DepthOffset)/(samples-1):Depth];

@@ -55,6 +55,14 @@ function GUI_SEGMENT_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for GUI_SEGMENT
 handles.output = hObject;
 
+% Build a colormap that consists of 2 separate
+% colormaps.
+cmap1 = gray(128);
+cmap2 = hot(128);
+cmap = [cmap1;cmap2];
+colormap(cmap)
+handles.acq.cmap = cmap;
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -224,7 +232,7 @@ frame_number = frame_number + 1;
 set(handles.frame_number, 'string', num2str(frame_number));
 handles.acq.frame_number = frame_number;
 
-handles = VsiBModeReconstructRFExtended(handles, handles.acq.short_data_path, frame_number);
+handles = VsiBModeReconstructRFModif(handles, handles.acq.short_data_path, frame_number);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

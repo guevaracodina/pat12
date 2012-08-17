@@ -22,7 +22,7 @@ function varargout = GUI_TEMPORAL(varargin)
 
 % Edit the above text to modify the response to help GUI_TEMPORAL
 
-% Last Modified by GUIDE v2.5 06-Aug-2012 15:28:36
+% Last Modified by GUIDE v2.5 16-Aug-2012 14:11:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -64,6 +64,8 @@ cmap2 = hot(128);
 cmap = [cmap1;cmap2];
 colormap(cmap)
 handles.acq.cmap = cmap;
+
+% set(hObject,'Position',get(0,'Screensize'));
 
 % Update handles structure
 guidata(hObject, handles);
@@ -727,6 +729,10 @@ if (open_FileName)
     handles.acq.source_type = 'MAT';
         
     % Load data
+    clear Bmode_data;
+    clear PAmode_data;
+    clear abs_data;
+    clear BfData;
     load(data_path);
     handles.acq.Bmode_data = Bmode_data;
     handles.acq.PAmode_data = PAmode_data;
@@ -757,6 +763,8 @@ if (open_FileName)
     handles = lock_interface(handles);
     pause(0.5);
     
+    handles.acq.starting_flag = true;
+        
     % Display US
     DisplayUSdata(handles, abs_data, param);
     
@@ -768,6 +776,8 @@ if (open_FileName)
     set(handles.edit_voffset,'enable', 'on');
         
     handles = unlock_interface(handles);
+    
+
 end
 
 guidata(hObject, handles);
@@ -873,12 +883,28 @@ for index = 1:4
             % handles = DisplayPAdata(handles, BfData, handles.acq.param);
             
             data_temporel(:,:,index) = extract_curves(handles, 2, I);
-            y = data_temporel(:,1,index);
-            figure;plot(y,':');
-            y_filtered = smooth(y, 5, 'moving');
+            
+            data_filename = strcat([handles.acq.open_PathName 'temporal\' get(handles.data_filename,'string')]);
+            y1 = data_temporel(:,1,index);
+            figure;plot(y1,'r:');
+            y_filtered1 = smooth(y1, 5, 'moving');
             hold on
-            plot(y_filtered,'k-','LineWidth',2);
-        
+            plot(y_filtered1,'r-','LineWidth',2);
+            curve_title = strcat([handles.acq.open_FileName]);
+            title(curve_title);
+            xlabel('sec');
+            
+            y2 = data_temporel(:,2,index);
+            hold on
+            plot(y2,'k:');
+            y_filtered2 = smooth(y2, 5, 'moving');
+            hold on
+            plot(y_filtered2,'k-','LineWidth',2);
+%             curve_title = strcat([handles.acq.open_FileName '__950nm']);
+            title(curve_title);            
+            xlabel('sec');
+            
+            save(data_filename,'y1','y_filtered1','y2','y_filtered2');
         else
             handles.acq.roi_positions{1,index} = [];            
         end
@@ -1035,80 +1061,78 @@ end
 if (open_FileName)
     
     data_path = strcat([open_PathName open_FileName]);
-%     handles.acq.data_path = data_path;
-%     handles.acq.open_FileName = open_FileName;
-%     handles.acq.open_PathName = open_PathName;
-    
-    
-load(data_path, 'roi_positions');
+       
+    load(data_path, 'roi_positions');
 
-handles.acq.roi_positions = roi_positions;
+    handles.acq.roi_positions = roi_positions;
 
-% Update les ROIs affichées
-frame_number = str2num(get(handles.frame_number,'string'));
+    % Update les ROIs affichées
+    frame_number = str2num(get(handles.frame_number,'string'));
 
-if (frame_number >= 1 && frame_number <= handles.acq.n_frames)
-%     handles = VsiBModeReconstructRFExtended(handles, handles.acq.short_data_path, frame_number);
-
-    handles.acq.frame_number = frame_number;
-    
-    abs_data = handles.acq.Bmode_data(:,:,frame_number);
-    BfData = handles.acq.PAmode_data(:,:,frame_number);
-    
-    % Display US
-    DisplayUSdata(handles, abs_data, handles.acq.param);
-    
-    % Display PA
-    handles = DisplayPAdata(handles, BfData, handles.acq.param);
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    % Va chercher les positions des ROIs du frame
-    for index = 1:4
-        if (~isempty(handles.acq.roi_positions{1,index}))
-            pos = handles.acq.roi_positions{1,index};
-            
-            % Cree un nouveau ROI
-            h = impoly(handles.axes1, pos);
-            h_bis = impoly(handles.axes2, pos);
-            
-            % Le stocke
-            handles.acq.hrois_us{index} = h;
-            handles.acq.hrois_pa{index} = h_bis;
-            
-            switch (index)
-                case 1
-                    setColor(h,'yellow');
-                    setColor(h_bis,'yellow');
-                case 2
-                    setColor(h,'red');
-                    setColor(h_bis,'red');
-                case 3
-                    setColor(h,'blue');
-                    setColor(h_bis,'blue');
-                case 4
-                    setColor(h,'green');
-                    setColor(h_bis,'green');
+    if (frame_number >= 1 && frame_number <= handles.acq.n_frames)
+        %     handles = VsiBModeReconstructRFExtended(handles, handles.acq.short_data_path, frame_number);
+        
+        handles.acq.frame_number = frame_number;
+        
+        abs_data = handles.acq.Bmode_data(:,:,frame_number);
+        BfData = handles.acq.PAmode_data(:,:,frame_number);
+        
+        % Display US
+        DisplayUSdata(handles, abs_data, handles.acq.param);
+        
+        % Display PA
+        handles = DisplayPAdata(handles, BfData, handles.acq.param);
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ROIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+        % Va chercher les positions des ROIs du frame
+        for index = 1:4
+            if (~isempty(handles.acq.roi_positions{1,index}))
+                pos = handles.acq.roi_positions{1,index};
+                
+                % Cree un nouveau ROI
+                h = impoly(handles.axes1, pos);
+                h_bis = impoly(handles.axes2, pos);
+                
+                % Le stocke
+                handles.acq.hrois_us{index} = h;
+                handles.acq.hrois_pa{index} = h_bis;
+                
+                switch (index)
+                    case 1
+                        setColor(h,'yellow');
+                        setColor(h_bis,'yellow');
+                    case 2
+                        setColor(h,'red');
+                        setColor(h_bis,'red');
+                    case 3
+                        setColor(h,'blue');
+                        setColor(h_bis,'blue');
+                    case 4
+                        setColor(h,'green');
+                        setColor(h_bis,'green');
+                end
+                
             end
-            
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+        
+        
+        if frame_number == handles.acq.n_frames
+            set(handles.next_button,'enable','off');
+            %         set(handles.next_copy_button,'enable','off');
+            set(handles.previous_button,'enable','on');
+        end
+        
+        if frame_number == 1
+            set(handles.previous_button,'enable','off');
+            set(handles.next_button,'enable','on');
+            %         set(handles.next_copy_button,'enable','on');
         end
     end
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
     
-    
-    if frame_number == handles.acq.n_frames
-        set(handles.next_button,'enable','off');
-%         set(handles.next_copy_button,'enable','off');
-        set(handles.previous_button,'enable','on');
-    end
-    
-    if frame_number == 1
-        set(handles.previous_button,'enable','off');
-        set(handles.next_button,'enable','on');
-%         set(handles.next_copy_button,'enable','on');
-    end
-end
+%     set(handles.pushbutton_extract_temporal,'enable','on');
 
 end
 guidata(hObject, handles);
@@ -1224,7 +1248,7 @@ complete_filename = [pathname filename];
 if ~isempty(complete_filename)
     roi_positions = handles.acq.roi_positions;
     save(complete_filename,'roi_positions');
-    set(handles.pushbutton_extract_temporal,'enable','on');
+%     set(handles.pushbutton_extract_temporal,'enable','on');
 end
 guidata(hObject, handles);
 
@@ -1240,8 +1264,8 @@ function ROI1_Callback(hObject, eventdata, handles)
 frame_number = str2num(get(handles.frame_number,'string'));
 h = impoly;
 
-if (~isempty(handles.acq.hrois_us{1}))
-    temp_h = handles.acq.hrois_us{1};
+if (~isempty(handles.acq.hrois_pa{1}))
+    temp_h = handles.acq.hrois_pa{1};
     
     if (isvalid(temp_h))
        delete(temp_h);
@@ -1369,6 +1393,7 @@ end
 abs_data = handles.acq.Bmode_data(:,:,frame_number);
 BfData = handles.acq.PAmode_data(:,:,frame_number);
 
+
 % Display US
 DisplayUSdata(handles, abs_data, handles.acq.param);
 
@@ -1495,3 +1520,36 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 guidata(hObject, handles);
+
+
+
+function data_filename_Callback(hObject, eventdata, handles)
+% hObject    handle to data_filename (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of data_filename as text
+%        str2double(get(hObject,'String')) returns contents of data_filename as a double
+
+set(handles.pushbutton_extract_temporal,'enable','on');
+
+% --- Executes during object creation, after setting all properties.
+function data_filename_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to data_filename (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton_axes.
+function pushbutton_axes_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_axes (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+axes(handles.axes2);

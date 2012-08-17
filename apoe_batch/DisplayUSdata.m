@@ -40,10 +40,20 @@ image_finale(find(image_finale > 128)) = 128;
 
 % clims = [0 128];
 % handles.acq.himage = imagesc(WidthAxis, DepthAxis, image_finale, clims);
+
+X_lim = get(handles.axes1,'XLim');
+Y_lim = get(handles.axes1,'YLim');
+
 handles.acq.himage = image(WidthAxis, DepthAxis, image_finale);
 
-axis equal 
-axis tight
+set(handles.axes1,'YLim',Y_lim);
+set(handles.axes1,'XLim',X_lim);
+
+if (handles.acq.starting_flag)
+    axis equal
+    axis tight
+end
+
 xlabel('Width (mm)')
 ylabel('Depth (mm)')
 		
