@@ -82,11 +82,20 @@ image_finale(find(image_finale < 0)) = 0;
 image_finale(find(image_finale > 128)) = 128;
 image_finale = image_finale + 129;
 
+X_lim = get(handles.axes2,'XLim');
+Y_lim = get(handles.axes2,'YLim');
+
 axes(handles.axes2);
 handles.acq.h_axes2 = image(WidthAxis, DepthAxis, image_finale);
+set(handles.axes2,'YLim',Y_lim);
+set(handles.axes2,'XLim',X_lim);
 
-axis equal
-axis tight
+if (handles.acq.starting_flag)
+    axis equal
+    axis tight
+end
+handles.acq.starting_flag = false;
+
 xlabel('Width (mm)')
 ylabel('Depth (mm)')
 % colormap(jet);

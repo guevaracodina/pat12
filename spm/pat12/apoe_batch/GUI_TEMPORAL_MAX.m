@@ -22,7 +22,7 @@ function varargout = GUI_TEMPORAL(varargin)
 
 % Edit the above text to modify the response to help GUI_TEMPORAL
 
-% Last Modified by GUIDE v2.5 16-Aug-2012 00:32:46
+% Last Modified by GUIDE v2.5 16-Aug-2012 14:11:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -64,6 +64,8 @@ cmap2 = hot(128);
 cmap = [cmap1;cmap2];
 colormap(cmap)
 handles.acq.cmap = cmap;
+
+set(hObject,'Position',get(0,'Screensize'));
 
 % Update handles structure
 guidata(hObject, handles);
@@ -761,6 +763,8 @@ if (open_FileName)
     handles = lock_interface(handles);
     pause(0.5);
     
+    handles.acq.starting_flag = true;
+        
     % Display US
     DisplayUSdata(handles, abs_data, param);
     
@@ -772,6 +776,8 @@ if (open_FileName)
     set(handles.edit_voffset,'enable', 'on');
         
     handles = unlock_interface(handles);
+    
+
 end
 
 guidata(hObject, handles);
@@ -878,13 +884,13 @@ for index = 1:4
             
             data_temporel(:,:,index) = extract_curves(handles, 2, I);
             
-            data_filename = strcat[(handles.acq.open_PathName '/temporal/' handles.data_filename]);
+            data_filename = strcat([handles.acq.open_PathName 'temporal\' get(handles.data_filename,'string')]);
             y1 = data_temporel(:,1,index);
             figure;plot(y1,'r:');
             y_filtered1 = smooth(y1, 5, 'moving');
             hold on
             plot(y_filtered1,'r-','LineWidth',2);
-            curve_title = strcat([handles.acq.open_FileName '__734nm']);
+            curve_title = strcat([handles.acq.open_FileName]);
             title(curve_title);
             xlabel('sec');
             
@@ -894,11 +900,11 @@ for index = 1:4
             y_filtered2 = smooth(y2, 5, 'moving');
             hold on
             plot(y_filtered2,'k-','LineWidth',2);
-            curve_title = strcat([handles.acq.open_FileName '__950nm']);
+%             curve_title = strcat([handles.acq.open_FileName '__950nm']);
             title(curve_title);            
             xlabel('sec');
             
-            save(data_filename,'y1'
+            save(data_filename,'y1','y_filtered1','y2','y_filtered2');
         else
             handles.acq.roi_positions{1,index} = [];            
         end
@@ -1258,8 +1264,8 @@ function ROI1_Callback(hObject, eventdata, handles)
 frame_number = str2num(get(handles.frame_number,'string'));
 h = impoly;
 
-if (~isempty(handles.acq.hrois_us{1}))
-    temp_h = handles.acq.hrois_us{1};
+if (~isempty(handles.acq.hrois_pa{1}))
+    temp_h = handles.acq.hrois_pa{1};
     
     if (isvalid(temp_h))
        delete(temp_h);
@@ -1386,6 +1392,7 @@ end
 
 abs_data = handles.acq.Bmode_data(:,:,frame_number);
 BfData = handles.acq.PAmode_data(:,:,frame_number);
+
 
 % Display US
 DisplayUSdata(handles, abs_data, handles.acq.param);
@@ -1537,3 +1544,12 @@ function data_filename_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in pushbutton_axes.
+function pushbutton_axes_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_axes (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+axes(handles.axes2);
