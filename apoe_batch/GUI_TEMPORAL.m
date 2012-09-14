@@ -728,10 +728,9 @@ if (open_FileName)
     handles.acq.source_type = 'MAT';
         
     % Load data
-    clear Bmode_data;
-    clear PAmode_data;
-    clear abs_data;
-    clear BfData;
+%     handles.acq.Bmode_data = [];
+%     handles.acq.PAmode_data = [];
+
     load(data_path);
     handles.acq.Bmode_data = Bmode_data;
     handles.acq.PAmode_data = PAmode_data;
