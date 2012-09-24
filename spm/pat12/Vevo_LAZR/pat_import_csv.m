@@ -1,12 +1,17 @@
 function [ROI mainHeader] = pat_import_csv(fileName)
-% import CSV with ROI time-trace
+% Import CSV with predefined ROI time-trace in PA mode. The CSV file was
+% exported from Vevo LAZR photo-acoustic system.
 % SYNTAX
-% ROI = pat_import_csv(filename)
+% [ROI mainHeader] = pat_import_csv(fileName)
 % INPUT
-% fileName      Name of the exported .CSV file with ROIs time course
-% OUTPUT
-% ROI           Structure containing ROIs info and data.
-% mainHeader    [Optional] cell array with the main header
+% fileName      Name of the exported .CSV file with predefined ROIs time trace.
+% OUTPUTS
+% ROI           Structure containing the following fileds for each ROI:
+%               name:   Original name from Vevo LAZR system
+%               header: Describes every column of data
+%               data:   Usually 6 columns with ROI time trace
+%               lambda: 2-element vector with wavelengths used.
+% mainHeader    [Optional] cell array with the main header (one line per cell)
 %_______________________________________________________________________________
 % Copyright (C) 2012 LIOM Laboratoire d'Imagerie Optique et Moléculaire
 %                    École Polytechnique de Montréal
