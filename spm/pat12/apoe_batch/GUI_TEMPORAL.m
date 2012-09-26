@@ -22,7 +22,7 @@ function varargout = GUI_TEMPORAL(varargin)
 
 % Edit the above text to modify the response to help GUI_TEMPORAL
 
-% Last Modified by GUIDE v2.5 16-Aug-2012 14:11:20
+% Last Modified by GUIDE v2.5 19-Sep-2012 09:53:30
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -398,8 +398,8 @@ if frame_number == 1
     set(handles.next_button,'enable','on');
 end
 
-handles = lock_interface(handles);
-pause(0.5);
+% handles = lock_interface(handles);
+% pause(0.5);
 
 if (strcmp(handles.acq.source_type, 'IQ'))
     % Display US
@@ -455,7 +455,7 @@ else
     
 end
 
-handles = unlock_interface(handles);
+% handles = unlock_interface(handles);
 guidata(hObject, handles);
 
 
@@ -727,10 +727,6 @@ if (open_FileName)
     % Type of data
     handles.acq.source_type = 'MAT';
         
-    % Load data
-%     handles.acq.Bmode_data = [];
-%     handles.acq.PAmode_data = [];
-
     load(data_path);
     handles.acq.Bmode_data = Bmode_data;
     handles.acq.PAmode_data = PAmode_data;
@@ -902,54 +898,11 @@ for index = 1:4
         else
             handles.acq.roi_positions{1,index} = [];            
         end
-
-        % Detruit le handle de toute facon
-%         handles.acq.hrois_us{index} = [];
         
     else
-%         handles.acq.roi_positions{1,index} = [];
+
     end
 end
-
-
-% % Si le handle de la ROI existe
-% if (~isempty(handles.acq.hrois_us{index}))
-%     temp_h = handles.acq.hrois_us{index};
-%     
-%     % Si la ROI existe
-%     if (isvalid(temp_h))
-%         
-%         % Copie la position
-%         pos = getPosition(temp_h);
-%         
-%         % Le stocke
-%         handles.acq.roi_positions{frame_number,index} = pos;
-%     else
-%         handles.acq.roi_positions{frame_number,index} = [];
-%     end
-%     
-%     % Detruit le handle de toute facon
-%     handles.acq.hrois_us{index} = [];
-%     
-% else
-%     handles.acq.roi_positions{frame_number,index} = [];
-% end
-% 
-% dim1_PA_data = size(handles.acq.PAmode_data,1);
-% dim2_PA_data = size(handles.acq.PAmode_data,2);
-% xdata = get(handles.acq.h_axes2,'XData');
-% pixelx = axes2pix(dim2_PA_data, xdata, pos(:,1));
-% ydata = get(handles.acq.h_axes2,'YData');
-% pixely = axes2pix(dim1_PA_data, ydata, pos(:,2));
-% 
-% bw = poly2mask(pixelx, pixely, dim1_PA_data, dim2_PA_data);
-% [I] = find(bw);
-%             
-% BfData = handles.acq.PAmode_data(:,:,handles.acq.frame_number);
-% % BfData(I) = 0;
-% % handles = DisplayPAdata(handles, BfData, handles.acq.param);
-% 
-% data = extract_curves(handles, 2, I);
 
 guidata(hObject, handles);
 
@@ -1526,6 +1479,7 @@ function data_filename_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of data_filename as a double
 
 set(handles.pushbutton_extract_temporal,'enable','on');
+set(handles.pushbutton_extract_temporal_seuil,'enable','on');
 
 % --- Executes during object creation, after setting all properties.
 function data_filename_CreateFcn(hObject, eventdata, handles)
@@ -1547,3 +1501,91 @@ function pushbutton_axes_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 axes(handles.axes2);
+
+
+% --- Executes on button press in pushbutton_extract_temporal_seuil.
+function pushbutton_extract_temporal_seuil_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_extract_temporal_seuil (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+dim3_PA_data = size(handles.acq.PAmode_data,3);
+n_temporal_points = floor(dim3_PA_data/2);
+data_temporel = zeros(n_temporal_points, 2, 4);
+
+% Verification de l'existence des folders
+data_path = strcat([handles.acq.open_PathName 'temporal\threshold\']);
+if ~exist(data_path,'dir')
+   [SUCCESS,MESSAGE,MESSAGEID] = mkdir(data_path);
+end
+          
+handles = lock_interface(handles);
+set(handles.display_status,'string', 'Exporting curves..');
+pause(0.5);
+    
+% Stocke les positions des ROIs du frame actuel
+for index = 1:4
+    % Si le handle de la ROI existe
+    if (~isempty(handles.acq.hrois_us{index}))
+        temp_h = handles.acq.hrois_us{index};
+        
+        % Si la ROI existe
+        if (isvalid(temp_h))
+            
+            % Copie la position
+            pos = getPosition(temp_h);
+ 
+            % La stocke
+            handles.acq.roi_positions{1,index} = pos;
+
+            dim1_PA_data = size(handles.acq.PAmode_data,1);
+            dim2_PA_data = size(handles.acq.PAmode_data,2);
+            xdata = get(handles.acq.h_axes2,'XData');
+            pixelx = axes2pix(dim2_PA_data, xdata, pos(:,1));
+            ydata = get(handles.acq.h_axes2,'YData');
+            pixely = axes2pix(dim1_PA_data, ydata, pos(:,2));
+            
+            bw = poly2mask(pixelx, pixely, dim1_PA_data, dim2_PA_data);
+            [I] = find(bw);
+            
+            BfData = handles.acq.PAmode_data(:,:,handles.acq.frame_number);
+            
+            for threshold_level = 0:9
+                
+                data_temporel(:,:,index) = extract_curves_threshold(handles, 2, I, threshold_level);
+                data_filename = strcat([data_path get(handles.data_filename,'string') '_seuil_' num2str(threshold_level)]);
+                y1 = data_temporel(:,1,index);
+                %             figure;plot(y1,'r:');
+                y_filtered1 = smooth(y1, 5, 'moving');
+                %             hold on
+                %             plot(y_filtered1,'r-','LineWidth',2);
+                %             curve_title = strcat([handles.acq.open_FileName]);
+                %             title(curve_title);
+                %             xlabel('sec');
+                
+                y2 = data_temporel(:,2,index);
+                %             hold on
+                %             plot(y2,'k:');
+                y_filtered2 = smooth(y2, 5, 'moving');
+                %             hold on
+                %             plot(y_filtered2,'k-','LineWidth',2);
+                
+                %             title(curve_title);
+                %             xlabel('sec');
+                save(data_filename,'y1','y_filtered1','y2','y_filtered2');
+            end
+            
+            
+        else
+            handles.acq.roi_positions{1,index} = [];            
+        end
+        
+    else
+
+    end
+end
+
+          
+handles = unlock_interface(handles);
+set(handles.display_status,'string', 'Exportation OK');
+guidata(hObject, handles);
