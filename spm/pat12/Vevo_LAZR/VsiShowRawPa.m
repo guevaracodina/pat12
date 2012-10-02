@@ -13,15 +13,15 @@ close all
 % fbase = 'LZ250 pa mode full width RAW.raw';
 fbase = 'D:\Edgar\Data\PAT_Data\2012-09-07-10-40-07.raw'; 
 fmode = '.pamode';
-StartFrame = 1;
-EndFrame = 6;
+StartFrame = 50;
+EndFrame = 60;
 DisplayMapLow = 20; %dB
 DisplayMapHigh = 100; %dB
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 load('RedMap.mat');
 nRows = 2;
-figure;
+figure; set(gcf,'color','w')
 for iframe = StartFrame:EndFrame
 % for iframe = StartFrame:2:EndFrame
     
@@ -30,21 +30,22 @@ for iframe = StartFrame:EndFrame
     ImageData = 20*log10(Rawdata);
     
 %     imagesc(WidthAxis, DepthAxis, ImageData, [DisplayMapLow DisplayMapHigh]);
-    subplot(ceil((EndFrame-StartFrame)/nRows),nRows, iframe)
+    subplot(ceil((EndFrame-StartFrame+1)/nRows),nRows,iframe-StartFrame+1)
+    disp(iframe-StartFrame+1)
     imagesc(WidthAxis, DepthAxis, Rawdata);
 	colormap(redmap)
-% 	colorbar
 	axis equal
 	axis tight
     xlabel('(mm)')
     ylabel('(mm)')
     if mod(iframe,2)
-%         title(sprintf('%s SO_2 Frame %d',fbase, (iframe+1)/2))
         title(sprintf('Frame %d (SO_2)',iframe))
     else
-%         title(sprintf('%s HBT Frame %d',fbase, iframe/2))
         title(sprintf('Frame %d (HBT)',iframe))
     end
-%     title(sprintf('%s Frame %d',fbase, iframe))
-%     pause(0.3)
 end
+
+%%
+addpath(genpath('D:\Edgar\ssoct\Matlab'))
+export_fig(fullfile('D:\Edgar\Documents\Dropbox\Docs\PAT',...
+    'Vevo_Export_Data_Matlab_correct'),'-png',gcf)
