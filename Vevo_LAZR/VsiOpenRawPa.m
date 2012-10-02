@@ -39,8 +39,16 @@ WidthAxis = [0:PaWidth/(PaNumLines-1):PaWidth];
 % Initialize data
 Rawdata = zeros(PaNumSamples, PaNumLines);
 
+% Updated by A. Needles Oct 2, 2012 for opening Oxy-Hemo raw file
+if mod(iframe,2) == 1
+    TempFrame = (iframe+1)/2;
+else
+    TempFrame = iframe/2;
+end
 
-header = file_header + frame_header*iframe + (size*PaNumSamples*PaNumLines + PaNumLines*line_header)*(iframe-1);
+header = file_header + frame_header*TempFrame + (size*PaNumSamples*PaNumLines + PaNumLines*line_header)*(iframe-1);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 for i=1:PaNumLines
     fseek(fid, header + (size*PaNumSamples + line_header)*(i-1),-1);
     fseek(fid, line_header, 'cof');
