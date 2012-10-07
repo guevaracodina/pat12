@@ -13,8 +13,8 @@ close all
 % fbase = 'LZ250 pa mode full width RAW.raw';
 fbase = 'D:\Edgar\Data\PAT_Data\2012-09-07-10-40-07.raw'; 
 fmode = '.pamode';
-StartFrame = 50;
-EndFrame = 60;
+StartFrame = 210;
+EndFrame = 215;
 DisplayMapLow = 20; %dB
 DisplayMapHigh = 100; %dB
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -31,7 +31,6 @@ for iframe = StartFrame:EndFrame
     
 %     imagesc(WidthAxis, DepthAxis, ImageData, [DisplayMapLow DisplayMapHigh]);
     subplot(ceil((EndFrame-StartFrame+1)/nRows),nRows,iframe-StartFrame+1)
-    disp(iframe-StartFrame+1)
     imagesc(WidthAxis, DepthAxis, Rawdata);
 	colormap(redmap)
 	axis equal
