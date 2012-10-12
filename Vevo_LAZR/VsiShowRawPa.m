@@ -10,39 +10,35 @@
 close all
 
 % Edit these parameters
-% fbase = 'LZ250 pa mode full width RAW.raw';
-fbase = 'D:\Edgar\Data\PAT_Data\2012-09-07-10-40-07.raw'; 
-fmode = '.pamode';
-StartFrame = 210;
-EndFrame = 215;
+% fileName = 'LZ250 pa mode full width RAW.raw';
+fileName = 'D:\Edgar\Data\PAT_Data\2012-09-07-11-04-40.raw.pamode'; 
+% fmode = '.pamode';
+StartFrame = 648;
+EndFrame = 648;
 DisplayMapLow = 20; %dB
 DisplayMapHigh = 100; %dB
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+[rawDataSO2, rawDataHbT, param] = pat_VsiOpenRawPa_multi(fileName);
+
+%% Display PAT raw images
 load('RedMap.mat');
-nRows = 2;
 figure; set(gcf,'color','w')
-for iframe = StartFrame:EndFrame
-% for iframe = StartFrame:2:EndFrame
-    
-    [Rawdata, WidthAxis, DepthAxis] = VsiOpenRawPa(fbase, fmode, iframe);
-	
-    ImageData = 20*log10(Rawdata);
-    
-%     imagesc(WidthAxis, DepthAxis, ImageData, [DisplayMapLow DisplayMapHigh]);
-    subplot(ceil((EndFrame-StartFrame+1)/nRows),nRows,iframe-StartFrame+1)
-    imagesc(WidthAxis, DepthAxis, Rawdata);
-	colormap(redmap)
-	axis equal
-	axis tight
+for i =1:size(rawDataSO2,4)
+    ImageData = 20*log10(squeeze(rawDataSO2(:,:,1,i)));
+    imagesc(param.WidthAxis, param.DepthAxis, ImageData);
+    colormap(redmap)
+    axis equal
+    axis tight
     xlabel('(mm)')
     ylabel('(mm)')
-    if mod(iframe,2)
-        title(sprintf('Frame %d (SO_2)',iframe))
-    else
-        title(sprintf('Frame %d (HBT)',iframe))
-    end
+    title(sprintf('Frame %d',i))
+    pause(0.1)
 end
+
+%% Save NIfTI
+fileName = 'D:\Edgar\Data\PAT_Data\2012-09-07-11-04-40.raw.pamode';
+pat_raw2nifti(fileName);
 
 %%
 addpath(genpath('D:\Edgar\ssoct\Matlab'))
