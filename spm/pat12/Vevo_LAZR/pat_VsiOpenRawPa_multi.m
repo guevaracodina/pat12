@@ -5,7 +5,7 @@ function [rawDataSO2, rawDataHbT,  param] = pat_VsiOpenRawPa_multi(fileName, var
 % [rawDataSO2, rawDataHbT,  param] = pat_VsiOpenRawPa_multi(fileName, [framesVector])
 % INPUTS
 % fileName          Full file name with extension of raw.pamode file
-% [framesVector]    Vector with frames to extract, if emoty, extracts the whole
+% [framesVector]    Vector with frames to extract, if empty, extracts the whole
 %                   file
 % OUTPUTS
 % rawDataSO2        4-D matrix with SO2 raw data, with the following dimensions:
