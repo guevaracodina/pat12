@@ -1,10 +1,10 @@
 function pat_raw2nifti(fileName)
 % Converts RAW PA-Mode files from data export on the Vevo 2100 to NIfTI files in
 % order to be able to use SPM later, possibly for realignment/unwarping
-%_______________________________________________________________________
+%_______________________________________________________________________________
 % Copyright (C) 2011 LIOM Laboratoire d'Imagerie Optique et Moléculaire
 %                    École Polytechnique de Montréal
-%______________________________________________________________________
+%_______________________________________________________________________________
 
 % read RAW PA-mode images
 [rawDataSO2, rawDataHbT, param] = pat_VsiOpenRawPa_multi(fileName);

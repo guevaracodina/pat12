@@ -11,4 +11,8 @@ plot(ROI(2).data(:, 2),ROI(2).data(:, 4),'g.-','LineWidth',2)
 xlabel(ROI(1).header{2},'FontSize',14); 
 ylabel(ROI(1).header{4},'FontSize',14); 
 legend({ROI(1).name, ROI(2).name}); set(gca,'FontSize',12)
+
+%%
+addpath(genpath('D:\Edgar\ssoct\Matlab'))
+export_fig(fullfile('D:\Edgar\Documents\Dropbox\Docs\fcOIS\2012_09_24_Report','PAT_ROI'),'-png',gcf)
 % print(gcf, '-dpng', fullfile('D:\Edgar\Documents\Dropbox\Docs\fcOIS\2012_09_24_Report','PAT_ROI'), '-r300');
