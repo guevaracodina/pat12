@@ -3,7 +3,7 @@
 % Copyright (C) 2012 LIOM Laboratoire d'Imagerie Optique et Moléculaire
 %                    École Polytechnique de Montréal
 %_______________________________________________________________________________
-
+addpath(genpath('D:\spm8\toolbox\pat12'))
 
 % Place optional args in memorable variable names
 dataFolder = 'D:\Edgar\Data\PAT_Data\';
@@ -11,6 +11,8 @@ dataFolder = 'D:\Edgar\Data\PAT_Data\';
 % Check if dataFolder is a valid directory, else get current working dir
 if ~exist(dataFolder,'dir')
     dataFolder = pwd;
+else
+    cd(dataFolder);
 end
 
 % Separate subdirectories and files:
@@ -26,6 +28,7 @@ folderList(ismember(folderList,{'.','..'})) = [];
 %% Arrange scans for every subject folder
 if sts
     for iFolders = 1:numel(subjectList)
+        fprintf('Processing %d of %d folders\n',iFolders,numel(subjectList));
         d = dir(fullfile(subjectList{iFolders},'*.pamode'));
         if ~isempty(d)
             for iFiles = 1:numel(d)
@@ -40,7 +43,7 @@ else
     disp('User cancelled input')
 end
 %%
-fileName = fullfile('D:\Edgar\Data\PAT_Data\2012-09-07-10-40-07\','2012-09-07-10-40-07.raw.pamode');
-pat_raw2nifti(fileName);
-fileName = fullfile('D:\Edgar\Data\PAT_Data\2012-09-07-11-04-40\','2012-09-07-11-04-40.raw.pamode');
-pat_raw2nifti(fileName);
+% fileName = fullfile('D:\Edgar\Data\PAT_Data\2012-09-07-10-40-07\','2012-09-07-10-40-07.raw.pamode');
+% pat_raw2nifti(fileName);
+% fileName = fullfile('D:\Edgar\Data\PAT_Data\2012-09-07-11-04-40\','2012-09-07-11-04-40.raw.pamode');
+% pat_raw2nifti(fileName);
