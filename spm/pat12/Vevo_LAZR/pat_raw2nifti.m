@@ -6,7 +6,7 @@ function pat_raw2nifti(fileName)
 %                    École Polytechnique de Montréal
 %_______________________________________________________________________________
 
-% read RAW PA-mode images
+% read RAW PA-mode images, Dimensions: [nDepth nWidth 1 nFrames]
 [rawDataSO2, rawDataHbT, param] = pat_VsiOpenRawPa_multi(fileName);
 % Number of frames
 nFrames = size(rawDataHbT,4);
@@ -14,8 +14,7 @@ nFrames = size(rawDataHbT,4);
 [pathstr, name, ~] = fileparts(fileName);
 fnameSO2 = fullfile(pathstr,[name,'.SO2.nii']);
 fnameHbT = fullfile(pathstr,[name,'.HbT.nii']);
-% Ts (4th dim) is hardcoded to a value of 1.002 from the .CSV ROI time course,
-% no way to get sampling period from the raw.pamode file!
+% Single frame dimensions: [nDepth nWidth 1]
 dim = [param.PaNumSamples param.PaNumLines 1];
 dt = [spm_type('float64') spm_platform('bigend')];
 pinfo = ones(3,1);
