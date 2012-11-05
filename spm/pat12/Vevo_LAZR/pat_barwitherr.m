@@ -1,3 +1,4 @@
+function pat_barwitherr(errors,varargin)
 %**************************************************************************
 %
 %   This is a simple extension of the bar plot to include error bars.  It
@@ -49,8 +50,6 @@
 %                                       vector plots
 %
 %**************************************************************************
-
-function barwitherr(errors,varargin)
 
 % Check how the function has been called based on requirements for "bar"
 if nargin < 3
