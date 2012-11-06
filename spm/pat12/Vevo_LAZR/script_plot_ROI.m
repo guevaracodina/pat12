@@ -21,12 +21,13 @@ folderList = {d(isub).name}';
 folderList(ismember(folderList,{'.','..'})) = [];
 
 %% Choose the subjects folders
+cd(dataFolder);
 [roiList, sts] = cfg_getfile(Inf,'any','Select ROI files',folderList, dataFolder, '.*(.csv)$');
 roiData = cell([size(roiList,1) 3]);
 
 %% Plot PAT ROIs timecourse
 for iFiles = 1:numel(roiList)
-    [ROI mainHeader] = pat_import_csv(roiList{iFiles});
+    [ROI mainHeader] = pat_import_csv(roiList{iFiles}, true);
     h = figure; set(gcf,'color','w')
     t1 = ROI(1).data(:, 2);
     r1 = ROI(1).data(:, 4);

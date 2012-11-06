@@ -1,10 +1,11 @@
-function [ROI mainHeader] = pat_import_csv(fileName)
+function [ROI mainHeader] = pat_import_csv(fileName, varargin)
 % Import CSV with predefined ROI time-trace in PA mode. The CSV file was
 % exported from Vevo LAZR photo-acoustic system.
 % SYNTAX
 % [ROI mainHeader] = pat_import_csv(fileName)
-% INPUT
+% INPUTS
 % fileName      Name of the exported .CSV file with predefined ROIs time trace.
+% saveMatFile   OPTIONAL: If true, saves outputs to a .mat file.
 % OUTPUTS
 % ROI           Structure containing the following fileds for each ROI:
 %               name:   Original name from Vevo LAZR system
@@ -16,6 +17,25 @@ function [ROI mainHeader] = pat_import_csv(fileName)
 % Copyright (C) 2012 LIOM Laboratoire d'Imagerie Optique et Moléculaire
 %                    École Polytechnique de Montréal
 %_______________________________________________________________________________
+
+% only want 1 optional input at most
+numVarArgs = length(varargin);
+if numVarArgs > 1
+    error('pat_import_csv:TooManyInputs', ...
+        'requires at most 1 optional input: saveMatFile');
+end
+
+% set defaults for optional inputs ()
+optArgs = {true};
+
+% now put these defaults into the optArgs cell array,
+% and overwrite the ones specified in varargin.
+optArgs(1:numVarArgs) = varargin;
+% or ...
+% [optargs{1:numvarargs}] = varargin{:};
+
+% Place optional args in memorable variable names
+saveMatFile = optArgs{:};
 
 %% Open .CSV file as a text string
 fid = fopen(fileName);
@@ -84,5 +104,11 @@ for iROI = 1:nROI,
         end
     end % lines loop
 end % ROI loop
+
+if saveMatFile
+    [pathName, fileName, fileExt] = fileparts(fileName);
+    save(fullfile(pathName, [fileName '.mat']), 'ROI', 'mainHeader')
+    fprintf('ROI data saved to %s\n', fullfile(pathName, [fileName '.mat']));
+end
 
 % EOF
