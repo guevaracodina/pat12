@@ -19,7 +19,7 @@ rev = '$Rev$'; %#ok
 preproc        = cfg_repeat; % A repeat collects a variable number of items from its .values field in its .val field
 preproc.name   = 'Preprocessing';
 preproc.tag    = 'preproc';
-preproc.values = {pat_extract_tiff_cfg}; % Config files for all preprocessing modules
+preproc.values = {pat_extract_raw_cfg pat_realign_reslice_cfg}; % Config files for all preprocessing modules
 preproc.forcestruct = true; % There is a speciality in cfg_repeat harvest behaviour that makes a difference depending on the number of elements in values. forcestruct == true forces the repeat to behave as if there are more than one distinct values, even if there is only one.
 preproc.help   = {'All functions used for data preprocessing are collected in this module'};
 
