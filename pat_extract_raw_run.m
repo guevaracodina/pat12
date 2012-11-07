@@ -24,8 +24,39 @@ try
             % Beamform image and save as Nifti in results dir
             stripped_filename=files(fileIdx).name(1:end-10);
             [tmp, pixel_width, pixel_height, depth_offset]=beamform(fullfile(PAT.input_dir,files(fileIdx).name));
+            % Data is filled with zeros, find where they are
+            start_index =1;
+            end_index=size(tmp,1);
+            left_index=1;
+            right_index=size(tmp,2);
+            for itop=1:size(tmp,1)
+                if( sum(tmp(itop,:,1)) > 0)
+                    start_index=itop;
+                    break;
+                end
+            end
+            for ibot=size(tmp,1):-1:1
+                if( sum(tmp(ibot,:,1)) > 0)
+                    end_index=ibot;
+                    break;
+                end
+            end
+            for ileft=1:size(tmp,2)
+                if( sum(tmp(:,ileft,1),1) > 0)
+                    left_index=ileft;
+                    break;
+                end
+                        end
+            for iright=size(tmp,2):-1:1
+                if( sum(tmp(:,iright,1),1) > 0)
+                    right_index=iright;
+                    break;
+                end
+            end
+            tmp=log(abs(tmp(start_index:end_index,left_index:right_index,:)));
+            
             nifti_filename=fullfile(PAT.output_dir,[stripped_filename,'.nii']);
-            dim = size(tmp);
+            dim = [size(tmp,1), size(tmp,2), 1];
             dt = [spm_type('float64') spm_platform('bigend')];
             pinfo = ones(3,1);
             % Affine transformation matrix: Scaling
@@ -43,7 +74,10 @@ try
             matTranslation(2,4) = -depth_offset;
             % Final Affine transformation matrix: 
             mat = matScaling * matRotation * matTranslation;
-            hdr = pat_create_vol(nifti_filename, dim, dt, pinfo, mat,1,squeeze(tmp));
+            % Save all frames temporally to use lambda as time
+            for istack=1:size(tmp,3)
+                hdr = pat_create_vol(nifti_filename, dim, dt, pinfo, mat,istack,squeeze(tmp(:,:,istack)));
+            end
             PAT.nifti_files{fileIdx}=nifti_filename;
         end
         
