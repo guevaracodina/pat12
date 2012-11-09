@@ -47,45 +47,31 @@ for scanIdx=1:size(PATmat,1)
     try
         load(PATmat{scanIdx});
         for iFile=1:length(PAT.nifti_files)
-            % Read file
-            vol = spm_vol(PAT.nifti_files{iFile});
-            data = spm_read_vols(vol);
+            % Read file, if realigned take that one for analysis
+            if( PAT.jobsdone.realign )
+                [p,n,e]=fileparts(PAT.nifti_files{iFile});
+                aligned_file=fullfile(p,['r',n,e]);
+                movement_est=fullfile(p,['r',n,'.mat']);
+                vol = spm_vol(aligned_file);
+                data = spm_read_vols(vol);
+                flims=[1,size(data,4)];
+                % Compute bad frames based on movement when realigned
+                load(movement_est);
+                vec=squeeze(mat(1,4,:));
+                badframes=find(abs(vec-mean(vec))>2*std(vec));
+                useframes = setdiff((flims(1):flims(2)), badframes);             
+            else
+                vol = spm_vol(PAT.nifti_files{iFile});
+                data = spm_read_vols(vol);
+                flims=[1,size(data,3)];
+                % Assume no bad frames when using all data
+                badframes = [];
+                useframes = setdiff((flims(1):flims(2)), badframes);
+            end
             
-            % Data is filled with zeros, find where they are
-            start_index =1;
-            end_index=size(data,1);
-            left_index=1;
-            right_index=size(data,2);
-            for itop=1:size(data,1)
-                if( sum(data(itop,:,1)) > 0)
-                    start_index=itop;
-                    break;
-                end
-            end
-            for ibot=size(data,1):-1:1
-                if( sum(data(ibot,:,1)) > 0)
-                    end_index=ibot;
-                    break;
-                end
-            end
-            for ileft=1:size(data,2)
-                if( sum(data(:,ileft,1),1) > 0)
-                    left_index=ileft;
-                    break;
-                end
-                        end
-            for iright=size(data,2):-1:1
-                if( sum(data(:,iright,1),1) > 0)
-                    right_index=iright;
-                    break;
-                end
-            end
-            data=log(abs(data(start_index:end_index,left_index:right_index,:)));
-            flims=[1,size(data,3)];
-            PAT.PCA.downsampling_factor=job.downsampling_factor;
-            % A corriger, voir comment identifier
-            badframes = [];
-            useframes = setdiff((flims(1):flims(2)), badframes);
+            % Due to the realignment process, images may have NaN, need to
+            % not look at those.
+            
             n_lambda = length(useframes);
             nPCs = min(job.nPCs, n_lambda);
             PAT.PCA.nPCs=nPCs;
@@ -93,26 +79,32 @@ for scanIdx=1:size(PATmat,1)
             
             pixw=size(data,1);
             pixh=size(data,2);
-            npix = pixw*pixh;
+            
+            tmpimg=squeeze(data(:,:,1,1));
+            good_pixels=find(~isnan(tmpimg));
+            npix = length(good_pixels);
             
             % Create covariance matrix in spectral or spatial coordinates using the
             % lowest dimension space since it is the same both ways
             if n_lambda < npix
-                [covmat, mov, movm, movtm] = create_lcov(data, pixw, pixh, useframes, n_lambda, PAT.PCA.downsampling_factor);
+                [covmat, mov, movm, movtm] = create_lcov(data, good_pixels, useframes, n_lambda);
                 covtrace = trace(covmat) / n_lambda;
             else
-                [covmat, mov, movm, movtm] = create_xcov(data, pixw, pixh, useframes, n_lambda, PAT.PCA.downsampling_factor);
+                [covmat, mov, movm, movtm] = create_xcov(data, good_pixels, useframes, n_lambda);
                 covtrace = trace(covmat) / npix;
             end
             
-            movm = reshape(movm, pixw, pixh);
+            % Replace everything int the right place
+            tmp = nan(pixw,pixh);
+            tmp(good_pixels) = movm; 
+            movm=tmp;
             
             if n_lambda < npix
                 % Perform SVD on spectral covariance
                 [mixedsig, CovEvals, percentvar] = spectral_pat_svd(covmat, nPCs, n_lambda, npix);
                 
                 % Load the other set of principal components
-                [mixedfilters] = reload_moviedata(pixw*pixh, mov, mixedsig, CovEvals);
+                [mixedfilters] = reload_moviedata(npix, mov, mixedsig, CovEvals);
             else
                 % Perform SVD on spatial components
                 [mixedfilters, CovEvals, percentvar] = spectral_pat_svd(covmat, nPCs, n_lambda, npix);
@@ -120,13 +112,10 @@ for scanIdx=1:size(PATmat,1)
                 % Load the other set of principal components
                 [mixedsig] = reload_moviedata(n_lambda, mov', mixedfilters, CovEvals);
             end
-            mixedfilters = reshape(mixedfilters, pixw,pixh,nPCs);
+            tmp = nan(pixw*pixh,nPCs);
+            tmp(good_pixels,:) = mixedfilters; 
+            mixedfilters = reshape(tmp, pixw,pixh,nPCs);
             
-            firstframe_full = squeeze(data(:,:,1));
-            firstframe = firstframe_full;
-            if PAT.PCA.downsampling_factor(1)>1
-                firstframe = imresize(firstframe, size(mov(:,:,1)),'bilinear');
-            end
             
             %------------
             % Save the output data
@@ -149,88 +138,30 @@ end
 
 end
 
-function [covmat, mov, movm, movtm] = create_xcov(data, pixw, pixh, useframes, nl, dsamp)
+function [covmat, mov, movm, movtm] = create_xcov(data, good_pixels, useframes, nl)
 %-----------------------
 % Load movie data to compute the spatial covariance matrix
-
-npix = pixw*pixh;
-
-% Downsampling
-if length(dsamp)==1
-    dsamp_lambda = dsamp(1);
-    dsamp_space = 1;
-else
-    dsamp_lambda = dsamp(1);
-    dsamp_space = dsamp(2); % Spatial downsample
-end
-
-if (dsamp_space==1)
-    mov = zeros(pixw, pixh, nl);
-    mov=data(:,:,useframes);
-else
-    [pixw_dsamp,pixh_dsamp] = size(imresize( squeeze(data(:,:,1)), 1/dsamp_space, 'bilinear' ));
-    mov = zeros(pixw_dsamp, pixh_dsamp, nl);
-    for jjind=1:length(useframes)
-        jj = useframes(jjind);
-        mov(:,:,jjind) = imresize( squeeze(data(:,:,jj)), 1/dsamp_space, 'bilinear' );
-    end
-end
-
-mov = reshape(mov, npix, nl);
-
+tmp=reshape(data,[size(data,1)*size(data,2),size(data,4)]);
+mov=tmp(good_pixels,useframes);
 % DFoF normalization of each pixel
 movm = mean(mov,2); % Average over spectra
-
-if dsamp_lambda>1
-    mov = filter(ones(dsamp,1)/dsamp, 1, mov, [], 2);
-    mov = downsample(mov', dsamp)';
-end
-
-movtm = mean(mov,2); % Average over space
-
-c1 = (mov*mov')/size(mov,2);
+movtm = mean(mov,1); % Average over space
+c1 = (mov*mov')/nl;
 toc
-covmat = c1 - movtm*movtm';
+covmat = c1 - movm*movm';
 clear c1
 end
 
-function [covmat, mov, movm, movtm] = create_lcov(data, pixw, pixh, useframes, nl, dsamp)
+function [covmat, mov, movm, movtm] = create_lcov(data, good_pixels, useframes, nl)
 %-----------------------
 % Load movie data to compute the temporal covariance matrix
-npix = pixw*pixh;
-
-% Downsampling
-if length(dsamp)==1
-    dsamp_lambda = dsamp(1);
-    dsamp_space = 1;
-else
-    dsamp_lambda = dsamp(1);
-    dsamp_space = dsamp(2); % Spatial downsample
-end
-
-if (dsamp_space==1)
-    mov=data(:,:,useframes);
-else
-    [pixw_dsamp,pixh_dsamp] = size(imresize( squeeze(data(:,:,1)), 1/dsamp_space, 'bilinear' ));
-    mov = zeros(pixw_dsamp, pixh_dsamp, nl);
-    for jjind=1:length(useframes)
-        jj = useframes(jjind);
-        mov(:,:,jjind) = imresize( squeeze(data(:,:,jj)), 1/dsamp_space, 'bilinear' );
-    end
-end
-
-mov = reshape(mov, npix, nl);
-
+tmp=reshape(data,[size(data,1)*size(data,2),size(data,4)]);
+mov=tmp(good_pixels,useframes);
+npix=length(good_pixels);
 % DFoF normalization of each pixel
 movm = mean(mov,2); % Average over spectra
-
-if dsamp_lambda>1
-    mov = filter(ones(dsamp,1)/dsamp, 1, mov, [], 2);
-    mov = downsample(mov', dsamp)';
-end
-
-c1 = (mov'*mov)/npix;
 movtm = mean(mov,1); % Average over space
+c1 = (mov'*mov)/npix;
 covmat = c1 - movtm'*movtm;
 clear c1
 end
