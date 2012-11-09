@@ -1,0 +1,78 @@
+function realign1 = pat_realign_cfg
+%_______________________________________________________________________
+% Copyright (C) 2011 LIOM Laboratoire d'Imagerie Optique et Moléculaire
+%                    École Polytechnique de Montréal
+%______________________________________________________________________
+        
+%% Input Items
+PATmat         = cfg_files; %Select NIRS.mat for this subject 
+PATmat.name    = 'PAT.mat'; % The displayed name
+PATmat.tag     = 'PATmat';       %file names
+PATmat.filter  = 'mat';
+PATmat.ufilter = '^PAT.mat$';    
+PATmat.num     = [1 Inf];     % Number of inputs required 
+PATmat.help    = {'Select PAT.mat for the scan.'}; % help text displayed
+
+redo1         = cfg_menu; % This is the generic data entry item
+redo1.name    = 'Force Redo?'; % The displayed name
+redo1.tag     = 'redo';       % The name appearing in the harvested job structure. This name must be unique among all items in the val field of the superior node
+redo1.labels  = {'No', 'Yes'};     % Number of inputs required (2D-array with exactly one row and two column)
+redo1.values  = {0,1};
+redo1.val     = {0};
+redo1.help    = {'This option will force recomputation.'}; % help text displayed
+
+%% Input Items for display mask
+quality1         = cfg_entry; % This is the generic data entry item
+quality1.name    = 'Quality, higher = slower but using more voxels'; % The displayed name
+quality1.tag     = 'quality';       % The name appearing in the harvested job structure. This name must be unique among all items in the val field of the superior node
+quality1.strtype = 'e';       % No restriction on what type of data is entered. This could be used to restrict input to real numbers, integers ...
+quality1.num     = [1 1];     % Number of inputs required (2D-array with exactly one row and two column)
+quality1.val     = {1};
+quality1.help    = {'This will control which voxels are used.'}; % help text displayed
+
+%% Input Items for display mask
+fwhm1         = cfg_entry; % This is the generic data entry item
+fwhm1.name    = 'Kernel FWHM'; % The displayed name
+fwhm1.tag     = 'fwhm';       % The name appearing in the harvested job structure. This name must be unique among all items in the val field of the superior node
+fwhm1.strtype = 'e';       % No restriction on what type of data is entered. This could be used to restrict input to real numbers, integers ...
+fwhm1.num     = [1 1];     % Number of inputs required (2D-array with exactly one row and two column)
+fwhm1.val     = {0.05};
+fwhm1.help    = {'Size of the smoothing kernel used prior to realignement.'}; % help text displayed
+
+%% Input Items for display mask
+sep1         = cfg_entry; % This is the generic data entry item
+sep1.name    = 'Sample point separation'; % The displayed name
+sep1.tag     = 'sep';       % The name appearing in the harvested job structure. This name must be unique among all items in the val field of the superior node
+sep1.strtype = 'e';       % No restriction on what type of data is entered. This could be used to restrict input to real numbers, integers ...
+sep1.num     = [1 1];     % Number of inputs required (2D-array with exactly one row and two column)
+sep1.val     = {0.02};
+sep1.help    = {'The default separation (mm) to sample the images for registration.'}; % help text displayed
+
+rtm1         = cfg_menu; % This is the generic data entry item
+rtm1.name    = 'Register to mean?'; % The displayed name
+rtm1.tag     = 'rtm';       % The name appearing in the harvested job structure. This name must be unique among all items in the val field of the superior node
+rtm1.labels  = {'No', 'Yes'};     % Number of inputs required (2D-array with exactly one row and two column)
+rtm1.values  = {0,1};
+rtm1.val     = {1};
+rtm1.help    = {'This option will force recomputation in a second pass to register to mean. Default is yes.'}; % help text displayed
+
+
+
+% Executable Branch
+realign1      = cfg_exbranch;       % This is the branch that has information about how to run this module
+realign1.name = 'Realign images in the stack to remove movement effects';             % The display name
+realign1.tag  = 'realign1'; %Very important: tag is used when calling for execution
+realign1.val  = {PATmat redo1 quality1 fwhm1 sep1 rtm1};    % The items that belong to this branch. All items must be filled before this branch can run or produce virtual outputs
+realign1.prog = @pat_realign_run;  % A function handle that will be called with the harvested job to run the computation
+realign1.vout = @pat_cfg_vout_realign; % A function handle that will be called with the harvested job to determine virtual outputs
+realign1.help = {'Image realignement.'};
+
+return
+
+%make PAT.mat available as a dependency
+function vout = pat_cfg_vout_realign(job)
+vout = cfg_dep;                     % The dependency object
+vout.sname      = 'PAT.mat';       % Displayed dependency name
+vout.src_output = substruct('.','PATmat'); %{1}); %,'PATmat');
+%substruct('()',{1}); % The output subscript reference. This could be any reference into the output variable created during computation
+vout.tgt_spec   = cfg_findspec({{'filter','mat','strtype','e'}});
