@@ -9,7 +9,7 @@ close all
 clear all
 
 % Set up file name
-fnameBase = 'test_export_3D_nanostepper_2012-02-23-11-11-01.iq';
+fnameBase = '/Users/fredericlesage/Documents/data/PAT/Apoe1_24h/2012-07-04-14-02-46_pos2_spectroA-2012-06-06-16-01-03_1.iq';
 
 fname = [fnameBase '.pamode'];
 fnameXml = [fnameBase '.xml'];

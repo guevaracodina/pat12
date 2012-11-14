@@ -23,7 +23,7 @@ try
         for fileIdx=1:length(files)
             % Beamform image and save as Nifti in results dir
             stripped_filename=files(fileIdx).name(1:end-10);
-            [tmp, pixel_width, pixel_height, depth_offset]=beamform(fullfile(PAT.input_dir,files(fileIdx).name));
+            [tmp, PAT.pixel_width, PAT.pixel_height, PAT.depth_offset]=beamform(fullfile(PAT.input_dir,files(fileIdx).name));
             % Data is filled with zeros, find where they are
             start_index =1;
             end_index=size(tmp,1);
@@ -53,6 +53,10 @@ try
                     break;
                 end
             end
+            % Reset the offsets with this new definition for the PAT images
+            PAT.depth_offset = PAT.depth_offset + (itop-1)*PAT.pixel_height;
+            PAT.left_offset = (ileft-1)*PAT.pixel_width;
+            
             tmp=log(abs(tmp(start_index:end_index,left_index:right_index,:)));
             
             nifti_filename=fullfile(PAT.output_dir,[stripped_filename,'.nii']);
@@ -61,8 +65,8 @@ try
             pinfo = ones(3,1);
             % Affine transformation matrix: Scaling
             matScaling = eye(4);
-            matScaling(1,1) = pixel_width;
-            matScaling(2,2) = pixel_height;
+            matScaling(1,1) = PAT.pixel_width;
+            matScaling(2,2) = PAT.pixel_height;
             % Affine transformation matrix: Rotation
             matRotation = eye(4);
             matRotation(1,1) = 0;
@@ -71,7 +75,8 @@ try
             matRotation(2,2) = 0;
             % Affine transformation matrix: Translation
             matTranslation = eye(4);
-            matTranslation(2,4) = -depth_offset;
+            matTranslation(2,4) = -PAT.depth_offset;
+            matTranslation(1,4) = -PAT.left_offset;
             % Final Affine transformation matrix: 
             mat = matScaling * matRotation * matTranslation;
             % Save all frames temporally to use lambda as time
