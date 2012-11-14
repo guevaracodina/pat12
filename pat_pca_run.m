@@ -48,7 +48,7 @@ for scanIdx=1:size(PATmat,1)
         load(PATmat{scanIdx});
         for iFile=1:length(PAT.nifti_files)
             % Read file, if realigned take that one for analysis
-            if( PAT.jobsdone.realign )
+            if( isfield(PAT.jobsdone,'realign') & PAT.jobsdone.realign )
                 [p,n,e]=fileparts(PAT.nifti_files{iFile});
                 aligned_file=fullfile(p,['r',n,e]);
                 movement_est=fullfile(p,['r',n,'.mat']);
@@ -59,11 +59,11 @@ for scanIdx=1:size(PATmat,1)
                 load(movement_est);
                 vec=squeeze(mat(1,4,:));
                 badframes=find(abs(vec-mean(vec))>2*std(vec));
-                useframes = setdiff((flims(1):flims(2)), badframes);             
+                useframes = setdiff((flims(1):flims(2)), badframes);
             else
                 vol = spm_vol(PAT.nifti_files{iFile});
                 data = spm_read_vols(vol);
-                flims=[1,size(data,3)];
+                flims=[1,size(data,4)];
                 % Assume no bad frames when using all data
                 badframes = [];
                 useframes = setdiff((flims(1):flims(2)), badframes);
@@ -96,7 +96,7 @@ for scanIdx=1:size(PATmat,1)
             
             % Replace everything int the right place
             tmp = nan(pixw,pixh);
-            tmp(good_pixels) = movm; 
+            tmp(good_pixels) = movm;
             movm=tmp;
             
             if n_lambda < npix
@@ -113,8 +113,53 @@ for scanIdx=1:size(PATmat,1)
                 [mixedsig] = reload_moviedata(n_lambda, mov', mixedfilters, CovEvals);
             end
             tmp = nan(pixw*pixh,nPCs);
-            tmp(good_pixels,:) = mixedfilters; 
+            tmp(good_pixels,:) = mixedfilters;
             mixedfilters = reshape(tmp, pixw,pixh,nPCs);
+            
+            % Save each spatial PCA in a separate nifti file
+            if ~exist([PAT.output_dir,filesep,'pca'],'dir'),mkdir([PAT.output_dir,filesep,'pca']); end
+            [p, stripped_filename, e]=fileparts(PAT.nifti_files{iFile});
+            for ipca=1:size(mixedfilters,3)
+                tmp=squeeze(mixedfilters(:,:,ipca));
+                norm_pca=(tmp-min(tmp(:)))/(max(tmp(:))-min(tmp(:)));
+                nifti_filename=fullfile([PAT.output_dir,filesep,'pca'],['pca_',num2str(ipca),'_',stripped_filename,'.nii']);
+                dim = [size(mixedfilters,1), size(mixedfilters,2), 1];
+                dt = [spm_type('float64') spm_platform('bigend')];
+                pinfo = ones(3,1);
+                % Affine transformation matrix: Scaling
+                matScaling = eye(4);
+                matScaling(1,1) = PAT.pixel_width;
+                matScaling(2,2) = PAT.pixel_height;
+                % Affine transformation matrix: Rotation
+                matRotation = eye(4);
+                matRotation(1,1) = 0;
+                matRotation(1,2) = 1;
+                matRotation(2,1) = -1;
+                matRotation(2,2) = 0;
+                % Affine transformation matrix: Translation
+                matTranslation = eye(4);
+                matTranslation(1,4) = PAT.depth_offset/PAT.pixel_height;
+                matTranslation(2,4) = PAT.left_offset/PAT.pixel_width;
+                % Final Affine transformation matrix:
+                mat = matScaling * matRotation * matTranslation;
+                % Save all frames temporally to use lambda as time
+                hdr = pat_create_vol(nifti_filename, dim, dt, pinfo, mat,1,norm_pca);
+                PAT.PCA.nifti_files{iFile}{ipca}=nifti_filename;
+                % Just to check alignement, may be useful later
+                h = spm_figure('GetWin', 'Graphics');
+                spm_figure('Clear', 'Graphics');
+                h=pat_overlay_map(PAT.bmode_nifti_files{iFile}, PAT.PCA.nifti_files{iFile}{ipca}, [0.3 1],['PCA #',num2str(ipca)]);
+                
+                if job.save_figures
+                    % Save as PNG
+                    print(h, '-dpng', fullfile([PAT.output_dir,filesep,'pca'],['pca_',num2str(ipca),'_',stripped_filename]), '-r150');
+                    % Save as EPS
+                    %spm_figure('Print', 'Graphics', fullfile(dir_fisherZfig,newName));
+                end
+            end
+            
+
+            
             
             
             %------------
