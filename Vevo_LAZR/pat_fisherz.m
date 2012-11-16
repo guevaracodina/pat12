@@ -1,4 +1,4 @@
-function z = fisherz(r)
+function z = pat_fisherz(r)
 % This function performs a Fisher's z-transform of Pearson's correlation
 % coefficient r . This function is used to map the correlations distribution in
 % [-1;+1] into a near gaussian population. The correlation coefficient need to

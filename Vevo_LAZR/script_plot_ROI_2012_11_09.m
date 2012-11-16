@@ -6,7 +6,7 @@ addpath(genpath('D:\Edgar\ssoct\Matlab'))
 
 
 % Place optional args in memorable variable names
-dataFolder = 'D:\Edgar\Data\PAT_Data\PAT_CSV';
+dataFolder = 'D:\Edgar\Data\PAT_Data\LPS_12_11_09';
 
 % Check if dataFolder is a valid directory, else get current working dir
 if ~exist(dataFolder,'dir')
@@ -27,7 +27,7 @@ roiData = cell([size(roiList,1) 3]);
 
 %% Plot PAT ROIs timecourse
 for iFiles = 1:numel(roiList)
-    [ROI mainHeader] = pat_import_csv(roiList{iFiles}, true);
+    [ROI mainHeader] = pat_import_csv(roiList{iFiles}, false);
     h = figure; set(gcf,'color','w')
     t1 = ROI(1).data(:, 2);
     r1 = ROI(1).data(:, 4);
@@ -68,16 +68,16 @@ end % Files loop
 
 %% t-stat
 % Control group
-x = [roiData{4,3}; roiData{6,3}];
+x1 = cell2mat(roiData(1:3,3));
 % Treatment group
-y = [cell2mat(roiData(1:3,3)); cell2mat(roiData(5,3)); cell2mat(roiData(7:8,3))];
+y1 = cell2mat(roiData(4:10,3));
 % Convert tio Fisher's z
-x = fisherz(x);
-y = fisherz(y);
+x1 = fisherz(x1);
+y1 = fisherz(y1);
 alpha = 0.05;
 tail = 'both';
 vartype = 'unequal';
-[hyp, p, ci, stats] = ttest2(x, y, alpha, tail, vartype);
+% [hyp, p, ci, stats] = ttest2(x1, y1, alpha, tail, vartype);
 
 %% Plot errorbars
 h = figure; set(gcf,'color','w')
@@ -96,5 +96,5 @@ set(gca,'XTickLabel',{'Control', 'Rat Toe'},'FontWeight', 'b')
 set(gca,'FontSize',14)
 % legend({'Control' '4-AP'},'FontSize',12)
 %%
-% export_fig(fullfile('D:\Edgar\Documents\Dropbox\Docs\fcOIS\2012_10_29_Report', ['tTest_p' num2str(p)]),'-png',gcf)
+export_fig(fullfile('D:\Edgar\Documents\Dropbox\Docs\PAT', ['LPS_12_11_09_tTest_p' num2str(p)]),'-png',gcf)
 % close(h)
