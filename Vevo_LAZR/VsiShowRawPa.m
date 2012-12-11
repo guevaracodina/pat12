@@ -11,10 +11,10 @@ close all
 
 % Edit these parameters
 % fileName = 'LZ250 pa mode full width RAW.raw';
-fileName = 'D:\Edgar\Data\PAT_Data\2012-09-07-11-04-40.raw.pamode'; 
+fileName = 'D:\Edgar\Data\PAT_Data\2012-09-07-10-40-07_toe10\2012-09-07-10-40-07.raw.pamode'; 
 % fmode = '.pamode';
-StartFrame = 648;
-EndFrame = 648;
+StartFrame = 1;
+EndFrame = 2;
 DisplayMapLow = 20; %dB
 DisplayMapHigh = 100; %dB
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -24,9 +24,9 @@ DisplayMapHigh = 100; %dB
 %% Display PAT raw images
 load('RedMap.mat');
 figure; set(gcf,'color','w')
-for i =1:size(rawDataSO2,4)
+for i = StartFrame:EndFrame
     ImageData = 20*log10(squeeze(rawDataSO2(:,:,1,i)));
-    imagesc(param.WidthAxis, param.DepthAxis, ImageData);
+    imagesc(param.WidthAxis, param.DepthAxis, ImageData, [DisplayMapLow DisplayMapHigh]);
     colormap(redmap)
     axis equal
     axis tight
