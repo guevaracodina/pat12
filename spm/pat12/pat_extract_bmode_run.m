@@ -10,11 +10,16 @@ PATmat=job.PATmat;
 for scanIdx=1:size(PATmat,1)
     try
         load(PATmat{scanIdx});
-        files=dir(fullfile(PAT.input_dir,'*.iq.bmode'));
-        PAT.bmode_nifti_files=cell(1,length(files));
-        for fileIdx=1:length(files)
+        % Only take b-mode images associated with PAT nifti files
+        PAT.bmode_nifti_files=cell(1,length(PAT.nifti_files));
+        for fileIdx=1:length(PAT.nifti_files)
+            [d,f,e]=fileparts(PAT.nifti_files{fileIdx});
+            files{fileIdx}=[f,'.iq.bmode'];            
+        end
+
+        for fileIdx=1:length(PAT.nifti_files)
             % Beamform image and save as Nifti in results dir
-            stripped_filename=files(fileIdx).name(1:end-6);
+            stripped_filename=files{fileIdx}(1:end-6);
             [bmode_img, pixel_width, pixel_height, depth_offset]=bmode_reconstruct_rf(fullfile(PAT.input_dir,stripped_filename));
             
             nifti_filename=fullfile(PAT.output_dir,[stripped_filename,'.bmode.nii']);
@@ -23,8 +28,8 @@ for scanIdx=1:size(PATmat,1)
             pinfo = ones(3,1);
             % Affine transformation matrix: Scaling
             matScaling = eye(4);
-            matScaling(1,1) = pixel_width;
-            matScaling(2,2) = pixel_height;
+            matScaling(1,1) = pixel_height;
+            matScaling(2,2) = pixel_width;
             % Affine transformation matrix: Rotation
             matRotation = eye(4);
             matRotation(1,1) = 0;
@@ -33,9 +38,9 @@ for scanIdx=1:size(PATmat,1)
             matRotation(2,2) = 0;
             % Affine transformation matrix: Translation
             matTranslation = eye(4);
-            matTranslation(1,4) = depth_offset/pixel_height;
+            matTranslation(1,4) = depth_offset;
             % Final Affine transformation matrix:
-            mat = matScaling * matRotation * matTranslation;
+            mat = matRotation * matTranslation * matScaling ;
             % Save all frames temporally to use lambda as time
             for istack=1:size(bmode_img,3)
                 hdr = pat_create_vol(nifti_filename, dim, dt, pinfo, mat,istack,squeeze(bmode_img));
