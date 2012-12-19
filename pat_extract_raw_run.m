@@ -65,8 +65,8 @@ try
             pinfo = ones(3,1);
             % Affine transformation matrix: Scaling
             matScaling = eye(4);
-            matScaling(1,1) = PAT.pixel_width;
-            matScaling(2,2) = PAT.pixel_height;
+            matScaling(2,2) = PAT.pixel_width;
+            matScaling(1,1) = PAT.pixel_height;
             % Affine transformation matrix: Rotation
             matRotation = eye(4);
             matRotation(1,1) = 0;
@@ -75,10 +75,10 @@ try
             matRotation(2,2) = 0;
             % Affine transformation matrix: Translation
             matTranslation = eye(4);
-            matTranslation(2,4) = -PAT.depth_offset;
-            matTranslation(1,4) = -PAT.left_offset;
+            matTranslation(1,4) = PAT.depth_offset;
+            matTranslation(2,4) = PAT.left_offset;
             % Final Affine transformation matrix: 
-            mat = matScaling * matRotation * matTranslation;
+            mat =  matRotation * matTranslation * matScaling;
             % Save all frames temporally to use lambda as time
             for istack=1:size(tmp,3)
                 hdr = pat_create_vol(nifti_filename, dim, dt, pinfo, mat,istack,squeeze(tmp(:,:,istack)));
