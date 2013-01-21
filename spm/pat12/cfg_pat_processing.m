@@ -43,6 +43,6 @@ postproc.help   = {'All functions used to generate images and results'};
 cfg        = cfg_repeat;
 cfg.name   = 'PAT';
 cfg.tag    = 'cfg_pat';
-cfg.values = {preproc proc postproc}; % Values in a cfg_repeat can be any cfg_item objects
+cfg.values = {preproc proc pat_fcPAT_cfg postproc}; % Values in a cfg_repeat can be any cfg_item objects
 cfg.forcestruct = true;
 cfg.help   = {'Full photoacoustic processing pipeline'};

@@ -1,15 +1,15 @@
-function [nifti_filename affine_mat_filename param] = pat_raw2nifti(fileName, output_dir)
+function [nifti_filename affine_mat_filename param] = pat_raw2nifti_bmode(fileName, output_dir)
 % Converts RAW PA-Mode files from data export on the Vevo 2100 to NIfTI files in
 % order to be able to use SPM later, possibly for realignment/unwarping.
 % SYNTAX
-% [nifti_filename affine_mat_filename] = pat_raw2nifti(fileName, output_dir)
+% [nifti_filename affine_mat_filename] = pat_raw2nifti_bmode(fileName, output_dir)
 % INPUTS
-% fileName          Full file name to open (with extension .pamode)
+% fileName          Full file name to open (with extension .bmode)
 % output_dir        Directory where the NIfTI files will be saved
 % OUTPUTS
 % nifti_filename        Cell with HbT and SO2 filenames
 % affine_mat_filename   Cell with HbT and SO2 affine matrices filenames
-% param                 PA-mode parameters
+% param                 
 %_______________________________________________________________________________
 % Copyright (C) 2011 LIOM Laboratoire d'Imagerie Optique et Moléculaire
 %                    École Polytechnique de Montréal
