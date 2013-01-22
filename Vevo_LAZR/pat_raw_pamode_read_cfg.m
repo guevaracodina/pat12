@@ -42,7 +42,9 @@ return
 
 %make PAT.mat available as a dependency
 function vout           = pat_cfg_vout_raw_pamode_read(job)
-vout                    = cfg_dep;                     % The dependency object
-vout.sname              = 'PAT.mat';       % Displayed dependency name
-vout.src_output         = substruct('.','PATmat'); %{1}); %,'PATmat');
+vout                    = cfg_dep;                  % The dependency object
+vout.sname              = 'PAT.mat';                % Displayed dependency name
+vout.src_output         = substruct('.','PATmat');  %{1}); %,'PATmat');
 vout.tgt_spec           = cfg_findspec({{'filter','mat','strtype','e'}});
+
+% EOF

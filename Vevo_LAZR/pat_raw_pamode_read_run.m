@@ -12,6 +12,7 @@ function out = pat_raw_pamode_read_run(job)
 % % out.PATmat = job.PATmat;
 % return
 % ------------------------------------------------------------------------------
+
 % Add Vevo LAZR related functions
 addpath(['.',filesep,'Vevo_LAZR/'])
 try
@@ -19,6 +20,9 @@ try
         tic
         % Set save structure and associated directory
         clear PAT
+        if ~isfield(PAT, 'jobsdone')
+            PAT.jobsdone = struct([]);
+        end
         PAT.input_dir = job.input_dir{scanIdx};
         % Current input dir
         filesdir = job.input_dir{scanIdx};
@@ -53,7 +57,7 @@ catch exception
     disp(exception.identifier)
     disp(exception.stack(1))
     out.PATmat{scanIdx} = PATmat;
-end
-end
+end % End Try
+end % End function
 
 % EOF
