@@ -8,7 +8,7 @@ PAT = [];
 PATmat = job.PATmat{scanIdx};
 [dir_patmat dummy] = fileparts(job.PATmat{scanIdx});
 if isfield(job.PATmatCopyChoice,'PATmatCopy')
-    newDir = job.PATmatCopyChoice.PATmatCopy.NewIOIdir;
+    newDir = job.PATmatCopyChoice.PATmatCopy.NewPATdir;
     newDir = fullfile(dir_patmat,newDir);
     if ~exist(newDir,'dir'),mkdir(newDir); end
     PATmat = fullfile(newDir,'PAT.mat');
