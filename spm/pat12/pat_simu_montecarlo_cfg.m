@@ -71,7 +71,7 @@ param2         = cfg_entry; % This is the generic data entry item
 param2.name    = 'Anisotropy'; % The displayed name
 param2.tag     = 'anisotropy';       % The name appearing in the harvested job structure. This name must be unique among all items in the val field of the superior node
 param2.strtype = 'e';       % No restriction on what type of data is entered. This could be used to restrict input to real numbers, integers ...
-param2.num     = [1];     % Number of inputs required (2D-array with exactly one row and two column)
+param2.num     = [1 1];     % Number of inputs required (2D-array with exactly one row and two column)
 param2.val     = {[0.9]};
 param2.help    = {'Anisotropy.'}; % help text displayed
 

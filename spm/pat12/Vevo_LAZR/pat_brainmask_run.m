@@ -43,10 +43,8 @@ for scanIdx = 1:length(job.PATmat)
         end
         if ~isfield(PAT.jobsdone,'maskOK') || job.force_redo
             % Read anatomical NIFTI file
-            vol = spm_vol(PAT.nifti_files{1});
+            vol = spm_vol(PAT.res.file_anat);
             im_anat = spm_read_vols(vol);
-            % Quick dirty way to have only the 1st image
-            im_anat = squeeze(im_anat(:,:,1,1));
             
             % 2-Afficher et utiliser imroi pour que l'usager puisse manuellement
             % identifier la zone d'intérêt contenant le cerveau (on click un
@@ -69,7 +67,7 @@ for scanIdx = 1:length(job.PATmat)
             set(gca,'FontSize',12);
             xlabel('Width [mm]','FontSize',14);
             ylabel('Depth [mm]','FontSize',14);
-            title(['Mask for subject ' dir_patmat],'FontSize',13)
+            title(['Mask for subject ' dir_patmat],'FontSize',14)
             
             % 3-Sauver en sortie une image nifti qui s'appelle brainmask.nii qui
             % vaut 1 dans le cerveau et 0 en dehors.
@@ -79,7 +77,7 @@ for scanIdx = 1:length(job.PATmat)
             
             % Create and write a NIFTI file in the scan folder
             pat_create_vol(brainMaskName, vol(1).dim, vol(1).dt,...
-                vol(1).pinfo, vol(1).mat, 1,BW_mask);
+                vol(1).pinfo, vol(1).mat, 1, BW_mask);
 
             if isempty(PAT.fcPAT.mask)
                 % To avoid emptyDotAssignment we create a field
