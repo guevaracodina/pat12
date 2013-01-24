@@ -111,7 +111,8 @@ for scanIdx=1:length(job.PATmat)
             if SelectPreviousROI
                 % Goto interactive window
                 h2 = spm_figure('GetWin', 'Interactive');
-                spm_input(['Subject ' int2str(scanIdx)],'-1','d');
+                [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
+                spm_input(['Subject ' int2str(scanIdx) ' ' splitStr{end-1}],'-1','d');
                 SelPrevROI = spm_input('Select a previous list of ROIs?','+1','y/n');
                 if SelPrevROI == 'y'
                     [tPrevROI stsPrevROI] = spm_select(1,'mat','Select PAT.mat structure containing information on desired ROIs','',dir_patmat,'PAT.mat',1);
@@ -164,7 +165,8 @@ for scanIdx=1:length(job.PATmat)
                 oneMoreROI = 1;
                 % Goto interactive window
                 h2 = spm_figure('GetWin', 'Interactive');
-                spm_input(['Subject ' int2str(scanIdx)],'-1','d');
+                [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
+                spm_input(['Subject ' int2str(scanIdx) ' ' splitStr{end-1}],'-1','d');
                 linecount = 0;
                 
                 while oneMoreROI
@@ -174,10 +176,11 @@ for scanIdx=1:length(job.PATmat)
                     if oneMoreROI
                         % h1 = figure('Position',[20 50 3*size(im_anat,1) 3*size(im_anat,2)]);
                         % Display anatomical image on SPM graphics window
-                        
+                        minVal = min(im_anat(:));
+                        maxVal = max(im_anat(:));
                         spm_figure('GetWin', 'Graphics');
                         spm_figure('Clear', 'Graphics');
-                        imagesc(im_anat .* full_mask);
+                        imagesc(im_anat .* full_mask, [minVal, maxVal]);
                         if useGrayContrast
                             colormap(cmap);
                         else
@@ -329,7 +332,8 @@ for scanIdx=1:length(job.PATmat)
             PAT.jobsdone.ROIOK = true;
             save(PATmat,'PAT');
         end
-        disp(['Subject ' int2str(scanIdx) ' complete']);
+        [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
+        disp(['Subject ' int2str(scanIdx) ' ' splitStr{end-1} ' complete']);
         out.PATmat{scanIdx} = PATmat;
     catch exception
         disp(exception.identifier)

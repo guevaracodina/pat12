@@ -11,9 +11,9 @@ PATmat                  = pat_PATmat_cfg(1);
 % Force re-do
 redo1                   = pat_redo_cfg(false);
 % PAT copy/overwrite method
-PATmatCopyChoice        = pat_PATmatCopyChoice_cfg('ROI');
+PATmatCopyChoice        = pat_PATmatCopyChoice_cfg('LPF');
 % Colors to include (OD,HbO,HbR,HbT,Flow)
-IC                      = pat_include_colors_cfg(0,1,1,1,1);
+IC                      = pat_include_colors_cfg(true,true);
 % Spatial low-pass filter options
 spatial_LPF_options     = pat_spatial_LPF_options_cfg;
 
@@ -25,8 +25,7 @@ spatial_LPF1.val        = {PATmat redo1 PATmatCopyChoice IC spatial_LPF_options}
 spatial_LPF1.prog       = @pat_spatial_LPF_run;  % A function handle that will be called with the harvested job to run the computation
 spatial_LPF1.vout       = @pat_cfg_vout_spatial_LPF; % A function handle that will be called with the harvested job to determine virtual outputs
 spatial_LPF1.help       = {'Low-pass filtering of 2-D images using a rotationally symmetric gaussian kernel.'
-    'Usually done after computing concentrations/flow.'}';
-
+    'Usually done after extracting HbT/SO2 data.'}';
 return
 
 % Make PAT.mat available as a dependency
