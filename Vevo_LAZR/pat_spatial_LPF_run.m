@@ -8,192 +8,110 @@ function out = pat_spatial_LPF_run(job)
 % ------------------------------------------------------------------------------
 % REMOVE AFTER FINISHING THE FUNCTION //EGC
 % ------------------------------------------------------------------------------
-fprintf('Work in progress...\nEGC\n')
-out.PATmat = job.PATmat;
-return
+% fprintf('Work in progress...\nEGC\n')
+% out.PATmat = job.PATmat;
+% return
 % ------------------------------------------------------------------------------
 
 %Big loop over subjects
-for SubjIdx=1:length(job.IOImat)
+for scanIdx=1:length(job.PATmat)
     try
         tic
-        %Load IOI.mat information
-        [IOI IOImat dir_ioimat]= ioi_get_IOI(job,SubjIdx);
-        
-        if ~isfield(IOI.res,'concOK') % Concentrations OK
-            disp(['No concentrations available for subject ' int2str(SubjIdx) ' ... skipping low-pass filtering']);
+        %Load PAT.mat information
+        [PAT PATmat dir_patmat]= pat_get_PATmat(job,scanIdx);
+        if ~isfield(PAT.jobsdone,'extract_rawPAmode') % PA mode extracted OK
+            disp(['No PA data available for subject ' int2str(scanIdx) ' ... skipping low-pass filtering']);
         else
-            % Check if laser is recorded
-            if ~isempty(regexp(IOI.sess_res{1}.availCol,'L','once'))
-                if ~isfield(IOI.res,'flowOK') % Flow OK
-                    disp(['No flow available for subject ' int2str(SubjIdx) ' ... skipping low-pass filtering']);
-                else
-                    if ~isfield(IOI.fcIOS.LPF,'LPFOK') || job.force_redo
-                        % Get colors to include information
-                        IC = job.IC;
-                        colorNames = fieldnames(IOI.color);
-                        % Radius of the gaussian kernel
-                        K.radius = round(job.spatial_LPF.spatial_LPF_On.spatial_LPF_radius);
-                        if IOI.res.shrinkageOn %ne pas oublier de decommenter
-                            vx = [IOI.res.shrink_x IOI.res.shrink_y 1];
-                        else
-                            vx = [1 1 1];
-                        end
-                        % Loop over sessions
-                        for s1=1:length(IOI.sess_res)
-                            if all_sessions || sum(s1==selected_sessions)
-                                % Loop over available colors
-                                for c1=1:length(IOI.sess_res{s1}.fname)
-                                    doColor = ioi_doColor(IOI,c1,IC);
-                                    if doColor
-                                        colorOK = true;
-                                        %skip laser - only extract for flow
-                                        if ~(IOI.color.eng(c1)==IOI.color.laser)
-                                            %% Correlation map
-                                            % Results filenames
-                                            fname_list = IOI.sess_res{s1}.fname{c1};
-                                            % Color names
-                                            colorNames = fieldnames(IOI.color);
-                                            % Initialize progress bar
-                                            spm_progress_bar('Init', length(fname_list), sprintf('Spatial LPF session %d, color %d (%s)\n',s1,c1,colorNames{1+c1}), 'Files');
-                                            % Loop over files
-                                            for f1 = 1:length(fname_list)
-                                                try
-                                                    fname = fname_list{f1};
-                                                    vols = spm_vol(fname);
-                                                    imagesTimeCourse = spm_read_vols(vols);
-                                                    [K.k1 K.k2 d3 d4] = size(imagesTimeCourse);
-                                                    imagesTimeCourseLPF = zeros([K.k1 K.k2 d3 d4]);
-                                                    if K.k1 <= 1 || K.k2 <= 1
-                                                        colorOK = false;
-                                                    end
-                                                catch
-                                                    colorOK = false;
-                                                end
-                                                %time dimension in 3rd dimension for colors
-                                                %R, G, Y, but in 4th dimension for O, D, F
-                                                if c1==1 || c1==2 || c1==3
-                                                    nt = d3;
-                                                else
-                                                    nt = d4;
-                                                end
-                                                % Low-passfilter set
-                                                K = ioi_spatial_LPF('set', K);
-                                                % Low-passfilter execution
-                                                for t1 = 1:nt,
-                                                    imagesTimeCourseLPF(:,:,1,t1) = ioi_spatial_LPF('lpf', K, squeeze(imagesTimeCourse(:,:,1,t1)));
-                                                end
-                                                % Overwrite the image
-                                                ioi_save_nifti(imagesTimeCourseLPF, fname, vx);
-                                                % Update progress bar
-                                                spm_progress_bar('Set', f1);
-                                            end
-                                            % Clear progress bar
-                                            spm_progress_bar('Clear');
-                                            if colorOK
-                                                fprintf('Spatial low-pass filtering for session %d and color %d (%s) completed\n',s1,c1,colorNames{1+c1})
-                                            end
-                                        end
+            if ~isfield(PAT.jobsdone,'LPFOK') || job.force_redo
+                % Get colors to include information
+                IC = job.IC;
+                colorNames = fieldnames(PAT.color);
+                % Radius of the gaussian kernel
+                K.radius = round(job.spatial_LPF.spatial_LPF_On.spatial_LPF_radius);
+                
+                % Loop over available colors
+                for c1=1:length(PAT.nifti_files)
+                    doColor = pat_doColor(PAT,c1,IC);
+                    if doColor
+                        colorOK = true;
+                        %skip B-mode only extract PA
+                        if ~(PAT.color.eng(c1)==PAT.color.Bmode)
+                            % HbT/SO2 filenames
+                            fname_list = PAT.nifti_files(:,c1);
+                            % Color names
+                            colorNames = fieldnames(PAT.color);
+                            
+                            % Loop over files
+                            for f1 = 1:size(fname_list,1)
+                                try
+                                    fname = fname_list{f1};
+                                    vol = spm_vol(fname);
+                                    imagesTimeCourse = spm_read_vols(vol);
+                                    % Time dimension is always the 4th when
+                                    % volumes are created with pat_create_vol
+                                    [K.k1 K.k2 d3 nT] = size(imagesTimeCourse);
+                                    imagesTimeCourseLPF = zeros([K.k1 K.k2 d3 nT]);
+                                    if K.k1 <= 1 || K.k2 <= 1
+                                        colorOK = false;
                                     end
-                                end % colors loop
-                            end
-                        end % Sessions Loop
-                        % LPF succesful!
-                        IOI.fcIOS.LPF(1).LPFOK = true;
-                        % Save LPF settings
-                        IOI.fcIOS.LPF(1).radius = K.radius;
-                        IOI.fcIOS.LPF(1).sigma = K.radius/2;
-                        save(IOImat,'IOI');
-                    end % LPF OK or redo job
-                end % Flow OK
-            else % Laser not recorded
-                if ~isfield(IOI.fcIOS.LPF,'LPFOK') || job.force_redo
-                    % Get colors to include information
-                    IC = job.IC;
-                    colorNames = fieldnames(IOI.color);
-                    % Radius of the gaussian kernel
-                    K.radius = round(job.spatial_LPF.spatial_LPF_On.spatial_LPF_radius);
-                    if IOI.res.shrinkageOn %ne pas oublier de decommenter
-                        vx = [IOI.res.shrink_x IOI.res.shrink_y 1];
-                    else
-                        vx = [1 1 1];
-                    end
-                    % Loop over sessions
-                    for s1=1:length(IOI.sess_res)
-                        if all_sessions || sum(s1==selected_sessions)
-                            % Loop over available colors
-                            for c1=1:length(IOI.sess_res{s1}.fname)
-                                doColor = ioi_doColor(IOI,c1,IC);
-                                if doColor
-                                    colorOK = true;
-                                    %skip laser - only extract for flow
-                                    if ~(IOI.color.eng(c1)==IOI.color.laser)
-                                        %% Correlation map
-                                        % Results filenames
-                                        fname_list = IOI.sess_res{s1}.fname{c1};
-                                        % Color names
-                                        colorNames = fieldnames(IOI.color);
-                                        % Initialize progress bar
-                                        spm_progress_bar('Init', length(fname_list), sprintf('Spatial LPF session %d, color %d (%s)\n',s1,c1,colorNames{1+c1}), 'Files');
-                                        % Loop over files
-                                        for f1 = 1:length(fname_list)
-                                            try
-                                                fname = fname_list{f1};
-                                                vols = spm_vol(fname);
-                                                imagesTimeCourse = spm_read_vols(vols);
-                                                [K.k1 K.k2 d3 d4] = size(imagesTimeCourse);
-                                                imagesTimeCourseLPF = zeros([K.k1 K.k2 d3 d4]);
-                                                if K.k1 <= 1 || K.k2 <= 1
-                                                    colorOK = false;
-                                                end
-                                            catch
-                                                colorOK = false;
-                                            end
-                                            %time dimension in 3rd dimension for colors
-                                            %R, G, Y, but in 4th dimension for O, D, F
-                                            if c1==1 || c1==2 || c1==3
-                                                nt = d3;
-                                            else
-                                                nt = d4;
-                                            end
-                                            % Low-passfiltering and saving
-                                            K = ioi_spatial_LPF('set', K);
-                                            
-                                            for t1 = 1:nt,
-                                                imagesTimeCourseLPF(:,:,1,t1) = ioi_spatial_LPF('lpf', K, squeeze(imagesTimeCourse(:,:,1,t1)));
-                                            end
-                                            % Overwrite the image
-                                            ioi_save_nifti(imagesTimeCourseLPF, fname, vx);
-                                            % Update progress bar
-                                            spm_progress_bar('Set', f1);
-                                        end
-                                        % Clear progress bar
-                                        spm_progress_bar('Clear');
-                                        if colorOK
-                                            fprintf('Spatial low-pass filtering for session %d and color %d (%s) completed\n',s1,c1,colorNames{1+c1})
-                                        end
-                                    end
+                                catch
+                                    colorOK = false;
                                 end
-                            end % colors loop
+
+                            end
+                            
+                            % Low-pass filtering and saving
+                            K = pat_spatial_LPF('set', K);
+                            for iT = 1:nT,
+                                imagesTimeCourseLPF(:,:,1,iT) = pat_spatial_LPF('lpf', K, squeeze(imagesTimeCourse(:,:,1,iT)));
+                            end
+                            % Backup the original images
+                            local_backup_nifti(PAT, f1, c1);
+                            fprintf('Creating NIfTI volume from %s...\n',PAT.nifti_files{f1,c1});
+                            
+                            % Initialize progress bar
+                            spm_progress_bar('Init', nT, sprintf('Spatial LPF, color %d (%s)\n',c1,colorNames{1+c1}), 'Frames');
+                            % Creates NIfTI volume frame by frame
+                            for iT = 1:nT,
+                                pat_create_vol(fname, vol(iT).dim, vol(iT).dt, vol(iT).pinfo,...
+                                    vol(iT).mat, iT,...
+                                    squeeze(imagesTimeCourseLPF(:,:,1,iT)));
+                                spm_progress_bar('Set', iT);
+                            end
+                            % Clear progress bar
+                            spm_progress_bar('Clear');
+                            fprintf('%d frames saved to NIfTI volume: %s\n',nT,PAT.nifti_files{f1,c1});
+                        end % Skip B-mode
+                        if colorOK
+                            fprintf('Spatial low-pass filtering for color %d (%s) completed\n',c1,colorNames{1+c1})
                         end
-                    end % Sessions Loop
-                    % LPF succesful!
-                    IOI.fcIOS.LPF(1).LPFOK = true;
-                    % Save LPF settings
-                    IOI.fcIOS.LPF(1).radius = K.radius;
-                    IOI.fcIOS.LPF(1).sigma = K.radius/2;
-                    save(IOImat,'IOI');
-                end % LPF OK or redo job
-            end % Laser recorded or not
-        end % Concentrations OK
+                    end
+                end % colors loop
+            end
+            % LPF succesful!
+            PAT.jobsdone(1).LPFOK = true;
+            % Save LPF settings
+            PAT.fcPAT.LPF(1).radius = K.radius;
+            PAT.fcPAT.LPF(1).sigma = K.radius/2;
+            save(PATmat,'PAT');
+        end % LPF OK or redo job
         disp(['Elapsed time: ' datestr(datenum(0,0,0,0,0,toc),'HH:MM:SS')]);
-        disp(['Subject ' int2str(SubjIdx) ' (' IOI.subj_name ')' ' complete']);
-        out.IOImat{SubjIdx} = IOImat;
+        fprintf('Subject %d of %d complete\n', scanIdx, length(job.PATmat));
+        out.PATmat{scanIdx} = PATmat;
     catch exception
-        out.IOImat{SubjIdx} = IOImat;
+        out.PATmat{scanIdx} = PATmat;
         disp(exception.identifier)
         disp(exception.stack(1))
-    end
+    end % End try
+end % Scans loop
+end % End function
+
+function local_backup_nifti(PAT, f1, c1)
+% Backup NIfTI files, they will be copied with the extension .nolpf, and the
+% low-pass filtered data will be overwritten to the original NIfTI files.
+[pathName, fileName, fileExt] = fileparts(PAT.nifti_files{f1,c1});
+backupName = fullfile(pathName, [fileName '.nolpf' fileExt]);
+copyfile(PAT.nifti_files{f1,c1}, backupName);
 end
 
 % EOF

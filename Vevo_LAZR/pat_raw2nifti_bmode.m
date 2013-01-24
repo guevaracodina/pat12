@@ -16,49 +16,49 @@ function [nifti_filename affine_mat_filename param] = pat_raw2nifti_bmode(fileNa
 %_______________________________________________________________________________
 
 % read RAW PA-mode images, Dimensions: [nDepth nWidth 1 nFrames]
-[rawDataSO2, rawDataHbT, param] = pat_VsiOpenRawPa_multi(fileName);
+[rawDataBmode, param] = pat_VsiOpenRawBmode_multi(fileName);
 % Number of frames
-nFrames = size(rawDataHbT,4);
+% nFrames = size(rawDataBmode,4);
 % Creating nifti file names
 [~, name, ~] = fileparts(fileName);
-fnameHbT = fullfile(output_dir,[name,'.HbT.nii']);
-fnameSO2 = fullfile(output_dir,[name,'.SO2.nii']);
+fnameBmode = fullfile(output_dir,[name,'.bmode.nii']);
 % NIfTI file name
-nifti_filename{1} = fnameHbT;
-nifti_filename{2} = fnameSO2;
+nifti_filename{1} = fnameBmode;
 % Affine matrix file name
-affine_mat_filename{1} = regexprep(fnameHbT,'.nii','.mat');
-affine_mat_filename{2} = regexprep(fnameSO2,'.nii','.mat');
-% Single frame dimensions: [nDepth nWidth 1]
-dim = [param.PaNumSamples param.PaNumLines 1];
-% Data type
-dt = [spm_type('float64') spm_platform('bigend')];
-% Plane info
-pinfo = ones(3,1);
-% Affine transformation matrix: Scaling
-matScaling = eye(4);
-matScaling(1,1) = param.pixWidth;
-matScaling(2,2) = param.pixDepth;
-% Affine transformation matrix: Rotation
-matRotation = eye(4);
-matRotation(1,1) = 0;
-matRotation(1,2) = 1;
-matRotation(2,1) = -1;
-matRotation(2,2) = 0;
-% Affine transformation matrix: Translation
-matTranslation = eye(4);
-matTranslation(2,4) = -param.PaDepthOffset;
-% Final Affine transformation matrix: 
-mat = matScaling * matRotation * matTranslation;
+affine_mat_filename{1} = regexprep(fnameBmode,'.nii','.mat');
 
-fprintf('Creating NIfTI volume from %s...\n',fileName);
-% Creates NIfTI volume frame by frame
-for iFrames = 1:nFrames
-    hdrSO2 = pat_create_vol(fnameSO2, dim, dt, pinfo, mat, iFrames,...
-        squeeze(rawDataSO2(:,:,1,iFrames)));
-    hdrHbT = pat_create_vol(fnameHbT, dim, dt, pinfo, mat, iFrames,...
-        squeeze(rawDataHbT(:,:,1,iFrames)));
-end
-fprintf('%d frames saved to NIfTI volume!\nOutput dir1: %s\nOutput dir2: %s\n',nFrames,nifti_filename{1},nifti_filename{2});
+%% COMMENTED OUT
+
+% % Single frame dimensions: [nDepth nWidth 1]
+% dim = [param.PaNumSamples param.PaNumLines 1];
+% % Data type
+% dt = [spm_type('float64') spm_platform('bigend')];
+% % Plane info
+% pinfo = ones(3,1);
+% % Affine transformation matrix: Scaling
+% matScaling = eye(4);
+% matScaling(1,1) = param.pixWidth;
+% matScaling(2,2) = param.pixDepth;
+% % Affine transformation matrix: Rotation
+% matRotation = eye(4);
+% matRotation(1,1) = 0;
+% matRotation(1,2) = 1;
+% matRotation(2,1) = -1;
+% matRotation(2,2) = 0;
+% % Affine transformation matrix: Translation
+% matTranslation = eye(4);
+% matTranslation(2,4) = -param.PaDepthOffset;
+% % Final Affine transformation matrix: 
+% mat = matScaling * matRotation * matTranslation;
+% 
+% fprintf('Creating NIfTI volume from %s...\n',fileName);
+% % Creates NIfTI volume frame by frame
+% for iFrames = 1:nFrames
+%     hdrSO2 = pat_create_vol(fnameSO2, dim, dt, pinfo, mat, iFrames,...
+%         squeeze(rawDataSO2(:,:,1,iFrames)));
+%     hdrHbT = pat_create_vol(fnameHbT, dim, dt, pinfo, mat, iFrames,...
+%         squeeze(rawDataHbT(:,:,1,iFrames)));
+% end
+% fprintf('%d frames saved to NIfTI volume!\nOutput dir1: %s\nOutput dir2: %s\n',nFrames,nifti_filename{1},nifti_filename{2});
 
 % EOF

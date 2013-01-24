@@ -119,7 +119,7 @@ AutoROIchoice.name      = 'Choose ROI generation method';
 AutoROIchoice.tag       = 'AutoROIchoice';
 AutoROIchoice.values    = {ManualROI ManualROIspline ManualEnterROI ...
      pointNclickROI pointNclickSquare AutoROI}; 
-AutoROIchoice.val       = {ManualROI}; 
+AutoROIchoice.val       = {pointNclickROI}; % Default value
 AutoROIchoice.help      = {'Choose whether to generate ROI manually or'
         'automatically'}'; 
 
