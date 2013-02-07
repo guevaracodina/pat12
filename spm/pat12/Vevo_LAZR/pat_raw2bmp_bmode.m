@@ -27,5 +27,36 @@ system([fileNameEXE ' ' rawBmodeFname ' ' fileNameXML ' ' outputPrefix ' ' '>' '
 % Returns to original folder
 cd(currentFolder);
 fprintf('B-mode images extracted to %s\n', bmp_dir)
+% Compress .BMP images to .PNG
+internal_convertBMP2PNG(bmp_dir);
+end
+
+function internal_convertBMP2PNG(bmp_dir)
+% Converts .BMP files to .PNG files in order to save disk space
+% Current path
+currPath = pwd;
+% Go to .BMP images folder
+cd(bmp_dir)
+% Get filenames
+files = dir(fullfile(bmp_dir,'*.BMP'));
+% Initialize progress bar
+spm_progress_bar('Init', numel(files), sprintf('Conversion to .PNG files\n'), '.BMP files');
+for iFiles = 1:numel(files)
+    % Read .BMP file
+    rgb = imread(files(iFiles).name, 'bmp');
+    % Get name
+    [~, fileName, ~] = fileparts(files(iFiles).name);
+    % Write as .PNG
+    imwrite(rgb, fullfile(bmp_dir,[fileName '.png']), 'png');
+    % Delete .BMP file
+    delete(files(iFiles).name)
+    % Update progress bar
+    spm_progress_bar('Set', iFiles);
+end
+% Return to current path
+cd(currPath)
+% Clear progress bar
+spm_progress_bar('Clear');
+end
 
 % EOF

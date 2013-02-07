@@ -10,7 +10,7 @@ clear all
 close all
 
 % Edit these parameters
-fbase = 'Bmode8.raw';
+fbase = 'E:\Edgar\Data\PAT_Data\2012-11-09-16-23-51_toe09\2012-11-09-16-23-51_RS_TOE9_12_11_09-2012-11-09-14-11-28_1.raw';
 fmode = '.bmode';
 StartFrame = 1;
 EndFrame = 1;

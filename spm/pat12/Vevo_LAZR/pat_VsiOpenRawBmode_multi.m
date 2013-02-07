@@ -2,21 +2,20 @@ function [rawDataBmode, param] = pat_VsiOpenRawBmode_multi(fileName, varargin)
 % Modified from VsiOpenRawPa.m. This version opens the file once, reads all
 % available frames and closes it.
 % SYNTAX
-% [rawDataSO2, rawDataHbT,  param] = pat_VsiOpenRawPa_multi(fileName, [framesVector])
+% [rawDataBmode, param] = pat_VsiOpenRawBmode_multi(fileName, [framesVector])
 % INPUTS
 % fileName          Full file name with extension of raw.pamode file
 % [framesVector]    Vector with frames to extract, if empty, extracts the whole
 %                   file
 % OUTPUTS
-% rawDataSO2        4-D matrix with SO2 raw data, with the following dimensions:
+% rawDataBmode      4-D matrix with B-mode raw data, with the following dimensions:
 %                   [nSamples(depth) nLines(width) 1 nFrames]
-% rawDataHbT        4-D matrix with HbT raw data, same dimensions as rawDataSO2
 % param             Structure with relevant info in the extracted images
-%_______________________________________________________________________
-% Copyright VisualSonics 1999-2010
+%_______________________________________________________________________________
+% Copyright VisualSonics 1999-2012
 % A. Needles
-% Revision: 1.0 Dec 3 2010
-%_______________________________________________________________________
+% Revision: 1.0 Oct 24 2012
+%_______________________________________________________________________________
 
 % only want 1 optional input at most
 numVarArgs = length(varargin);
@@ -40,67 +39,65 @@ framesVector = optArgs{:};
 fnameBase = fullfile(pathString, fnameBase);
 fnameXml = [fnameBase '.xml'];
 
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parse the XML parameter file - DO NOT CHANGE
-param = VsiParseXml(fnameXml, ModeName);
-BmodeNumSamples = param.BmodeNumSamples;
-BmodeNumLines = param.BmodeNumLines;
-BmodeDepthOffset = param.BmodeDepthOffset; % mm
-BmodeDepth = param.BmodeDepth; % mm
-BmodeWidth = param.BmodeWidth; % mm
-param.pixDepth = (BmodeDepth-BmodeDepthOffset)/(BmodeNumSamples-1);
-param.DepthAxis = BmodeDepthOffset:param.pixDepth:BmodeDepth;
-param.pixWidth = BmodeWidth/(BmodeNumLines-1);
-param.WidthAxis = 0:param.pixWidth:BmodeWidth;
-
-rawDataBmode = [];
+param               = VsiParseXml(fnameXml, ModeName);
+BmodeNumSamples     = param.BmodeNumSamples;
+BmodeNumLines       = param.BmodeNumLines;
+BmodeDepthOffset    = param.BmodeDepthOffset;   % mm
+BmodeDepth          = param.BmodeDepth;         % mm
+BmodeWidth          = param.BmodeWidth;         % mm
+param.pixDepth      = (BmodeDepth-BmodeDepthOffset)/(BmodeNumSamples-1);
+param.DepthAxis     = BmodeDepthOffset:param.pixDepth:BmodeDepth;
+param.pixWidth      = BmodeWidth/(BmodeNumLines-1);
+param.WidthAxis     = 0:param.pixWidth:BmodeWidth;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % This is to strip the header data in the files - DO NOT CHANGE
-% size            = 2;    % 2 bytes
-% file_header     = 40;   % 40bytes
-% line_header     = 0;    % 0 bytes
-% frame_header    = 56;   % 56 bytes  
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
-% % Open file
-% fid = fopen(fileName, 'r');
-% 
-% %% Get total number of frames
-% fileInfo = dir(fileName);
-% fileSize = fileInfo.bytes;
-% % nFrames represents the total of frames SO2 & HbT
-% nFrames = (fileSize - file_header) ./ (BmodeNumLines.*(size.*BmodeNumSamples + line_header) + frame_header./2);
-% if isinf(framesVector)
-%     framesVector = 1:nFrames;
-% end
-% % Initialize data
-% Rawdata = zeros(BmodeNumSamples, BmodeNumLines, 1, numel(framesVector));
-% 
-% %% Frames loop
-% fprintf('Reading %d frames from file %s...\n',numel(framesVector)/2, fileName);
-% for iFrames = framesVector
-%     % Updated by A. Needles Oct 2, 2012 for opening Oxy-Hemo raw file
-%     if mod(iFrames,2) == 1
-%         TempFrame = (iFrames+1)/2;
-%     else
-%         TempFrame = iFrames/2;
-%     end
-%     
-%     header = file_header + frame_header*TempFrame + (size*BmodeNumSamples*BmodeNumLines + BmodeNumLines*line_header)*(iFrames-1);
-%     
-%     % A-lines loop
-%     for iLines = 1:BmodeNumLines
-%         fseek(fid, header + (size*BmodeNumSamples + line_header)*(iLines-1),-1);
-%         fseek(fid, line_header, 'cof');
-%         [Rawdata(:,iLines,1,iFrames), ~] = fread(fid, BmodeNumSamples, 'ushort');
-%     end
-% end
-% rawDataSO2 = Rawdata(:,:,1,1:2:end);
-% rawDataHbT = Rawdata(:,:,1,2:2:end);
-% 
-% %% Close file
-% fclose(fid);
-% fprintf('%d frames extracted!\n',numel(framesVector)/2);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This is to strip the header data in the files - DO NOT CHANGE
+size            = 1;    % 1 byte
+file_header     = 40;   % 40 bytes
+line_header     = 0;    % 0 bytes
+frame_header    = 56;   % 56 bytes  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Open file
+fid = fopen(fileName, 'r');
+
+%% Get total number of frames
+fileInfo = dir(fileName);
+fileSize = fileInfo.bytes;
+% nFrames represents the total of B-mode frames.
+nFrames = (fileSize - file_header) / (BmodeNumLines*(size*BmodeNumSamples + line_header) + frame_header);
+if isinf(framesVector)
+    framesVector = 1:nFrames;
+end
+% Initialize data
+rawDataBmode = zeros(BmodeNumSamples, BmodeNumLines, 1, numel(framesVector));
+
+%% Frames loop
+fprintf('Reading %d frames from file %s...\n',numel(framesVector), fileName);
+% Initialize progress bar
+spm_progress_bar('Init', nFrames, sprintf('Read %d frames from raw B-mode\n',nFrames), 'Frames');
+for iFrames = framesVector,
+    % Update header for each frame
+    header = file_header + frame_header*iFrames + (size*BmodeNumSamples*BmodeNumLines + BmodeNumLines*line_header)*(iFrames-1);
+    % A-lines loop
+    for iLines = 1:BmodeNumLines,
+        fseek(fid, header + (size*BmodeNumSamples + line_header)*(iLines-1),-1);
+        fseek(fid, line_header, 'cof');
+        [rawDataBmode(:,iLines,1,iFrames), ~] = fread(fid, BmodeNumSamples, 'uchar');
+    end
+    % Update progress bar
+    spm_progress_bar('Set', iFrames);
+end
+% Clear progress bar
+spm_progress_bar('Clear');
+
+%% Close file
+fclose(fid);
+fprintf('%d frames extracted!\n',numel(framesVector));
 
 % EOF
