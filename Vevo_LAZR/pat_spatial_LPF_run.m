@@ -60,7 +60,7 @@ for scanIdx=1:length(job.PATmat)
 
                             end
                             
-                            % Low-pass filtering and saving
+                            % Low-pass filtering
                             K = pat_spatial_LPF('set', K);
                             for iT = 1:nT,
                                 imagesTimeCourseLPF(:,:,1,iT) = pat_spatial_LPF('lpf', K, squeeze(imagesTimeCourse(:,:,1,iT)));

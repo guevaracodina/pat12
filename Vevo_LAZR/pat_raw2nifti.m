@@ -49,16 +49,22 @@ matRotation(2,2) = 0;
 matTranslation = eye(4);
 matTranslation(2,4) = -param.PaDepthOffset;
 % Final Affine transformation matrix: 
-mat = matScaling * matRotation * matTranslation;
+mat = matTranslation * matScaling * matRotation;
 
 fprintf('Creating NIfTI volume from %s...\n',fileName);
+% Initialize progress bar
+spm_progress_bar('Init', nFrames, sprintf('Write %d PA frames to NIfTI\n',nFrames), 'Frames');
 % Creates NIfTI volume frame by frame
 for iFrames = 1:nFrames
     hdrSO2 = pat_create_vol(fnameSO2, dim, dt, pinfo, mat, iFrames,...
         squeeze(rawDataSO2(:,:,1,iFrames)));
     hdrHbT = pat_create_vol(fnameHbT, dim, dt, pinfo, mat, iFrames,...
         squeeze(rawDataHbT(:,:,1,iFrames)));
+    % Update progress bar
+    spm_progress_bar('Set', iFrames);
 end
+% Clear progress bar
+spm_progress_bar('Clear');
 fprintf('%d frames saved to NIfTI volume!\nOutput dir1: %s\nOutput dir2: %s\n',nFrames,nifti_filename{1},nifti_filename{2});
 
 % EOF
