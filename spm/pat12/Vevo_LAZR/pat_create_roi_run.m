@@ -333,7 +333,8 @@ for scanIdx=1:length(job.PATmat)
             save(PATmat,'PAT');
         end
         [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
-        disp(['Subject ' int2str(scanIdx) ' ' splitStr{end-1} ' complete']);
+        % disp(['Subject ' int2str(scanIdx) ' ' splitStr{end-1} ' complete']);
+        fprintf('Scan %s, %d of %d complete\n', splitStr{end-1}, scanIdx, length(job.PATmat));
         out.PATmat{scanIdx} = PATmat;
     catch exception
         disp(exception.identifier)

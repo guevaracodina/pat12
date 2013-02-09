@@ -96,7 +96,7 @@ for scanIdx=1:length(job.PATmat)
             save(PATmat,'PAT');
         end % LPF OK or redo job
         disp(['Elapsed time: ' datestr(datenum(0,0,0,0,0,toc),'HH:MM:SS')]);
-        fprintf('Subject %d of %d complete\n', scanIdx, length(job.PATmat));
+        fprintf('Scan %d of %d complete\n', scanIdx, length(job.PATmat));
         out.PATmat{scanIdx} = PATmat;
     catch exception
         out.PATmat{scanIdx} = PATmat;
