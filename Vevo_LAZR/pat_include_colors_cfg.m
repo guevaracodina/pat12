@@ -29,7 +29,7 @@ include_HbT             = cfg_menu;
 include_HbT.tag         = 'include_HbT';
 include_HbT.name        = 'Include HbT';
 include_HbT.labels      = {'Yes','No'};
-include_HbT.values      = {true,false};
+include_HbT.values      = {true, false};
 include_HbT.val         = {HbT};
 include_HbT.help        = {'Include HbT.'}';
 
@@ -37,7 +37,7 @@ include_SO2             = cfg_menu;
 include_SO2.tag         = 'include_SO2';
 include_SO2.name        = 'Include SO2';
 include_SO2.labels      = {'Yes','No'};
-include_SO2.values      = {true,false};
+include_SO2.values      = {true, false};
 include_SO2.val         = {SO2};
 include_SO2.help        = {'Include SO2.'}';
 
@@ -45,7 +45,7 @@ include_Bmode           = cfg_menu;
 include_Bmode.tag       = 'include_Bmode';
 include_Bmode.name      = 'Include Bmode';
 include_Bmode.labels    = {'Yes','No'};
-include_Bmode.values    = {true,false};
+include_Bmode.values    = {true, false};
 include_Bmode.val       = {Bmode};
 include_Bmode.help      = {'Include Bmode.'}';
 

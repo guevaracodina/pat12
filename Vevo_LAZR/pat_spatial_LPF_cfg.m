@@ -12,8 +12,8 @@ PATmat                  = pat_PATmat_cfg(1);
 redo1                   = pat_redo_cfg(false);
 % PAT copy/overwrite method
 PATmatCopyChoice        = pat_PATmatCopyChoice_cfg('LPF');
-% Colors to include (OD,HbO,HbR,HbT,Flow)
-IC                      = pat_include_colors_cfg(true,true);
+% Colors to include (HbT, SO2, Bmode)
+IC                      = pat_include_colors_cfg(true, true);
 % Spatial low-pass filter options
 spatial_LPF_options     = pat_spatial_LPF_options_cfg;
 

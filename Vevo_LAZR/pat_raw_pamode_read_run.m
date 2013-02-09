@@ -62,7 +62,7 @@ try
             PAT.nifti_files_affine_matrix{fileIdx,2} = affine_mat_filename{2};
         end % files loop
         % Create anatomical file from HbT data 
-        % (it should be done from B-mode data, but it's not yet available)
+        % (it should be done from B-mode data, but coregistration is challenging)
         PAT = local_create_anatomical_file(PAT);
         % raw.pamode extraction done!
         PAT.jobsdone(1).extract_rawPAmode = true;
@@ -90,4 +90,5 @@ PAT.res.file_anat = fullfile(PAT.output_dir, 'anatomical.nii');
 pat_create_vol(PAT.res.file_anat, vol(1).dim, vol(1).dt,...
     vol(1).pinfo, vol(1).mat, 1, im_anat);
 end
+
 % EOF
