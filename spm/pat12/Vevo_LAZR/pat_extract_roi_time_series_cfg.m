@@ -44,7 +44,7 @@ extract_roi1.help       = {'Create regions of interest.'};
 
 return
 
-%make IOI.mat available as a dependency
+%make PAT.mat available as a dependency
 function vout = pat_cfg_vout_extract_roi(job)
 vout                    = cfg_dep;                  % The dependency object
 vout.sname              = 'PAT.mat';                % Displayed dependency name
