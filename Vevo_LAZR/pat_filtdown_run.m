@@ -1,6 +1,6 @@
 function out = pat_filtdown_run(job)
 % Band-pass filters (usually [0.009 - 0.8]Hz) the time series of an ROI (seed)
-% and the whole brain mask.
+% and the global brain signal. Option to filter whole image time-series.
 %_______________________________________________________________________________
 % Copyright (C) 2012 LIOM Laboratoire d'Imagerie Optique et Moléculaire
 %                    École Polytechnique de Montréal
@@ -9,46 +9,29 @@ function out = pat_filtdown_run(job)
 % ------------------------------------------------------------------------------
 % REMOVE AFTER FINISHING THE FUNCTION //EGC
 % ------------------------------------------------------------------------------
-fprintf('Work in progress...\nEGC\n')
-out.PATmat = job.PATmat;
-return
+% fprintf('Work in progress...\nEGC\n')
+% out.PATmat = job.PATmat;
+% return
 % ------------------------------------------------------------------------------
 
-for scanIdx=1:length(job.PATmat)
+for scanIdx = 1:length(job.PATmat)
     try
         tic
         % Load PAT.mat information
         [PAT PATmat dir_patmat]= pat_get_PATmat(job,scanIdx);
-        
-        if ~isfield(PAT.fcPAT.filtNdown,'filtNdownOK') || job.force_redo
-            
+        [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
+        scanName = splitStr{end-1};
+        if ~isfield(PAT.jobsdone,'filtNdownOK') || job.force_redo
             % Get sampling period in seconds
-            PAT.dev.TR = pat_get_TR(PAT);
-            
-            % Filter & Downsample time series
-            % ------------------------------------------------------------------
-            % Original Sampling Frequency (5 Hz per color, data is sampled at 20
-            % Hz for 4 colors RGYL)
-            fs = 1/PAT.dev.TR;
-            
-            % Desired downsampling frequency
-%             fprintf('Desired downsampling frequency: %0.1f Hz \n',job.downFreq);
-            
-            % Real downsampling frequency (might be different from desired
-            % downsampling frequency PAT.fcPAT.filtNdown.downFreq)
-%             samples2skip = round(fs/job.downFreq);
-%             fprintf('Real downsampling frequency: %0.1f Hz \n',fs/samples2skip);
-%             PAT.fcPAT.filtNdown(1).fs = fs/samples2skip;
-            
+            PAT.fcPAT.filtNdown(1).TR = pat_get_TR(PAT);
+            % Original Sampling Frequency
+            fs = 1/PAT.fcPAT.filtNdown.TR;
             % Filter order
             filterOrder = job.bpf.bpf_On.bpf_order;
-            
             % Band-pass cut-off frequencies
             BPFfreq = job.bpf.bpf_On.bpf_freq;
-            
             % Filter type
             fType = job.bpf.bpf_On.bpf_type;
-            
             % Passband/Stopband ripple in dB
             Rp_Rs = [job.bpf.bpf_On.bpf_Rp job.bpf.bpf_On.bpf_Rs];
             
@@ -62,164 +45,138 @@ for scanIdx=1:length(job.PATmat)
                 brainMaskData = brainMaskData.brainMaskSeries;
             end
             
-%             [all_sessions selected_sessions] = ioi_get_sessions(job);
-            
             % Include colors
             IC = job.IC;
             % Band-pass filter configuration
             [z, p, k] = pat_temporalBPFconfig(fType, fs, BPFfreq, filterOrder, Rp_Rs);
-            % Loop over sessions
-            
+            % Loop over sessions (in PAT only 1 session per scan)
             s1 = 1;
-            if all_sessions || sum(s1==selected_sessions)
-                colorNames = fieldnames(PAT.color);
-                % Loop over available colors
-                for c1=1:length(PAT.sess_res{s1}.fname)
-                    doColor = ioi_doColor(PAT,c1,IC);
-                    if doColor
-                        colorOK = 1;
-                        if ~(PAT.color.eng(c1)==PAT.color.laser)
-                            if job.wholeImage
-                                %% Filtering & Downsampling whole images (y)
-                                y = ioi_get_images(PAT,1:PAT.sess_res{s1}.n_frames,c1,s1,dir_ioimat,shrinkage_choice);
-                                % Preallocating output images
-                                filtY = zeros([size(y,1) size(y,2) 1 size(y,3)]);
-                                % Computing lenght of time vector
-                                nT = ceil(size(y,3) / samples2skip);
-                                filtNdownY = zeros([size(y,1) size(y,2) 1 nT]);
-                                % Read brain mask file
-                                vol = spm_vol(PAT.fcPAT.mask.fname);
-                                brainMask = logical(spm_read_vols(vol));
-                                % Test if there was shrinkage
-                                if size(brainMask,1)~= size(y,1)|| size(brainMask,2)~= size(y,2)
-                                    brainMask = ioi_MYimresize(brainMask, [size(y,1) size(y,2)]);
-                                end
-                                % Color names
-                                colorNames = fieldnames(PAT.color);
-                                % Initialize progress bar
-                                spm_progress_bar('Init', size(filtY,1), sprintf('Filtering & Downsampling session %d, color %d (%s)\n',s1,c1,colorNames{1+c1}), 'Pixels along X');
-                                for iX = 1:size(filtY,1)
-                                    spm_progress_bar('Set', iX);
-                                    for iY = 1:size(filtY,2)
-                                        if brainMask(iX,iY) == 1
-                                            % Only non-masked pixels are
-                                            % band-passs filtered
-                                            % filtY(iX,iY,1,:) = temporalBPF(fType, fs, BPFfreq, filterOrder, squeeze(y(iX,iY,:)), Rp_Rs);
-                                            filtY(iX,iY,1,:) = temporalBPFrun(squeeze(y(iX,iY,:)), z, p, k);
-                                            % Downsampling
-                                            filtNdownY(iX,iY,1,:) = downsample(squeeze(filtY(iX,iY,1,:)), samples2skip);
-                                        end
-                                    end
-                                end
-                                spm_progress_bar('Clear');
-                                % Saving images
-                                sessionDir = [dir_ioimat filesep 'S' sprintf('%02d',s1)];
-                                if ~exist(sessionDir,'dir'),mkdir(sessionDir); end
-                                filtNdownfnameWholeImage = fullfile(sessionDir,[PAT.subj_name '_OD_' PAT.color.eng(c1) '_filtNdown_' sprintf('%05d',1) 'to' sprintf('%05d',PAT.sess_res{s1}.n_frames) '.nii']);
-                                ioi_save_nifti(filtNdownY, filtNdownfnameWholeImage, [1 1 samples2skip/fs]);
-                                PAT.fcPAT.filtNdown.fnameWholeImage{s1, c1} = filtNdownfnameWholeImage;
-                                fprintf('Filtering and downsampling whole images for session %d and color %d (%s) completed\n',s1,c1,colorNames{1+c1})
-                            end % End of filtering & downsampling whole images
-                            if PAT.fcPAT.mask.seriesOK
-                                % Retrieve time-course
-                                % signal for brain mask
-                                brainSignal = brainMaskData{1}{s1, c1};
-                                % Band-passs filtering
-                                % brainSignal = temporalBPF(fType, fs, BPFfreq, filterOrder, brainSignal, Rp_Rs);
-                                brainSignal = temporalBPFrun(brainSignal, z, p, k);
-                                % Downsampling
-                                brainSignal = downsample(brainSignal, samples2skip);
-                                % Update data cell
-                                filtNdownBrain{1}{s1,c1} = brainSignal;
+            
+            colorNames = fieldnames(PAT.color);
+            % Loop over available colors
+            for c1 = 1:length(PAT.nifti_files)
+                doColor = pat_doColor(PAT,c1,IC);
+                if doColor
+                    colorOK = true;
+                    %skip B-mode only extract PA
+                    if ~(PAT.color.eng(c1)==PAT.color.Bmode)
+                        if job.wholeImage
+                            %% Filtering whole image time series (y)
+                            volY = spm_vol(PAT.nifti_files{1,c1});
+                            y = spm_read_vols(volY);
+                            % Preallocating output images
+                            filtY = zeros(size(y));
+                            % Computing lenght of time vector
+                            % Read brain mask file
+                            [PAT brainMask] = pat_get_brain_mask(PAT);
+                            % brain mask was needed as a cell in pat_extract_main
+                            brainMask = brainMask{1};
+                            % Test if there was shrinkage
+                            if size(brainMask,1)~= size(y,1)|| size(brainMask,2)~= size(y,2)
+                                brainMask = pat_imresize(brainMask, [size(y,1) size(y,2)]);
                             end
-                            %skip laser - only extract for flow
-                            [all_ROIs selected_ROIs] = ioi_get_ROIs(job);
-                            nROI = 1:length(PAT.res.ROI); % All the ROIs
-                            msg_ColorNotOK = 1;
-                            % Initialize output filtNdownROI
-                            for r1 = nROI;
-                                if all_ROIs || sum(r1==selected_ROIs)
-                                    filtNdownROI{r1}{s1,c1} = [];
+                            % Color names
+                            colorNames = fieldnames(PAT.color);
+                            % Initialize progress bar
+                            spm_progress_bar('Init', size(filtY,1), sprintf('Filtering color %d (%s)\n',c1,colorNames{1+c1}), 'Pixels along X');
+                            pat_text_waitbar(0, sprintf('Filtering color %d (%s)',c1,colorNames{1+c1}))      % ascii progress bar
+                            for iX = 1:size(filtY,1)
+                                % Update progress bar
+                                spm_progress_bar('Set', iX);
+                                pat_text_waitbar(iX/size(filtY,1), sprintf('Processing pixel time course %d from %d', iX, size(filtY,1))); 
+                                for iY = 1:size(filtY,2)
+                                    if brainMask(iX,iY)
+                                        % Only non-masked pixels are band-passs filtered
+                                        filtY(iX,iY,1,:) = temporalBPFrun(squeeze(y(iX,iY,:)), z, p, k);
+                                    end
                                 end
                             end
-                            % Loop over ROIs
-                            for r1 = nROI; % All the ROIs
-                                if all_ROIs || sum(r1==selected_ROIs)
-                                    try
-                                        % Retrieve time-series signal for
-                                        % given ROI, session and color
-                                        ROIsignal = ROIdata{r1}{s1, c1};
-                                        
-                                        % Band-passs filtering
-                                        % ROIsignal = temporalBPF(fType, fs, BPFfreq, filterOrder, ROIsignal, Rp_Rs);
-                                        ROIsignal = temporalBPFrun(ROIsignal, z, p, k);
-                                        
-                                        % Downsampling
-                                        ROIsignal = downsample(ROIsignal, samples2skip);
-                                        
-                                        % Plot and print data if required
-                                        subfunction_plot_filtNdown_data(job, PAT, dir_ioimat, ROIdata, ROIsignal, r1, s1, c1);
-                                        
-                                    catch
-                                        if msg_ColorNotOK
-                                            msg = ['Problem filtering/downsampling for color ' int2str(c1) ', session ' int2str(s1) ...
-                                                ',region ' int2str(r1) ': size ROIsignal= ' int2str(size(ROIsignal,1)) 'x' ...
-                                                int2str(size(brainSignal,2)) ', but brainSignal= ' int2str(size(brainSignal,1)) 'x' ...
-                                                int2str(size(brainSignal,2))];
-                                            PAT = disp_msg(PAT,msg);
-                                            msg_ColorNotOK = 0;
-                                        end
-                                        if colorOK
-                                            try
-                                                % Retrieve time-series signal for
-                                                % given ROI, session and color
-                                                ROIsignal = ROIdata{r1}{s1, c1};
-                                                
-                                                % Band-passs filtering
-                                                % ROIsignal = temporalBPF(fType, fs, BPFfreq, filterOrder, ROIsignal, Rp_Rs);
-                                                ROIsignal = temporalBPFrun(ROIsignal, z, p, k);
-                                                
-                                                % Downsampling
-                                                ROIsignal = downsample(ROIsignal, samples2skip);
-                                                
-                                                % Plot and print data if required
-                                                subfunction_plot_filtNdown_data(job, PAT, dir_ioimat, ROIdata, ROIsignal, r1, s1, c1);
-                                                
-                                            catch
-                                                msg = ['Unable to extract color ' int2str(c1) ', session ' int2str(s1)];
-                                                PAT = disp_msg(PAT,msg);
-                                                colorOK = 0;
-                                            end
-                                        end
-                                    end
-                                    if colorOK
-                                        filtNdownROI{r1}{s1,c1} = ROIsignal;
-                                        filtNdownBrain{1}{s1,c1} = brainSignal;
-                                    end
-                                end
-                            end % ROI loop
-                            if colorOK
-                                filtNdownROI{r1}{s1,c1} = ROIsignal;
-                                filtNdownBrain{1}{s1,c1} = brainSignal;
-                                fprintf('Filtering and downsampling ROIs/seeds for session %d and color %d (%s) completed\n',s1,c1,colorNames{1+c1})
+                            spm_progress_bar('Clear');
+                            pat_text_waitbar('Clear')
+                            % Saving images
+                            filtNdownfnameWholeImage = fullfile(dir_patmat,[scanName '_' PAT.color.eng(c1) '_filt_' sprintf('%05d',1) 'to' sprintf('%05d', size(filtY,4)) '.nii']);
+                            % Create 4-D NIFTI file with filtered time trace of each pixel
+                            pat_create_vol_4D(filtNdownfnameWholeImage, volY, filtY);
+                            % 
+                            PAT.fcPAT.filtNdown.fnameWholeImage{s1, c1} = filtNdownfnameWholeImage;
+                            fprintf('Filtering whole images for color %d (%s) completed %30s\n',c1,colorNames{1+c1},spm('time'))
+                        end % End of filtering & downsampling whole images
+                        if PAT.jobsdone.maskSeriesOK
+                            %% Filtering global brain signal
+                            % Retrieve time-course signal for brain mask
+                            brainSignal = brainMaskData{1}{s1, c1};
+                            % Band-passs filtering
+                            brainSignal = temporalBPFrun(brainSignal, z, p, k);
+                            % Update data cell
+                            filtNdownBrain{1}{s1,c1} = brainSignal;
+                        end
+                        [all_ROIs selected_ROIs] = pat_get_rois(job);
+                        nROI = 1:length(PAT.res.ROI); % All the ROIs
+                        msg_ColorNotOK = true;
+                        % Initialize output filtNdownROI
+                        for r1 = nROI;
+                            if all_ROIs || sum(r1==selected_ROIs)
+                                filtNdownROI{r1}{s1,c1} = [];
                             end
                         end
+                        % Loop over ROIs
+                        for r1 = nROI; % All the ROIs
+                            if all_ROIs || sum(r1==selected_ROIs)
+                                try
+                                    %% Filtering seeds
+                                    % Retrieve time-series signal for given ROI and color
+                                    ROIsignal = ROIdata{r1}{s1, c1};
+                                    % Band-passs filtering
+                                    ROIsignal = temporalBPFrun(ROIsignal, z, p, k);
+                                    % Plot and print data if required
+                                    subfunction_plot_filtNdown_data(job, PAT, dir_patmat, ROIdata, ROIsignal, r1, c1);
+                                catch
+                                    if msg_ColorNotOK
+                                        msg = ['Problem filtering/downsampling for color ' int2str(c1) ', session ' int2str(s1) ...
+                                            ',region ' int2str(r1) ': size ROIsignal= ' int2str(size(ROIsignal,1)) 'x' ...
+                                            int2str(size(brainSignal,2)) ', but brainSignal= ' int2str(size(brainSignal,1)) 'x' ...
+                                            int2str(size(brainSignal,2))];
+                                        PAT = pat_disp_msg(PAT,msg);
+                                        msg_ColorNotOK = false;
+                                    end
+                                    if colorOK
+                                        try
+                                            %% Filtering seeds
+                                            % Retrieve time-series signal for given ROI and color
+                                            ROIsignal = ROIdata{r1}{s1, c1};
+                                            % Band-passs filtering
+                                            ROIsignal = temporalBPFrun(ROIsignal, z, p, k);
+                                            % Plot and print data if required
+                                            subfunction_plot_filtNdown_data(job, PAT, dir_patmat, ROIdata, ROIsignal, r1, c1);
+                                        catch
+                                            msg = ['Unable to extract color ' int2str(c1) ', session ' int2str(s1)];
+                                            PAT = pat_disp_msg(PAT,msg);
+                                            colorOK = false;
+                                        end
+                                    end
+                                end
+                                if colorOK
+                                    filtNdownROI{r1}{s1,c1} = ROIsignal;
+                                    filtNdownBrain{1}{s1,c1} = brainSignal;
+                                end
+                            end
+                        end % ROI loop
+                        if colorOK
+                            filtNdownROI{r1}{s1,c1} = ROIsignal;
+                            filtNdownBrain{1}{s1,c1} = brainSignal;
+                            fprintf('Filtering ROIs/seeds for color %d (%s) completed %30s\n',c1,colorNames{1+c1},spm('time'))
+                        end
                     end
-                end % Colors loop
-            end
-            
-            % ------------------------------------------------------------------
+                end
+            end % Colors loop
             
             % Filter and Downsampling succesful!
-            PAT.fcPAT.filtNdown(1).filtNdownOK = true;
+            PAT.jobsdone.filtNdownOK = true;
             % Save filtered & downsampled data
-            filtNdownfname = fullfile(dir_ioimat,'filtNdown.mat');
+            filtNdownfname = fullfile(dir_patmat,'filtNdown.mat');
             save(filtNdownfname,'filtNdownROI','filtNdownBrain');
             % Update .mat file name in PAT structure
             PAT.fcPAT.filtNdown.fname = filtNdownfname;
-            % Desired downsampling frequency, it could be different to real
-            % downsampling frequency (PAT.fcPAT.filtNdown.fs)
-            PAT.fcPAT.filtNdown.downFreq = job.downFreq;
             % Band-pass frequency
             PAT.fcPAT.filtNdown.BPFfreq = BPFfreq;
             % Band-pass filter order
@@ -230,7 +187,7 @@ for scanIdx=1:length(job.PATmat)
         end
         out.PATmat{scanIdx} = PATmat;
         disp(['Elapsed time: ' datestr(datenum(0,0,0,0,0,toc),'HH:MM:SS')]);
-        disp(['Subject ' int2str(scanIdx) ' (' PAT.subj_name ')' ' complete']);
+        fprintf('Scan %s, %d of %d complete %30s\n', splitStr{end-1}, scanIdx, length(job.PATmat), spm('time'));
     catch exception
         out.PATmat{scanIdx} = job.PATmat{scanIdx};
         disp(exception.identifier)
@@ -240,78 +197,90 @@ end % End of main for
 end % End of function
 
 
-function subfunction_plot_filtNdown_data(job, PAT, dir_ioimat, ROIdata, ROIsignal, r1, s1, c1)
-% plots time course and spectrum for both the raw and filtered/downsampled data
+function subfunction_plot_filtNdown_data(job, PAT, dir_patmat, ROIdata, ROIsignal, r1, c1)
+% Plots time course and spectrum for both the raw and filtered data
 if job.generate_figures
-    % Original Sampling Frequency (5 Hz per color, data is sampled at 20 Hz for
-    % 4 colors RGYL)
-    fs = 1/PAT.dev.TR;
+    % ------------------------ Plot options ------------------------------------
+    titleFontSize = 14;
+    axisLabelFontSize = 14;
+    axisFontSize = 12;
+    lineWidth = 1.5;
+    % --------------------------------------------------------------------------
+    
+    [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
+	scanName = splitStr{end-1};
+    % Only 1 session per scan in PAT
+    s1 = 1;
+    % Original Sampling Frequency (Hz)
+    fs = 1/PAT.fcPAT.filtNdown.TR;
     % Get color names
     colorNames = fieldnames(PAT.color);
     % Band-pass cut-off frequencies
     BPFfreq = job.bpf.bpf_On.bpf_freq;
     
-    % ---- Plotting results ----
+    % --------------------------- Plotting results -----------------------------
     % Display plots on SPM graphics window
     h = spm_figure('GetWin', 'Graphics');
     spm_figure('Clear', 'Graphics');
-    % Positive FFT
-    [X, freq] = ioi_positiveFFT(ROIdata{r1}{s1, c1}, fs);
+    % Positive FFT (raw signal)
+    [X, freq] = pat_positiveFFT(ROIdata{r1}{s1, c1}, fs);
     % Time vector
     t = 0:1/fs:(1/fs)*(numel(ROIdata{r1}{s1, c1})-1);
     
     subplot(221)
-    plot(t, ROIdata{r1}{s1, c1},'k-','LineWidth',2)
-    title(sprintf('%s_R%02d(%s)_S%02d_C%d(%s)\n',PAT.subj_name,r1,PAT.ROIname{r1},s1,c1,colorNames{1+c1}),'interpreter', 'none','FontSize',14);
-    xlabel('t [s]','FontSize',14)
-    set(gca,'FontSize',12)
+    plot(t, ROIdata{r1}{s1, c1},'k-','LineWidth',lineWidth)
+    title(sprintf('%s_R%02d(%s)_C%d(%s)\n',scanName,r1,PAT.ROI.ROIname{r1},c1,colorNames{1+c1}),'interpreter', 'none','FontSize',titleFontSize);
+    xlabel('t [s]','FontSize',axisLabelFontSize)
+    ylabel('[a.u.]','FontSize',axisLabelFontSize)
+    set(gca,'FontSize',axisFontSize)
     axis tight
     
     subplot(222)
-    semilogx(freq, abs(X),'k-','LineWidth',2);
-    title(sprintf('Unfiltered spectrum'),'interpreter', 'none','FontSize',14);
-    xlabel('f [Hz]','FontSize',14)
-    set(gca,'FontSize',12)
+    semilogx(freq, abs(X),'k-','LineWidth',lineWidth);
+    title(sprintf('Unfiltered spectrum'),'interpreter', 'none','FontSize',titleFontSize);
+    xlabel('f [Hz]','FontSize',axisLabelFontSize)
+    set(gca,'FontSize',axisFontSize)
     xlim([0 max(freq)]);
     % Plot filter band
-    yLimits = get(gca,'Ylim');
-    hold on
-    plot([BPFfreq(1) BPFfreq(1)],[yLimits(1) yLimits(2)],'r--','LineWidth',2)
-    plot([BPFfreq(2) BPFfreq(2)],[yLimits(1) yLimits(2)],'r--','LineWidth',2)
-    
-    % Downsampled Time vector
-    t = 0:1/PAT.fcPAT.filtNdown(1).fs:(1/PAT.fcPAT.filtNdown(1).fs)*(numel(ROIsignal)-1);
-    % Positive FFT
-    [X, freq] = ioi_positiveFFT(ROIsignal, PAT.fcPAT.filtNdown(1).fs);
+    yLimits = get(gca,'Ylim');  hold on;
+    plot([BPFfreq(1) BPFfreq(1)],[yLimits(1) yLimits(2)],'r--','LineWidth',lineWidth)
+    plot([BPFfreq(2) BPFfreq(2)],[yLimits(1) yLimits(2)],'r--','LineWidth',lineWidth)
     
     subplot(223)
-    plot(t, ROIsignal,'k-','LineWidth',2)
-    title(sprintf('Filtered time-course'),'interpreter', 'none','FontSize',14);
-    xlabel('t [s]','FontSize',14)
-    set(gca,'FontSize',12)
+    % Positive FFT (filtered signal)
+    [X, freq] = pat_positiveFFT(ROIsignal, fs);
+    plot(t, ROIsignal,'k-','LineWidth',lineWidth)
+    title(sprintf('Filtered time-course'),'interpreter', 'none','FontSize',titleFontSize);
+    xlabel('t [s]','FontSize',axisLabelFontSize)
+    ylabel('[a.u.]','FontSize',axisLabelFontSize)
+    set(gca,'FontSize',axisFontSize)
     axis tight
     
     subplot(224)
-    semilogx(freq, abs(X),'k-','LineWidth',2);
-    title('Filtered spectrum','interpreter', 'none','FontSize',14);
-    xlabel('f [Hz]','FontSize',14)
-    set(gca,'FontSize',12)
+    semilogx(freq, abs(X),'k-','LineWidth',lineWidth);
+    title('Filtered spectrum','interpreter', 'none','FontSize',titleFontSize);
+    xlabel('f [Hz]','FontSize',axisLabelFontSize)
+    set(gca,'FontSize',axisFontSize)
     xlim([0 max(freq)]);
+    % --------------------------------------------------------------------------
     
-    [oldDir, oldName, oldExt] = fileparts(PAT.res.ROI{1,1}.fname);
-    newName = [sprintf('%s_R%02d_S%02d_C%d',PAT.subj_name,r1,s1,c1) '_filtNdown'];
-    
+    % --------------------------- Saving plots ---------------------------------
+    newName = [sprintf('%s_R%02d_C%d',scanName,r1,c1) '_filt'];
     if job.save_figures
-        if isfield(job.IOImatCopyChoice,'IOImatCopy')
-            dir_filtfig = fullfile(dir_ioimat,strcat('fig_',job.IOImatCopyChoice.IOImatCopy.NewIOIdir));
+        if isfield(job.PATmatCopyChoice,'PATmatCopy')
+            dir_filtfig = fullfile(dir_patmat,strcat('fig_',job.PATmatCopyChoice.PATmatCopy.NewPATdir));
         else
-            dir_filtfig = fullfile(dir_ioimat,'fig_FiltNDown');
+            dir_filtfig = fullfile(dir_patmat,'fig_FiltNDown');
         end
         if ~exist(dir_filtfig,'dir'), mkdir(dir_filtfig); end
         % Save as PNG
         print(h, '-dpng', fullfile(dir_filtfig,newName), '-r300');
-        % --------------------------
+        % Save as a figure
+        saveas(h, fullfile(dir_filtfig,newName), 'fig');
     end % Save figures
+    % --------------------------------------------------------------------------
 end % Generate figures
 end % subfunction_plot_filtNdown_data
+
+
 % EOF

@@ -25,7 +25,7 @@ function out = pat_extract_roi_time_series_run(job)
 %     generate_figures  = true;
 % end
 
-for scanIdx=1:length(job.PATmat)
+for scanIdx = 1:length(job.PATmat)
     try
         tic
         clear ROI

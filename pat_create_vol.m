@@ -1,5 +1,5 @@
 function hdr = pat_create_vol(fname, dim, dt, pinfo, mat, n, data)
-% Create a NIfTI volume.
+% Create a NIfTI volume slice by slice.
 % SYNTAX
 % hdr = pat_create_vol(fname, dim, dt, pinfo, mat, n, data)
 % INPUTS
