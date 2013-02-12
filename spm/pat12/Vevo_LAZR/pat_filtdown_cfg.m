@@ -17,7 +17,7 @@ ROI_choice          = pat_roi_choice_cfg;
 IC                  = pat_include_colors_cfg(true, true);
 
 % Bandpass filtering
-bpf                 = pat_bpf_cfg(1, [0.009 0.08], 4, 'butter');
+bpf                 = pat_bpf_cfg(1, [0.009 0.08], 2, 'butter');
 % Generate / save figures
 [generate_figures ...
     save_figures]   = pat_generate_figures_cfg;

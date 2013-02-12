@@ -10,7 +10,7 @@ IC = job.IC;
 % loop over sessions (in PAT only 1 session per scan)
 s1 = 1;
 % Loop over available colors
-for c1=1:length(PAT.nifti_files)
+for c1 = 1:length(PAT.nifti_files)
     doColor = pat_doColor(PAT,c1,IC);
     if doColor
         colorOK = true;

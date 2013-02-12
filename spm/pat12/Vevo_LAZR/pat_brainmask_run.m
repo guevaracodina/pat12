@@ -75,7 +75,7 @@ for scanIdx = 1:length(job.PATmat)
             % Create filename according the existing nomenclature at scan level
             brainMaskName = fullfile(dir_patmat, 'brainmask.nii');
             
-            % Create and write a NIFTI file in the scan folder
+            % Create and write a 1-slice NIFTI file in the scan folder
             pat_create_vol(brainMaskName, vol(1).dim, vol(1).dt,...
                 vol(1).pinfo, vol(1).mat, 1, BW_mask);
 
