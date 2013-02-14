@@ -67,12 +67,13 @@ for scanIdx = 1:length(job.PATmat)
                 % We are not extracting brain mask here
                 job.extractingBrainMask = false;
                 % Extract ROI
-                [ROI PAT] = pat_extract_core(PAT,job,mask,Amask);
+                [PAT ROI ROIstd ROIsem] = pat_extract_core(PAT,job,mask,Amask);
                 % ROI time course extraction succesful!
                 PAT.jobsdone(1).seriesOK = true;
                 % .mat file with ROIs/seeds time course data
                 ROIfname = fullfile(dir_patmat,'ROI.mat');
-                save(ROIfname,'ROI');
+                % save ROI, standard deviation and standard error
+                save(ROIfname,'ROI',  'ROIstd', 'ROIsem');
                 PAT.ROI.ROIfname = ROIfname;
                 save(PATmat,'PAT');
             end
@@ -92,13 +93,13 @@ for scanIdx = 1:length(job.PATmat)
                     % Get brain mask
                     [PAT mask] = pat_get_brain_mask(PAT);
                     % Extract brain mask here
-                    [brainMaskSeries PAT] = pat_extract_core(PAT,job,mask,Amask);
+                    [PAT brainMaskSeries brainMaskStd brainMaskSem] = pat_extract_core(PAT,job,mask,Amask);
                     % Reset flag
                     job.extractingBrainMask = false;
                     % Brain mask time series extraction succesful!
                     PAT.jobsdone(1).maskSeriesOK = true;
                     fnameSeries = fullfile(dir_patmat,'brainMaskSeries.mat');
-                    save(fnameSeries, 'brainMaskSeries');
+                    save(fnameSeries, 'brainMaskSeries', 'brainMaskStd', 'brainMaskSem');
                     % identify in PAT the file name of the time series
                     PAT.fcPAT.mask.fnameSeries = fnameSeries;
                     save(PATmat,'PAT');
@@ -110,7 +111,7 @@ for scanIdx = 1:length(job.PATmat)
 %         end
         disp(['Elapsed time: ' datestr(datenum(0,0,0,0,0,toc),'HH:MM:SS')]);
         [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
-        fprintf('Scan %s, %d of %d complete\n', splitStr{end-1}, scanIdx, length(job.PATmat));
+        fprintf('Scan %s, %d of %d complete %30s\n', splitStr{end-1}, scanIdx, length(job.PATmat), spm('time'));
         out.PATmat{scanIdx} = PATmat;
     catch exception
         disp(exception.identifier)
