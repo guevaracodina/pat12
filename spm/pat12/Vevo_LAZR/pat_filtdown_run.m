@@ -92,12 +92,12 @@ for scanIdx = 1:length(job.PATmat)
                                 end
                             end
                             spm_progress_bar('Clear');
-                            pat_text_waitbar('Clear')
+                            pat_text_waitbar('Clear');
                             % Saving images
                             filtNdownfnameWholeImage = fullfile(dir_patmat,[scanName '_' PAT.color.eng(c1) '_filt_' sprintf('%05d',1) 'to' sprintf('%05d', size(filtY,4)) '.nii']);
                             % Create 4-D NIFTI file with filtered time trace of each pixel
                             pat_create_vol_4D(filtNdownfnameWholeImage, volY, filtY);
-                            % 
+                            % filename saved in PAT structure
                             PAT.fcPAT.filtNdown.fnameWholeImage{s1, c1} = filtNdownfnameWholeImage;
                             fprintf('Filtering whole images for color %d (%s) completed %30s\n',c1,colorNames{1+c1},spm('time'))
                         end % End of filtering & downsampling whole images

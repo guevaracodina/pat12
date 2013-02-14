@@ -57,30 +57,44 @@ for scanIdx=1:length(job.PATmat)
                                 catch
                                     colorOK = false;
                                 end
-
-                            end
+                            end % Loop over files
                             
                             % Low-pass filtering
                             K = pat_spatial_LPF('set', K);
+                            % Initialize progress bar
+                            spm_progress_bar('Init', nT, sprintf('Spatial LPF, color %d (%s)\n',c1,colorNames{1+c1}), 'Frames');
+                            pat_text_waitbar(0, sprintf('Spatial LPF, color %d (%s)\n',c1,colorNames{1+c1}));
                             for iT = 1:nT,
                                 imagesTimeCourseLPF(:,:,1,iT) = pat_spatial_LPF('lpf', K, squeeze(imagesTimeCourse(:,:,1,iT)));
+                                % Update progress bar
+                                spm_progress_bar('Set', iT);
+                                pat_text_waitbar(iT/nT, sprintf('Low pass filtering slice %d from %d', iT, nT));
                             end
+                            % Clear progress bar
+                            spm_progress_bar('Clear');
+                            pat_text_waitbar('Clear');
+                            
                             % Backup the original images
                             local_backup_nifti(PAT, f1, c1);
                             fprintf('Creating NIfTI volume from %s...\n',PAT.nifti_files{f1,c1});
                             
                             % Initialize progress bar
-                            spm_progress_bar('Init', nT, sprintf('Spatial LPF, color %d (%s)\n',c1,colorNames{1+c1}), 'Frames');
+                            spm_progress_bar('Init', nT, sprintf('Saving NIfTI, color %d (%s)\n',c1,colorNames{1+c1}), 'Frames');
+                            pat_text_waitbar(0, sprintf('Saving NIfTI, color %d (%s)\n',c1,colorNames{1+c1}));
                             % Creates NIfTI volume frame by frame
                             for iT = 1:nT,
                                 pat_create_vol(fname, vol(iT).dim, vol(iT).dt, vol(iT).pinfo,...
                                     vol(iT).mat, iT,...
                                     squeeze(imagesTimeCourseLPF(:,:,1,iT)));
+                                % Update progress bar
                                 spm_progress_bar('Set', iT);
+                                pat_text_waitbar(iT/nT, sprintf('Saving slice %d from %d', iT, nT));
                             end
                             % Clear progress bar
                             spm_progress_bar('Clear');
+                            pat_text_waitbar('Clear');
                             fprintf('%d frames saved to NIfTI volume: %s\n',nT,PAT.nifti_files{f1,c1});
+                            
                         end % Skip B-mode
                         if colorOK
                             fprintf('Spatial low-pass filtering for color %d (%s) completed\n',c1,colorNames{1+c1})

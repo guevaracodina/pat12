@@ -2,16 +2,16 @@ function pat_text_waitbar(varargin)
 % Shows a non-graphical progress indication.
 % 
 % Prior to the for-loop, you should call:
-% pat_text_waitbar(0, 'Please wait...')
+% pat_text_waitbar(0, 'Please wait...');
 % 
 % In each iteration of the for-loop, you should call:
 % for iX = 1:nX
 %     % Update progress bar
-%     pat_text_waitbar(iX/nX, sprintf('Processing event %d from %d', ix, nX));
+%     pat_text_waitbar(iX/nX, sprintf('Processing event %d from %d', iX, nX));
 % end
 % 
 % After finishing the for-loop, you should call
-% pat_text_waitbar('Close')
+% pat_text_waitbar('Clear');
 % 
 %_______________________________________________________________________________
 % Copyright (C) 2012 LIOM Laboratoire d'Imagerie Optique et Moléculaire
