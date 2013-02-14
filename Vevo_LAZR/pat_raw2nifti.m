@@ -54,6 +54,7 @@ mat = matTranslation * matScaling * matRotation;
 fprintf('Creating NIfTI volume from %s...\n',fileName);
 % Initialize progress bar
 spm_progress_bar('Init', nFrames, sprintf('Write %d PA frames to NIfTI\n',nFrames), 'Frames');
+pat_text_waitbar(0, sprintf('Write %d PA frames to NIfTI\n',nFrames))
 % Creates NIfTI volume frame by frame
 for iFrames = 1:nFrames
     hdrSO2 = pat_create_vol(fnameSO2, dim, dt, pinfo, mat, iFrames,...
@@ -62,9 +63,11 @@ for iFrames = 1:nFrames
         squeeze(rawDataHbT(:,:,1,iFrames)));
     % Update progress bar
     spm_progress_bar('Set', iFrames);
+    pat_text_waitbar(iFrames/nFrames, sprintf('Processing frame %d from %d', iFrames, nFrames));
 end
 % Clear progress bar
 spm_progress_bar('Clear');
+pat_text_waitbar('Clear');
 fprintf('%d frames saved to NIfTI volume!\nOutput dir1: %s\nOutput dir2: %s\n',nFrames,nifti_filename{1},nifti_filename{2});
 
 % EOF
