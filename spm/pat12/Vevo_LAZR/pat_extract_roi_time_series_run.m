@@ -16,15 +16,6 @@ function out = pat_extract_roi_time_series_run(job)
 % return
 % ------------------------------------------------------------------------------
 
-% if isfield(job, 'save_figures') % NOT CODED UP YET
-%     % save_figures
-%     save_figures      = job.save_figures;
-%     generate_figures  = job.generate_figures;
-% else
-%     save_figures      = false;
-%     generate_figures  = true;
-% end
-
 for scanIdx = 1:length(job.PATmat)
     try
         tic
@@ -106,9 +97,6 @@ for scanIdx = 1:length(job.PATmat)
                 end
             end
         end
-%         if generate_figures || save_figures % NOT CODED UP YET
-%             pat_plot_roi_time_series(PAT,ROI,generate_figures,save_figures);
-%         end
         disp(['Elapsed time: ' datestr(datenum(0,0,0,0,0,toc),'HH:MM:SS')]);
         [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
         fprintf('Scan %s, %d of %d complete %30s\n', splitStr{end-1}, scanIdx, length(job.PATmat), spm('time'));
