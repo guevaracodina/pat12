@@ -78,9 +78,9 @@ end
 rawDataBmode = zeros(BmodeNumSamples, BmodeNumLines, 1, numel(framesVector));
 
 %% Frames loop
-fprintf('Reading %d frames from file %s...\n',numel(framesVector), fileName);
 % Initialize progress bar
 spm_progress_bar('Init', nFrames, sprintf('Read %d frames from raw B-mode\n',nFrames), 'Frames');
+pat_text_waitbar(0, sprintf('Read %d frames from raw B-mode file %s...\n', nFrames, fileName));
 for iFrames = framesVector,
     % Update header for each frame
     header = file_header + frame_header*iFrames + (size*BmodeNumSamples*BmodeNumLines + BmodeNumLines*line_header)*(iFrames-1);
@@ -92,10 +92,11 @@ for iFrames = framesVector,
     end
     % Update progress bar
     spm_progress_bar('Set', iFrames);
+    pat_text_waitbar(iFrames/nFrames, sprintf('Processing frame %d from %d', iFrames, nFrames));
 end
 % Clear progress bar
 spm_progress_bar('Clear');
-
+pat_text_waitbar('Clear');
 %% Close file
 fclose(fid);
 fprintf('%d frames extracted!\n',numel(framesVector));

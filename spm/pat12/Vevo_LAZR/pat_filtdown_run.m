@@ -58,7 +58,7 @@ for scanIdx = 1:length(job.PATmat)
                 doColor = pat_doColor(PAT,c1,IC);
                 if doColor
                     colorOK = true;
-                    %skip B-mode only extract PA
+                    % skip B-mode only extract PA
                     if ~(PAT.color.eng(c1)==PAT.color.Bmode)
                         if job.wholeImage
                             %% Filtering whole image time series (y)

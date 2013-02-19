@@ -21,7 +21,9 @@ ROIstd          = [];
 filtNdownBrain  = [];
 brainMaskSem    = [];
 brainMaskStd    = [];
-
+ROIregress      = [];
+ROIregressSem   = [];
+ROIregressStd   = [];
 for scanIdx = 1:length(job.PATmat)
     try
         tic
@@ -42,10 +44,17 @@ for scanIdx = 1:length(job.PATmat)
             load(PAT.fcPAT.filtNdown.fname);
             tVec = (0:numel(filtNdownBrain{1}{1})-1)*PAT.fcPAT.filtNdown.TR;
         end
+        % Load computed seeds regressed time courses
+        if isfield(PAT.jobsdone, 'GLMOK')
+            load(PAT.fcPAT.SPM.fnameROIregress);
+            tVec = (0:numel(filtNdownBrain{1}{1})-1)*PAT.fcPAT.filtNdown.TR;
+        end
         %% Plot raw ROIs
         subfunction_plot_seeds(tVec, ROI, ROIsem, ROIstd, brainMaskSeries, brainMaskSem, brainMaskStd, job, PAT, scanIdx)
         %% Plot filtered series
         subfunction_plot_filtered_seeds(tVec, filtNdownROI, ROIsem, ROIstd, filtNdownBrain, brainMaskSem, brainMaskStd, job, PAT, scanIdx)
+        %% Plot global brain signal regressed signals.
+        subfunction_plot_GLM_seeds(tVec, ROIregress, ROIregressSem, ROIregressStd, job, PAT, scanIdx);
         %% Display ROIs and brain mask over anatomical image
         subfunction_display_seeds;
         % TO DO...
@@ -114,6 +123,9 @@ if job.generate_figures
                 legendCell = cat(1,legendCell,'Global Brain Signal');
             end
             axis tight;
+            if isfield(job.yLimits, 'yLimManual')
+                set(gca, 'ylim', job.yLimits.yLimManual.yLimValue)
+            end
             set(gca, 'FontSize', job.axisFontSize)
             if isfield(job.legends, 'legendShow')
                 legend(legendCell, 'FontSize', job.legends.legendShow.legendFontSize, 'Location', job.legends.legendShow.legendLocation);
@@ -181,6 +193,9 @@ if job.generate_figures && job.plotfiltNdown
                 legendCell = cat(1,legendCell,'Global Brain Signal');
             end
             axis tight;
+            if isfield(job.yLimits, 'yLimManual')
+                set(gca, 'ylim', job.yLimits.yLimManual.yLimValue)
+            end
             set(gca, 'FontSize', job.axisFontSize)
             if isfield(job.legends, 'legendShow')
                 legend(legendCell, 'FontSize', job.legends.legendShow.legendFontSize, 'Location', job.legends.legendShow.legendLocation);
@@ -195,8 +210,66 @@ if job.generate_figures && job.plotfiltNdown
 end % generate figures
 end % subfunction_plot_filtered_seeds
 
+function subfunction_plot_GLM_seeds(tVec, ROIregress, ROIregressSem, ROIregressStd, job, PAT, scanIdx)
+% Plot GLM-regressed series
+% ROI selection
+[all_ROIs selected_ROIs] = pat_get_rois(job);
+nROI = 1:length(PAT.res.ROI); % All the ROIs
+if job.generate_figures && job.plotGLM
+    colorNames = fieldnames(PAT.color);
+    % Loop over colors
+    for c1 = 1:length(PAT.nifti_files)
+        doColor = pat_doColor(PAT,c1,job.IC);
+        if doColor
+            % --------------------- Plot options -------------------------------
+            h = figure; set(gcf,'color','w');
+            % Specify window units
+            set(h, 'units', 'inches')
+            % Change figure and paper size
+            set(h, 'Position', [0.1 0.1 job.figSize(1) job.figSize(2)])
+            set(h, 'PaperPosition', [0.1 0.1 job.figSize(1) job.figSize(2)])
+            % ------------------------------------------------------------------
+            legendCell = {};
+            % Loop over ROIs/seeds
+            for r1 = nROI,
+                if all_ROIs || sum(r1==selected_ROIs)
+                    if isfield(PAT.jobsdone, 'filtNdownOK')
+                        if job.stderror
+                            e = ROIregressSem{r1}{1,c1};
+                        else
+                            e = ROIregressStd{r1}{1,c1};
+                        end
+                        % Plot filtered ROIs
+                        hold on
+                        h1 = errorbar(tVec, ROIregress{r1}{1,c1}, e, strcat(job.figColors{r1}, job.figLS{r1}));
+                        % Change linwidth for signal only, not error
+                        hChild = get(h1, 'Children');
+                        set(hChild(1), 'LineWidth', job.figLW);
+                    end
+                    legendCell = cat(1,legendCell,PAT.ROI.ROIname{r1});
+                end
+            end % ROIS loop             
+            axis tight;
+            if isfield(job.yLimits, 'yLimManual')
+                set(gca, 'ylim', job.yLimits.yLimManual.yLimValue)
+            end
+            set(gca, 'FontSize', job.axisFontSize)
+            if isfield(job.legends, 'legendShow')
+                legend(legendCell, 'FontSize', job.legends.legendShow.legendFontSize, 'Location', job.legends.legendShow.legendLocation);
+            end
+            title(sprintf('%s global signal regressed',colorNames{c1+1}), 'interpreter', 'none', 'FontSize', job.titleFontSize);
+            xlabel('t [s]', 'FontSize', job.axisLabelFontSize)
+            ylabel(sprintf('%s [a.u.]', colorNames{c1+1}), 'FontSize', job.axisLabelFontSize)
+            % Save figures
+            pat_save_figs(job, h, 'plotROIregress', scanIdx, c1);
+        end
+    end % Colors loop
+end % generate figures
+end % subfunction_plot_GLM_seeds
+
 function subfunction_display_seeds
 % Display ROIS as colored blobs on anatomical image with brain mask
+fprintf('Display ROIs and brain mask over anatomical image: Work in progress...\nEGC\n')
 end % subfunction_display_seeds
 
 % EOF
