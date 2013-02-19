@@ -1,7 +1,7 @@
 function [PAT ROI varargout] = pat_extract_core(PAT, job, mask, Amask, varargin)
 % ROI time course extraction over colors and files. Calls pat_extract_main
 % Optional computation of standard deviation and standard error of mean 
-% [ROIstd ROIsem]
+% [ROIstd ROIsem].
 %_______________________________________________________________________________
 % Copyright (C) 2012 LIOM Laboratoire d'Imagerie Optique et Moléculaire
 %                    École Polytechnique de Montréal
@@ -9,19 +9,19 @@ function [PAT ROI varargout] = pat_extract_core(PAT, job, mask, Amask, varargin)
 
 % only want 2 optional input at most
 numVarArgs = length(varargin);
-if numVarArgs > 2
+if numVarArgs > 3
     error('pat_extract_core:TooManyInputs', ...
-        'requires at most 2 optional inputs: ROIstd, ROIsem');
+        'requires at most 2 optional inputs: dataType, ROIstd, ROIsem');
 end
 % set defaults for optional inputs ()
-optArgs = {cell(1) cell(1)};
+optArgs = {'rawData' cell(1) cell(1)};
 % skip any new inputs if they are empty
 newVals = cellfun(@(x) ~isempty(x), varargin);
 % now put these defaults into the optArgs cell array, and overwrite the ones
 % specified in varargin.
 optArgs(newVals) = varargin(newVals);
 % Place optional args in memorable variable names
-[ROIstd ROIsem] = optArgs{:};
+[dataType ROIstd ROIsem] = optArgs{:};
 
 
 [all_ROIs selected_ROIs] = pat_get_rois(job);
@@ -35,8 +35,20 @@ for c1 = 1:length(PAT.nifti_files)
         colorOK = true;
         %skip B-mode only extract PA
         if ~(PAT.color.eng(c1)==PAT.color.Bmode)
-            % HbT/SO2 filenames
-            fname_list = PAT.nifti_files(:,c1);
+            switch dataType
+                case 'rawData'
+                    % HbT/SO2 filenames (raw data)
+                    fname_list = PAT.nifti_files(:,c1);
+                case 'filtData'
+                    % HbT/SO2 filenames (filtered data)
+                    fname_list = PAT.fcPAT.filtNdown.fnameWholeImage(:,c1);
+                case 'regressData'
+                    % GLM regressed data
+                    fname_list = PAT.fcPAT.SPM.fname(:,c1);
+                otherwise
+                    % HbT/SO2 filenames (raw data)
+                    fname_list = PAT.nifti_files(:,c1);
+            end
             % Color names
             colorNames = fieldnames(PAT.color);
             % number of ROIs is 1 if extracting brain mask signal

@@ -10,7 +10,7 @@ spatial_LPF_radius.name     = 'Spatial LPF radius';
 spatial_LPF_radius.tag      = 'spatial_LPF_radius';
 spatial_LPF_radius.strtype  = 'r';
 spatial_LPF_radius.num      = [1 1];
-spatial_LPF_radius.val      = {5};
+spatial_LPF_radius.val      = {10};
 spatial_LPF_radius.help     = {'Enter radius of spatial low pass filter in pixels.'
     'In practice, a radius of 1 gives a weight of 0.4 to the central pixel, of 0.1 to the 4 nearest'
     'and the remainder to the next 8 pixels.'}';

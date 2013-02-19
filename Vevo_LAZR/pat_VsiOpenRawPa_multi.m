@@ -82,6 +82,7 @@ Rawdata = zeros(PaNumSamples, PaNumLines, 1, numel(framesVector));
 fprintf('Reading %d frames from file %s...\n',numel(framesVector)/2, fileName);
 % Initialize progress bar
 spm_progress_bar('Init', nFrames, sprintf('Read 2x%d frames from raw PA-mode\n',numel(framesVector)/2), 'Frames');
+pat_text_waitbar(0, sprintf('Read 2x %d frames from raw PA-mode file %s\n',numel(framesVector)/2), fileName);
 for iFrames = framesVector,
     % Updated by A. Needles Oct 2, 2012 for opening Oxy-Hemo raw file
     if mod(iFrames,2) == 1
@@ -101,14 +102,16 @@ for iFrames = framesVector,
     end
     % Update progress bar
     spm_progress_bar('Set', iFrames);
+    pat_text_waitbar(iFrames/numel(framesVector), sprintf('Processing frame %d from %d', iFrames, numel(framesVector)));
 end
 rawDataSO2 = Rawdata(:,:,1,1:2:end);
 rawDataHbT = Rawdata(:,:,1,2:2:end);
 % Clear progress bar
 spm_progress_bar('Clear');
+pat_text_waitbar('Clear');
 
 %% Close file
 fclose(fid);
-fprintf('%d frames extracted!\n',numel(framesVector)/2);
+fprintf('2x %d frames extracted!\n',numel(framesVector)/2);
 
 % EOF

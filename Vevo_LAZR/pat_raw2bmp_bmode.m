@@ -41,6 +41,7 @@ cd(bmp_dir)
 files = dir(fullfile(bmp_dir,'*.BMP'));
 % Initialize progress bar
 spm_progress_bar('Init', numel(files), sprintf('Conversion to .PNG files\n'), '.BMP files');
+pat_text_waitbar(0, sprintf('Conversion to .PNG files'));
 for iFiles = 1:numel(files)
     % Read .BMP file
     rgb = imread(files(iFiles).name, 'bmp');
@@ -49,14 +50,18 @@ for iFiles = 1:numel(files)
     % Write as .PNG
     imwrite(rgb, fullfile(bmp_dir,[fileName '.png']), 'png');
     % Delete .BMP file
-    delete(files(iFiles).name)
+    % delete(files(iFiles).name)
+    % Undocumented MATLAB feature to delete files with Java
+    java.io.File(files(iFiles).name).delete();
     % Update progress bar
     spm_progress_bar('Set', iFiles);
+    pat_text_waitbar(iFiles/numel(files), sprintf('Processing file %d from %d', iFiles, numel(files)));
 end
 % Return to current path
 cd(currPath)
 % Clear progress bar
 spm_progress_bar('Clear');
+pat_text_waitbar('Clear');
 end
 
 % EOF
