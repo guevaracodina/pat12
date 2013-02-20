@@ -7,13 +7,6 @@ function [PAT PATmat dir_patmat] = pat_get_PATmat(job,scanIdx)
 PAT = [];
 PATmat = job.PATmat{scanIdx};
 [dir_patmat dummy] = fileparts(job.PATmat{scanIdx});
-if isfield(job.PATmatCopyChoice,'PATmatCopy')
-    newDir = job.PATmatCopyChoice.PATmatCopy.NewPATdir;
-    newDir = fullfile(dir_patmat,newDir);
-    if ~exist(newDir,'dir'),mkdir(newDir); end
-    PATmat = fullfile(newDir,'PAT.mat');
-    dir_patmat = newDir;
-end
 try
     load(PATmat);
     display([PATmat ' now loaded']);
@@ -23,5 +16,11 @@ catch
     load(job.PATmat{scanIdx});
     display([PATmat ' not found -- ' job.PATmat{scanIdx} ' now loaded']);
 end
-
+if isfield(job.PATmatCopyChoice,'PATmatCopy')
+    newDir = job.PATmatCopyChoice.PATmatCopy.NewPATdir;
+    newDir = fullfile(dir_patmat,newDir);
+    if ~exist(newDir,'dir'),mkdir(newDir); end
+    PATmat = fullfile(newDir,'PAT.mat');
+    dir_patmat = newDir;
+end
 % EOF

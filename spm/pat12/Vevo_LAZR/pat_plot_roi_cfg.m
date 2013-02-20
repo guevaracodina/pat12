@@ -44,6 +44,7 @@ plotGLM.values              = {false,true};
 plotGLM.val                 = {true};
 plotGLM.help                = {'Plot GLM-regressed signal from the ROIs'}';
 
+% Generate / save figures
 [generate_figures ...
     save_figures]       = pat_generate_figures_cfg;
 
