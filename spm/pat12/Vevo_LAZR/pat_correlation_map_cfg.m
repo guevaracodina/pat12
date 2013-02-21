@@ -36,13 +36,22 @@ pValue.num              = [1 1];                    % Number of inputs required
 pValue.val              = {0.05};                   % Default value
 pValue.help             = {'p-value for testing the hypothesis of no correlation against the alternative that there is a nonzero correlation. If p-value is small, say less than 0.05, then the correlation r is significantly different from zero.'};
 
+% Multiple comparisons correction (Bonferroni)
+bonferroni              = cfg_menu;
+bonferroni.tag          = 'bonferroni';
+bonferroni.name         = 'Bonferroni correction';
+bonferroni.labels       = {'No','Yes'};
+bonferroni.values       = {false, true};
+bonferroni.val          = {true};
+bonferroni.help         = {'Perform Bonferroni correction for multiple comparisons.'}';
+
 % Fisher's z transform
 fisherZ                 = cfg_menu;
 fisherZ.tag             = 'fisherZ';
 fisherZ.name            = 'Fisher''s z transform';
 fisherZ.labels          = {'No', 'Yes'};
-fisherZ.values          = {0, 1};
-fisherZ.val             = {0};                      % Default value
+fisherZ.values          = {false, true};
+fisherZ.val             = {false};                      % Default value
 fisherZ.help            = {'Choose whether to perform a Fisher''s z transform of correlation coefficients. The correlation coefficient need to be transformed to the normal distribution by Fisher''s z transform before performing the random effect t-tests'}';
 
 % Seeds correlation matrix
@@ -50,8 +59,8 @@ seed2seedCorrMat        = cfg_menu;
 seed2seedCorrMat.tag    = 'seed2seedCorrMat';
 seed2seedCorrMat.name   = 'seed2seedCorrMat';
 seed2seedCorrMat.labels = {'No', 'Yes'};
-seed2seedCorrMat.values = {0, 1};
-seed2seedCorrMat.val    = {1};                      % Default value
+seed2seedCorrMat.values = {false, true};
+seed2seedCorrMat.val    = {false};                      % Default value
 seed2seedCorrMat.help   = {'Choose whether to compute a seed-to-seed correlation matrix'}';
 
 % Correlation on 1st derivative
@@ -59,9 +68,18 @@ derivative              = cfg_menu;
 derivative.tag          = 'derivative';
 derivative.name         = '1st derivative';
 derivative.labels       = {'No', 'Yes'};
-derivative.values       = {0, 1};
-derivative.val          = {0};                      % Default value
+derivative.values       = {false, true};
+derivative.val          = {false};                      % Default value
 derivative.help         = {'Choose whether to perform correlation analysis on 1st derivative of seeds/pixels time-course'}';
+
+% Correlation on raw data time course (before filtering, downsampling and GLM regression)
+rawData                 = cfg_menu;
+rawData.tag             = 'rawData';
+rawData.name            = 'raw time course';
+rawData.labels          = {'No', 'Yes'};
+rawData.values          = {false, true};
+rawData.val             = {false};                      % Default value
+rawData.help            = {'Choose whether to perform correlation analysis on seeds raw time course'}';
 
 % Generate / save figures
 [generate_figures ...
@@ -187,7 +205,7 @@ correlation_map1        = cfg_exbranch; % This is the branch that has informatio
 correlation_map1.name   = 'Functional connectivity (fcPAT) map'; % The display name
 correlation_map1.tag    = 'correlation_map1'; %Very important: tag is used when calling for execution
 correlation_map1.val	= { PATmat redo1 PATmatCopyChoice ROI_choice IC pValue...
-                        fisherZ seed2seedCorrMat derivative ...
+                        bonferroni fisherZ seed2seedCorrMat derivative rawData...
                         generate_figures save_figures figSize figRes ...
                         figRange figAlpha figIntensity figCmap drawCircle ...
                         transM};    % The items that belong to this branch. All items must be filled before this branch can run or produce virtual outputs
