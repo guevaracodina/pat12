@@ -233,20 +233,30 @@ if job.generate_figures && job.plotGLM
             % Loop over ROIs/seeds
             for r1 = nROI,
                 if all_ROIs || sum(r1==selected_ROIs)
-                    if isfield(PAT.jobsdone, 'filtNdownOK')
-                        if job.stderror
-                            e = ROIregressSem{r1}{1,c1};
+                    if isfield(PAT.jobsdone, 'filtNdownOK') && isfield(PAT.fcPAT.SPM, 'ROIregressOK')
+                        if r1 <= numel(PAT.fcPAT.SPM.ROIregressOK),
+                            if PAT.fcPAT.SPM.ROIregressOK{r1}{1, c1}
+                                if job.stderror
+                                    e = ROIregressSem{r1}{1,c1};
+                                else
+                                    e = ROIregressStd{r1}{1,c1};
+                                end
+                                % Plot filtered ROIs
+                                hold on
+                                h1 = errorbar(tVec, ROIregress{r1}{1,c1}, e, strcat(job.figColors{r1}, job.figLS{r1}));
+                                % Change linwidth for signal only, not error
+                                hChild = get(h1, 'Children');
+                                set(hChild(1), 'LineWidth', job.figLW);
+                                legendCell = cat(1,legendCell,PAT.ROI.ROIname{r1});
+                            else
+                                fprintf('No regressed data for ROI %d (%s)\n',r1,colorNames{c1+1})
+                            end
                         else
-                            e = ROIregressStd{r1}{1,c1};
+                            fprintf('No regressed data for ROI %d (%s)\n',r1,colorNames{c1+1})
                         end
-                        % Plot filtered ROIs
-                        hold on
-                        h1 = errorbar(tVec, ROIregress{r1}{1,c1}, e, strcat(job.figColors{r1}, job.figLS{r1}));
-                        % Change linwidth for signal only, not error
-                        hChild = get(h1, 'Children');
-                        set(hChild(1), 'LineWidth', job.figLW);
+                    else
+                        fprintf('ROI regression not found (%s)!\n',colorNames{c1+1})
                     end
-                    legendCell = cat(1,legendCell,PAT.ROI.ROIname{r1});
                 end
             end % ROIS loop             
             axis tight;

@@ -33,7 +33,6 @@ for scanIdx=1:length(job.PATmat)
             if ~isfield(PAT.jobsdone,'seriesOK') || ~isfield(PAT.jobsdone,'maskSeriesOK')
                 fprintf('Extracted series not available for (%s) scan %d of %d ... skipping GLM\n', scanName, scanIdx, length(job.PATmat));
             else
-                % NEED TO COMPLETE FILTERING MODULE //EGC
                 if ~isfield(PAT.jobsdone,'filtNdownOK')
                     fprintf('Filtered/downsampled time-courses not available for (%s) scan %d of %d ... skipping GLM\n', scanName, scanIdx, length(job.PATmat));
                 else
