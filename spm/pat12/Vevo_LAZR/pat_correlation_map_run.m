@@ -147,7 +147,7 @@ for scanIdx = 1:length(job.PATmat)
                 PAT.jobsdone.corrOK = true;
                 % Compute seed to seed correlation matrix
                 if job.seed2seedCorrMat
-                    [seed2seedCorrMat seed2seedCorrMatDiff PAT.fcPAT.corr(1).corrMatrixFname PAT.fcPAT.corr(1).corrMatrixDiffFname] = ioi_roi_corr(job, scanIdx);
+                    [seed2seedCorrMat seed2seedCorrMatDiff PAT.fcPAT.corr(1).corrMatrixFname PAT.fcPAT.corr(1).corrMatrixDiffFname] = pat_roi_corr(job, scanIdx);
                     % seed-to-seed correlation succesful!
                     PAT.fcPAT.corr(1).corrMatrixOK = true;
                     % Save seed-to-seed correlation data
@@ -320,6 +320,9 @@ function fcPAT_display_corrMap(PAT, job, scanIdx, r1, s1, c1, dir_corrfig, newNa
     newName = [newName '_masked'];
     dir_corrMapMaskedfig = dir_corrfig;
     oldExt = '.nii';
+    colorNames      = fieldnames(PAT.color);
+    [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
+    scanName = splitStr{end-1};
     %% Mask out non-brain voxels
     if size(brainMask,1)~= size(tempCorrMap,1)|| size(brainMask,2)~= size(tempCorrMap,2)
         brainMask = pat_imresize(brainMask, [size(tempCorrMap,1) size(tempCorrMap,2)]);
@@ -329,6 +332,9 @@ function fcPAT_display_corrMap(PAT, job, scanIdx, r1, s1, c1, dir_corrfig, newNa
         nComparisons = sum(brainMask(:) == true);
         % Make NaN all the transparent or non-significant pixels
         tempCorrMap(~brainMask | (pValuesMap>(job.pValue / nComparisons))) = NaN;
+        percActPix = sum((pValuesMap(brainMask)<(job.pValue / nComparisons))) / sum(brainMask(:));
+        fprintf('%0.2f %% positively correlated pixels. %s (%s) R%02d\n',100*percActPix,...
+            scanName, colorNames{1+c1}, r1);
     else
         % Make NaN all the transparent or non-significant pixels
         tempCorrMap(~brainMask | (pValuesMap>job.pValue)) = NaN;
@@ -439,8 +445,9 @@ slObj.img(2).type = 'truecolour';           % Functional map
 
 slObj.img(1).cmap = gray(256);              % Colormap for anatomy
 slObj.img(2).cmap = job.figCmap;            % Colormap for functional map
-
-% slObj.cbar = [2 3];                         % Plot colorbars for images 2 & 3
+if job.showColorbar
+    slObj.cbar = 2;                         % Plot colorbar for image 2
+end
 slObj.area.valign = 'middle';               % Vertical alignment
 slObj.area.halign = 'center';               % Horizontal alignment
 
