@@ -112,6 +112,15 @@ figRange.num            = [1 2];
 figRange.val{1}         = [-1 1];
 figRange.help           = {'Enter colormap range. For correlation maps default is [-1 1]'};
 
+% Show Colorbar
+showColorbar            = cfg_menu;
+showColorbar.tag        = 'showColorbar';
+showColorbar.name       = 'Show Colorbar';
+showColorbar.labels     = {'No', 'Yes'};
+showColorbar.values     = {false, true};
+showColorbar.val        = {false};                      % Default value
+showColorbar.help       = {'Show colorbar'}';
+
 % Alpha transparency values
 figAlpha                = cfg_entry;
 figAlpha.tag            = 'figAlpha';
@@ -127,7 +136,7 @@ figIntensity.tag        = 'figIntensity';
 figIntensity.name       = 'Intensity';
 figIntensity.strtype    = 'r';
 figIntensity.num        = [1 1];
-figIntensity.val{1}     = 1;
+figIntensity.val{1}     = 0.5;
 figIntensity.help       = {'Enter background (anatomical) intensity, between 0 and 1'};
 
 % Colormap to use
@@ -207,7 +216,7 @@ correlation_map1.tag    = 'correlation_map1'; %Very important: tag is used when 
 correlation_map1.val	= { PATmat redo1 PATmatCopyChoice ROI_choice IC pValue...
                         bonferroni fisherZ seed2seedCorrMat derivative rawData...
                         generate_figures save_figures figSize figRes ...
-                        figRange figAlpha figIntensity figCmap drawCircle ...
+                        figRange showColorbar figAlpha figIntensity figCmap drawCircle ...
                         transM};    % The items that belong to this branch. All items must be filled before this branch can run or produce virtual outputs
 correlation_map1.prog	= @pat_correlation_map_run; % A function handle that will be called with the harvested job to run the computation
 correlation_map1.vout	= @pat_cfg_vout_correlation_map; % A function handle that will be called with the harvested job to determine virtual outputs
