@@ -4,11 +4,11 @@ function [nifti_filename affine_mat_filename param] = pat_raw2nifti_bmode(fileNa
 % SYNTAX
 % [nifti_filename affine_mat_filename] = pat_raw2nifti_bmode(fileName, output_dir)
 % INPUTS
-% fileName          Full file name to open (with extension .bmode)
-% output_dir        Directory where the NIfTI files will be saved
+% fileName              Full file name to open (with extension .bmode)
+% output_dir            Directory where the NIfTI files will be saved
 % OUTPUTS
-% nifti_filename        Cell with HbT and SO2 filenames
-% affine_mat_filename   Cell with HbT and SO2 affine matrices filenames
+% nifti_filename        Cell with B-mode filename
+% affine_mat_filename   Cell with B-mode affine matrices filenames
 % param                 
 %_______________________________________________________________________________
 % Copyright (C) 2011 LIOM Laboratoire d'Imagerie Optique et Moléculaire
