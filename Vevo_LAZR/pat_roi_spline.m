@@ -20,6 +20,8 @@ function mask = pat_roi_spline(I, kind, tension, titleText)
 %                    École Polytechnique de Montréal
 %_______________________________________________________________________________
 
+USE_CONTRAST = false;
+
 if nargin<2 || isempty(kind)
     % Default value for spline type
     kind = 'natural';
@@ -33,7 +35,11 @@ if nargin < 4,
 end
 
 siz=size(I);
-cmap = contrast(I);
+if USE_CONTRAST
+    cmap = contrast(I);
+else
+    cmap = gray(256);
+end
 imagesc(I); colormap(cmap);
 axis image
 title(titleText,'FontSize',13)
