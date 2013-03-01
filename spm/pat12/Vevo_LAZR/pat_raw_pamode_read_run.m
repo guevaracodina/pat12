@@ -28,10 +28,12 @@ try
         filesdir = job.input_dir{scanIdx};
         % Extract only raw.pamode files
         files = dir(fullfile(filesdir,'*.raw.pamode'));
-        dirlen = size(job.input_data_topdir{1},2);
+        % dirlen = size(job.input_data_topdir{1},2);
+        % Find backslashes
+        filesepIdx = regexp(job.input_dir{scanIdx},['\' filesep]);
         [pathstr, ~] = fileparts(filesdir);
         % Current output dir
-        PAT.output_dir = fullfile(job.output_dir{1},pathstr(dirlen+1:end));
+        PAT.output_dir = fullfile(job.output_dir{1},pathstr(filesepIdx(end-1)+1:end));
         if ~exist(PAT.output_dir,'dir'),mkdir(PAT.output_dir); end
         % current PAT structure
         PATmat = fullfile(PAT.output_dir,'PAT.mat');
@@ -63,7 +65,7 @@ try
         end % files loop
         % Create anatomical file from HbT data 
         % (it should be done from B-mode data, but coregistration is challenging)
-        PAT = local_create_anatomical_file(PAT);
+        % PAT = local_create_anatomical_file(PAT);
         % raw.pamode extraction done!
         PAT.jobsdone(1).extract_rawPAmode = true;
         save(PATmat,'PAT');
@@ -77,18 +79,5 @@ catch exception
     out.PATmat{scanIdx} = PATmat;
 end % End Try
 end % End function
-
-function PAT = local_create_anatomical_file(PAT)
-% Local function to extract the first frame of the image
-vol = spm_vol(PAT.nifti_files{1,1});
-im_anat = spm_read_vols(vol);
-% Quick dirty way to have only the 1st image
-im_anat = squeeze(im_anat(:,:,1,1));
-% Create filename according the existing nomenclature at scan level
-PAT.res.file_anat = fullfile(PAT.output_dir, 'anatomical.nii');
-% Create and write a NIFTI file in the scan folder
-pat_create_vol(PAT.res.file_anat, vol(1).dim, vol(1).dt,...
-    vol(1).pinfo, vol(1).mat, 1, im_anat);
-end
 
 % EOF
