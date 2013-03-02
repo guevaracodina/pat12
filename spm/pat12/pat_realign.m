@@ -1,6 +1,6 @@
 function P = pat_realign(P,flags)
 % Estimation of within modality rigid body movement parameters
-% FORMAT P = spm_realign(P,flags)
+% FORMAT P = pat_realign(P,flags)
 %
 % P     - matrix of filenames {one string per row}
 %         All operations are performed relative to the first image.
@@ -80,7 +80,7 @@ function P = pat_realign(P,flags)
 % Copyright (C) 2008 Wellcome Trust Centre for Neuroimaging
 
 % John Ashburner
-% $Id: spm_realign.m 4152 2011-01-11 14:13:35Z volkmar $
+% $Id: pat_realign.m 4152 2011-01-11 14:13:35Z volkmar $
 
 
 if nargin==0, return; end;
@@ -259,6 +259,7 @@ if flags.rtm,
     grad3 = dG3;
 end;
 
+pat_text_waitbar(0, 'Registering Images...');
 spm_progress_bar('Init',length(P)-1,'Registering Images');
 % Loop over images
 %-----------------------------------------------------------------------
@@ -313,8 +314,10 @@ for i=2:length(P),
         grad2(msk) = grad2(msk) + dG2*sc;
         grad3(msk) = grad3(msk) + dG3*sc;
     end;
+    pat_text_waitbar((i-1)/(length(P)-1), sprintf('Registering image %d from %d', i-1, length(P)-1));
     spm_progress_bar('Set',i-1);
 end;
+pat_text_waitbar('Clear');
 spm_progress_bar('Clear');
 
 if ~flags.rtm, return; end;
@@ -328,6 +331,7 @@ clear ave grad1 grad2 grad3
 
 % Loop over images
 %-----------------------------------------------------------------------
+pat_text_waitbar(0, 'Registering Images to Mean...');
 spm_progress_bar('Init',length(P),'Registering Images to Mean');
 for i=1:length(P),
     V  = smooth_vol(P(i),flags.interp,flags.wrap,flags.fwhm);
@@ -367,8 +371,10 @@ for i=1:length(P),
             countdown = countdown -1;
         end;
     end;
+    pat_text_waitbar(i/length(P), sprintf('Registering image %d from %d to mean', i, length(P)));
     spm_progress_bar('Set',i);
 end;
+pat_text_waitbar('Clear');
 spm_progress_bar('Clear');
 
 

@@ -32,15 +32,6 @@ for scanIdx = 1:length(job.PATmat)
         if ~isfield(PAT, 'jobsdone')
             PAT.jobsdone = struct([]);
         end
-        if ~isfield(PAT, 'fcPAT')
-            % Create fcPAT field to contain the whole structure of fcPAT utilities
-            PAT.fcPAT = struct([]);
-            PAT.fcPAT(1).mask = struct([]);
-            PAT.fcPAT(1).LPF  = struct([]);
-            PAT.fcPAT(1).filtNdown = struct([]);
-            PAT.fcPAT(1).SPM = struct([]);
-            PAT.fcPAT(1).corr = struct([]);
-        end
         if ~isfield(PAT.jobsdone,'maskOK') || job.force_redo
             % Read anatomical NIFTI file
             vol = spm_vol(PAT.res.file_anat);
