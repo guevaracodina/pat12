@@ -1,6 +1,6 @@
-function spm_reslice(P,flags)
+function rVO = pat_reslice(P,flags)
 % Rigid body reslicing of images
-% FORMAT spm_reslice(P,flags)
+% FORMAT rVO = pat_reslice(P,flags)
 %
 % P      - matrix or cell array of filenames {one string per row}
 %          All operations are performed relative to the first image.
@@ -59,7 +59,7 @@ function spm_reslice(P,flags)
 % Copyright (C) 2008 Wellcome Trust Centre for Neuroimaging
 
 % John Ashburner
-% $Id: spm_reslice.m 4179 2011-01-28 13:57:20Z volkmar $
+% $Id: pat_reslice.m 4179 2011-01-28 13:57:20Z volkmar $
 
 %__________________________________________________________________________
 %
@@ -119,11 +119,11 @@ end
 if ~nargin || isempty(P), P = spm_select([2 Inf],'image'); end
 if iscellstr(P), P = char(P);    end;
 if ischar(P),    P = spm_vol(P); end;
-reslice_images(P,flags);
+rVO = reslice_images(P,flags);
 
 
 %==========================================================================
-function reslice_images(P,flags)
+function rVO = reslice_images(P,flags)
 % Reslices images volume by volume
 % FORMAT reslice_images(P,flags)
 % See main function for a description of the input parameters
@@ -145,6 +145,7 @@ if ~isfinite(flags.interp), % Use Fourier method
 end
 
 if flags.mask || flags.mean
+    pat_text_waitbar(0, 'Computing available voxels...');
     spm_progress_bar('Init',P(1).dim(3),'Computing available voxels','planes completed');
     x1    = repmat((1:P(1).dim(1))',1,P(1).dim(2));
     x2    = repmat( 1:P(1).dim(2)  ,P(1).dim(1),1);
@@ -160,8 +161,10 @@ if flags.mask || flags.mean
         end
         if flags.mask, msk{x3} = find(tmp ~= numel(P)); end;
         if flags.mean, Count(:,:,x3) = tmp; end;
+        pat_text_waitbar(x3/P(1).dim(3), sprintf('Processing plane %d from %d', x3, P(1).dim(3)));
         spm_progress_bar('Set',x3);
     end
+    pat_text_waitbar('Clear');
 end
 
 nread = numel(P);
@@ -169,12 +172,13 @@ if ~flags.mean
     if flags.which == 1, nread = nread - 1; end;
     if flags.which == 0, nread = 0; end;
 end
+pat_text_waitbar(0, 'Reslicing...');
 spm_progress_bar('Init',nread,'Reslicing','volumes completed');
 
 [x1,x2] = ndgrid(1:P(1).dim(1),1:P(1).dim(2));
 nread   = 0;
 d       = [flags.interp*[1 1 1]' flags.wrap(:)];
-
+rVO = P;
 for i = 1:numel(P)
 
     if (i>1 && flags.which==1) || flags.which==2
@@ -227,13 +231,15 @@ for i = 1:numel(P)
             VO.pinfo   = P(i).pinfo;
             VO.mat     = P(1).mat;
             VO.descrip = 'spm - realigned';
-            VO = spm_write_vol(VO,v);
+            VO         = spm_write_vol(VO,v);
+            rVO(i)     = VO;
         end
-
         nread = nread + 1;
     end
+    pat_text_waitbar(nread/numel(P), sprintf('Reslicing image %d from %d', nread, numel(P)));
     spm_progress_bar('Set',nread);
 end
+pat_text_waitbar('Clear');
 
 if flags.mean
     % Write integral image (16 bit signed)

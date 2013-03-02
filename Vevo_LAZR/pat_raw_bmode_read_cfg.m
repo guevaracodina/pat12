@@ -11,7 +11,7 @@ function extract_rawB1 = pat_raw_bmode_read_cfg
 PATmat                  = pat_PATmat_cfg(1);
 % Force re-do
 redo1                   = pat_redo_cfg(false);
-% IOI copy/overwrite method
+% PAT copy/overwrite method
 PATmatCopyChoice        = pat_PATmatCopyChoice_cfg('Bmode');
 
 % Extract .BMP
