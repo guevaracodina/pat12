@@ -2,12 +2,30 @@ function [PAT ROI varargout] = pat_extract_core(PAT, job, mask, Amask, varargin)
 % ROI time course extraction over colors and files. Calls pat_extract_main
 % Optional computation of standard deviation and standard error of mean 
 % [ROIstd ROIsem].
+% SYNTAX:
+% [PAT ROI ROIstd ROIsem] = pat_extract_core(PAT, job, mask, Amask,dataType, ROIstd, ROIsem)
+% INPUTS:
+% PAT       Matrix with the PAT structure
+% job       Matlab batch job structure
+% mask      ROI/seed binary mask
+% Amask     Activation mask
+% [dataType]
+%           'rawData'       - Default: extract ROIs/seeds raw data
+%           'filtData'      - extract ROIs/seeds temporally BPF data
+%           'regressData'   - extract ROIs/seeds GLM-regressed data
+% [ROIstd]  Cell with ROIs/seeds standard deviation
+% [ROIsem]  Cell with ROIs/seeds standard error of the mean
+% OUTPUTS:
+% PAT       Matrix with the PAT structure
+% ROI       Cell with ROIs/seeds time traces
+% [ROIstd]  Cell with ROIs/seeds standard deviation
+% [ROIsem]  Cell with ROIs/seeds standard error of the mean
 %_______________________________________________________________________________
 % Copyright (C) 2012 LIOM Laboratoire d'Imagerie Optique et Moléculaire
 %                    École Polytechnique de Montréal
 %_______________________________________________________________________________
 
-% only want 2 optional input at most
+% only want 3 optional input at most
 numVarArgs = length(varargin);
 if numVarArgs > 3
     error('pat_extract_core:TooManyInputs', ...

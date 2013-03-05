@@ -1,5 +1,6 @@
 function [PAT PATmat dir_patmat] = pat_get_PATmat(job,scanIdx)
-% Reads PAT matrix info
+% Loads PAT matrix, optionally creating a new folder to store the current
+% analysis
 %_______________________________________________________________________________
 % Copyright (C) 2012 LIOM Laboratoire d'Imagerie Optique et Moleculaire
 %                    Ecole Polytechnique de Montreal
