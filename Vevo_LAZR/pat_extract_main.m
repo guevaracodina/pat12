@@ -8,7 +8,6 @@ function [PAT ROI varargout] = pat_extract_main(PAT,ROI,job,d,d3,d4,c1,s1,colorO
 %                    École Polytechnique de Montréal
 %_______________________________________________________________________________
 
-
 % only want 2 optional input at most
 numVarArgs = length(varargin);
 if numVarArgs > 2
@@ -24,9 +23,9 @@ newVals = cellfun(@(x) ~isempty(x), varargin);
 optArgs(newVals) = varargin(newVals);
 % Place optional args in memorable variable names
 [ROIstd ROIsem] = optArgs{:};
+
 % Color names
 colorNames = fieldnames(PAT.color);
-
 [all_ROIs selected_ROIs] = pat_get_rois(job);
 msg_ColorNotOK = true;
 nROI = 1:length(PAT.res.ROI); % All the ROIs

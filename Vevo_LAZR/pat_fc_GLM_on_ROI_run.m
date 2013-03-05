@@ -243,7 +243,7 @@ for scanIdx=1:length(job.PATmat)
                                 end
                             end
                         end % colors loop
-                        
+                        %%
                         % ------------------------------------------------------
                         % If ROI regression failed, then get ROI time course
                         % from the whole image regressed series.
@@ -283,7 +283,7 @@ for scanIdx=1:length(job.PATmat)
                         end % colors loop
                         % ------------------------------------------------------
                         
-                        % GLM regression succesful!
+                        %% GLM regression succesful!
                         PAT.jobsdone(1).GLMOK = true;
                         if isfield(job.regressor_choice,'regressBrainSignal'),
                             save(fnameROIregress,'ROIregress', 'ROIregressStd', 'ROIregressSem');
