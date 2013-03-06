@@ -34,7 +34,7 @@ proc.help   = {'All functions used for data per-se processing are collected in t
 postproc        = cfg_repeat; % A repeat collects a variable number of items from its .values field in its .val field
 postproc.name   = 'Post-Processing';
 postproc.tag    = 'postproc';
-postproc.values = {pat_ica_figures_cfg}; % Config files for all preprocessing modules
+postproc.values = {pat_ica_figures_cfg pat_send_email_cfg}; % Config files for all preprocessing modules
 postproc.forcestruct = true; % There is a speciality in cfg_repeat harvest behaviour that makes a difference depending on the number of elements in values. forcestruct == true forces the repeat to behave as if there are more than one distinct values, even if there is only one.
 postproc.help   = {'All functions used to generate images and results'};
 
