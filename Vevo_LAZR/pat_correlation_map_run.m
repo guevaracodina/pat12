@@ -413,7 +413,10 @@ imagesOverlay{2,1}  = positiveMap;          % Pos. correlation
 
 % Handle of current figure;
 h = figure(999);
+% Change background to black
 set(h,'color','k')
+% Allow printing of black background
+set(h, 'InvertHardcopy', 'off');
 
 % Get range
 mapRange        = {job.figRange};
