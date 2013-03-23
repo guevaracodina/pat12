@@ -188,7 +188,6 @@ for scanIdx=1:length(job.PATmat)
                         end
                         axis image;
                         
-                        
                         if graphicalROI
                             % Specify polygonal region of interest (ROI)
                             title('Make ROI polygon, then double click in it to create ROI.');
