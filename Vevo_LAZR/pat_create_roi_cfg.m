@@ -74,7 +74,7 @@ ManualROIradius         = cfg_entry;
 ManualROIradius.name    = 'Radius size of ROIs/seeds';
 ManualROIradius.tag     = 'ManualROIradius';       
 ManualROIradius.strtype = 'r';
-ManualROIradius.val{1}  = 7;                    % Default value
+ManualROIradius.val{1}  = 5;                    % Default value
 ManualROIradius.num     = [1 1];     
 ManualROIradius.help    = {'Enter radius of the ROIs/seeds in pixels.'}'; 
 
@@ -144,7 +144,7 @@ useGrayContrast.help    = {'Use gray contrast.'}';
 % Choose whether interface should ask whether to use a previously saved list of ROI
 SelectPreviousROI       = cfg_menu;
 SelectPreviousROI.tag   = 'SelectPreviousROI';
-SelectPreviousROI.name  = 'Select whether interface should ask for a possible previous list of ROIs';
+SelectPreviousROI.name  = 'Ask for a previous list of ROIs';
 SelectPreviousROI.labels= {'No','Yes'};
 SelectPreviousROI.values= {0,1};
 SelectPreviousROI.val   = {0};
