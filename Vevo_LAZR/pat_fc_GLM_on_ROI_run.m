@@ -158,10 +158,8 @@ for scanIdx=1:length(job.PATmat)
                                             % --------------------------
                                             fnameNIFTI = fullfile(ROIdir,['ROI' sprintf('%02d',r1) '_C' num2str(c1),'.nii']);
                                             dim = [1 1 1];
-                                            % Create a single voxel 4-D
-                                            % series
+                                            % Create a single voxel 4-D series
                                             y2(1,1,1,:) = y;
-                                            % ioi_save_nifti(y2, fnameNIFTI, dim);
                                             % Create volume header structure
                                             volROI = SPM.xY.VY;
                                             for iPlanes = 1:numel(volROI)
@@ -259,6 +257,8 @@ for scanIdx=1:length(job.PATmat)
                         % Extract ROI from regressed whole image series.
                         [PAT ROIregressTmp ROIregressStd ROIregressSem] = ...
                             pat_extract_core(PAT,job,mask,Amask,'regressData');
+                        % Color names
+                        colorNames = fieldnames(PAT.color);
                         % Loop over available colors
                         for c1 = 1:length(PAT.nifti_files)
                             doColor = pat_doColor(PAT,c1,IC);
@@ -275,6 +275,7 @@ for scanIdx=1:length(job.PATmat)
                                                 ROIregress{r1}{s1, c1} =  ROIregressTmp{r1}{s1, c1};
                                                 % Brain signal regression succesful!
                                                 PAT.fcPAT.SPM(1).ROIregressOK{r1}{s1, c1} = true;
+                                                fprintf('GLM on ROI %d (%s) not succesful. Extracting ROI time course from regressed whole image.\n',r1,colorNames{1+c1});
                                             end
                                         end
                                     end % ROI loop
