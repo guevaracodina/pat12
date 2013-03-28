@@ -85,10 +85,7 @@ for scanIdx=1:length(job.PATmat)
             end
             [dir1 fil1] = fileparts(vol_anat.fname);
             im_anat = spm_read_vols(vol_anat);
-            % Gray-scale colormap to enhance contrast
-            if useGrayContrast
-                cmap = contrast(im_anat);
-            end
+
             
             spm_figure('GetWin', 'Graphics');
             spm_figure('Clear', 'Graphics');
@@ -112,7 +109,8 @@ for scanIdx=1:length(job.PATmat)
                 % Goto interactive window
                 h2 = spm_figure('GetWin', 'Interactive');
                 [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
-                spm_input(['Subject ' int2str(scanIdx) ' ' splitStr{end-1}],'-1','d');
+                % Ypos = 1, always first line
+                spm_input(['Subject ' int2str(scanIdx) ' ' splitStr{end-1}], 1, 'd');
                 SelPrevROI = spm_input('Select a previous list of ROIs?','+1','y/n');
                 if SelPrevROI == 'y'
                     [tPrevROI stsPrevROI] = spm_select(1,'mat','Select PAT.mat structure containing information on desired ROIs','',dir_patmat,'PAT.mat',1);
@@ -166,9 +164,9 @@ for scanIdx=1:length(job.PATmat)
                 % Goto interactive window
                 h2 = spm_figure('GetWin', 'Interactive');
                 [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
-                spm_input(['Subject ' int2str(scanIdx) ' ' splitStr{end-1}],'-1','d');
+                % Ypos = 1, always first line
+                spm_input(['Subject ' int2str(scanIdx) ' ' splitStr{end-1}], 1, 'd');
                 linecount = 0;
-                
                 while oneMoreROI
                     figure(h2);
                     oneMoreROI = spm_input('Add an ROI?',2*linecount+2,'y/n');
@@ -181,13 +179,14 @@ for scanIdx=1:length(job.PATmat)
                         spm_figure('GetWin', 'Graphics');
                         spm_figure('Clear', 'Graphics');
                         imagesc(im_anat .* full_mask, [minVal, maxVal]);
+                                    % Gray-scale colormap to enhance contrast
                         if useGrayContrast
+                            cmap = contrast(im_anat);
                             colormap(cmap);
                         else
                             colormap(gray);
                         end
                         axis image;
-                        
                         if graphicalROI
                             % Specify polygonal region of interest (ROI)
                             title('Make ROI polygon, then double click in it to create ROI.');
