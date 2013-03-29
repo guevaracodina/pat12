@@ -1,65 +1,69 @@
-function out = pat_extract_raw_run(job)
-addpath(['.',filesep,'Vevo_LAZR/'])
-%_______________________________________________________________________
+function out = pat_extract_bmode_run(job)
+% Batch function to import *.raw/iq.bmode files into NIfTI files.
+%_______________________________________________________________________________
 % Copyright (C) 2011 LIOM Laboratoire d'Imagerie Optique et Moléculaire
 %                    École Polytechnique de Montréal
-%______________________________________________________________________
-PATmat=job.PATmat;
-% Loop over acquisitions
+%_______________________________________________________________________________
 
-for scanIdx=1:size(PATmat,1)
-    try
-        load(PATmat{scanIdx});
-        % Only take b-mode images associated with PAT nifti files
-        PAT.bmode_nifti_files=cell(1,length(PAT.nifti_files));
-        for fileIdx=1:length(PAT.nifti_files)
-            [d,f,e]=fileparts(PAT.nifti_files{fileIdx});
-            files{fileIdx}=[f,'.iq.bmode'];            
-        end
+addpath(['.',filesep,'Vevo_LAZR/'])
 
-        for fileIdx=1:length(PAT.nifti_files)
-            % Beamform image and save as Nifti in results dir
-            stripped_filename=files{fileIdx}(1:end-6);
-            [bmode_img, pixel_width, pixel_height, depth_offset]=bmode_reconstruct_rf(fullfile(PAT.input_dir,stripped_filename));
-            
-            nifti_filename=fullfile(PAT.output_dir,[stripped_filename,'.bmode.nii']);
-            dim = [size(bmode_img,1), size(bmode_img,2), 1];
-            dt = [spm_type('float64') spm_platform('bigend')];
-            pinfo = ones(3,1);
-            % Affine transformation matrix: Scaling
-            matScaling = eye(4);
-            matScaling(1,1) = pixel_height;
-            matScaling(2,2) = pixel_width;
-            % Affine transformation matrix: Rotation
-            matRotation = eye(4);
-            matRotation(1,1) = 0;
-            matRotation(1,2) = 1;
-            matRotation(2,1) = -1;
-            matRotation(2,2) = 0;
-            % Affine transformation matrix: Translation
-            matTranslation = eye(4);
-            matTranslation(1,4) = depth_offset;
-            % Final Affine transformation matrix:
-            mat = matRotation * matTranslation * matScaling ;
-            % Save all frames temporally to use lambda as time
-            for istack=1:size(bmode_img,3)
-                hdr = pat_create_vol(nifti_filename, dim, dt, pinfo, mat,istack,squeeze(bmode_img));
+if pat_isVEVOraw(job)
+    % Runs *.raw.pamode module
+    out = pat_raw_bmode_read_run(job);
+else
+    % Runs *.iq.pamode module
+    PATmat=job.PATmat;
+    % Loop over acquisitions
+    for scanIdx=1:size(PATmat,1)
+        try
+            load(PATmat{scanIdx});
+            % Only take b-mode images associated with PAT nifti files
+            PAT.bmode_nifti_files=cell(1,length(PAT.nifti_files));
+            for fileIdx=1:length(PAT.nifti_files)
+                [d,f,e]=fileparts(PAT.nifti_files{fileIdx});
+                files{fileIdx}=[f,'.iq.bmode'];
             end
-            PAT.bmode_nifti_files{fileIdx}=nifti_filename;
+            
+            for fileIdx=1:length(PAT.nifti_files)
+                % Beamform image and save as Nifti in results dir
+                stripped_filename=files{fileIdx}(1:end-6);
+                [bmode_img, pixel_width, pixel_height, depth_offset]=bmode_reconstruct_rf(fullfile(PAT.input_dir,stripped_filename));
+                
+                nifti_filename=fullfile(PAT.output_dir,[stripped_filename,'.bmode.nii']);
+                dim = [size(bmode_img,1), size(bmode_img,2), 1];
+                dt = [spm_type('float64') spm_platform('bigend')];
+                pinfo = ones(3,1);
+                % Affine transformation matrix: Scaling
+                matScaling = eye(4);
+                matScaling(1,1) = pixel_height;
+                matScaling(2,2) = pixel_width;
+                % Affine transformation matrix: Rotation
+                matRotation = eye(4);
+                matRotation(1,1) = 0;
+                matRotation(1,2) = 1;
+                matRotation(2,1) = -1;
+                matRotation(2,2) = 0;
+                % Affine transformation matrix: Translation
+                matTranslation = eye(4);
+                matTranslation(1,4) = depth_offset;
+                % Final Affine transformation matrix:
+                mat = matRotation * matTranslation * matScaling ;
+                % Save all frames temporally to use lambda as time
+                for istack=1:size(bmode_img,3)
+                    hdr = pat_create_vol(nifti_filename, dim, dt, pinfo, mat,istack,squeeze(bmode_img));
+                end
+                PAT.bmode_nifti_files{fileIdx}=nifti_filename;
+            end
+            PAT.jobsdone.extract_bmode=1;
+            save(PATmat{scanIdx},'PAT');
+            out.PATmat{scanIdx} = PATmat{scanIdx};
+        catch exception
+            disp(exception.identifier)
+            disp(exception.stack(1))
+            out.PATmat{scanIdx} = PATmat{scanIdx};
         end
-        
-        
-        PAT.jobsdone.extract_bmode=1;
-        save(PATmat{scanIdx},'PAT');
-        out.PATmat{scanIdx} = PATmat{scanIdx};
-    catch exception
-        disp(exception.identifier)
-        disp(exception.stack(1))
-        out.PATmat{scanIdx} = PATmat{scanIdx};
     end
 end
-
-
 end
 
 function [bmode_img, pixel_width, pixel_height, BmodeDepthOffset] = bmode_reconstruct_rf(fnameBase)
@@ -174,3 +178,5 @@ for i=1:Nlines
 end
 fclose(fid);
 end
+
+% EOF

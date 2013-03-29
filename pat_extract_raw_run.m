@@ -1,101 +1,123 @@
 function out = pat_extract_raw_run(job)
-addpath(['.',filesep,'Vevo_LAZR/'])
-%_______________________________________________________________________
-% Copyright (C) 2011 LIOM Laboratoire d'Imagerie Optique et Moléculaire
+% Batch function to import *.raw/iq.pamode files into NIfTI files.
+%_______________________________________________________________________________
+% Copyright (C) 2012 LIOM Laboratoire d'Imagerie Optique et Moléculaire
 %                    École Polytechnique de Montréal
-%______________________________________________________________________
-try
-    for scanIdx=1:length(job.input_dir)
-        
-        % Set save structure and associated directory
-        clear PAT
-        PAT.input_dir=job.input_dir{scanIdx}
-        filesdir=job.input_dir{scanIdx};
-        files=dir(fullfile(filesdir,'*.iq.pamode'));
-        
-        dirlen=size(job.input_data_topdir{1},2);
-        [pathstr, temp]=fileparts(filesdir);
-        PAT.output_dir=fullfile(job.output_dir{1},pathstr(dirlen+1:end));
-        if ~exist(PAT.output_dir,'dir'),mkdir(PAT.output_dir); end
-        PATmat = fullfile(PAT.output_dir,'PAT.mat');
-        % 
-        PAT.nifti_files=cell(1,length(files));
-        for fileIdx=1:length(files)
-            % Beamform image and save as Nifti in results dir
-            stripped_filename=files(fileIdx).name(1:end-10);
-            [tmp, PAT.pixel_width, PAT.pixel_height, PAT.depth_offset]=beamform(fullfile(PAT.input_dir,files(fileIdx).name));
-            % Data is filled with zeros, find where they are
-            start_index =1;
-            end_index=size(tmp,1);
-            left_index=1;
-            right_index=size(tmp,2);
-            for itop=1:size(tmp,1)
-                if( sum(tmp(itop,:,1)) > 0)
-                    start_index=itop;
-                    break;
-                end
-            end
-            for ibot=size(tmp,1):-1:1
-                if( sum(tmp(ibot,:,1)) > 0)
-                    end_index=ibot;
-                    break;
-                end
-            end
-            for ileft=1:size(tmp,2)
-                if( sum(tmp(:,ileft,1),1) > 0)
-                    left_index=ileft;
-                    break;
-                end
-                        end
-            for iright=size(tmp,2):-1:1
-                if( sum(tmp(:,iright,1),1) > 0)
-                    right_index=iright;
-                    break;
-                end
-            end
-            % Reset the offsets with this new definition for the PAT images
-            PAT.depth_offset = PAT.depth_offset + (itop-1)*PAT.pixel_height;
-            PAT.left_offset = (ileft-1)*PAT.pixel_width;
+%_______________________________________________________________________________
+
+addpath(['.',filesep,'Vevo_LAZR/'])
+
+if pat_isVEVOraw(job)
+    % Runs *.raw.pamode module
+    out = pat_raw_pamode_read_run(job);
+else
+    % Runs *.iq.pamode module
+    try
+        for scanIdx=1:length(job.input_dir)
             
-            tmp=log(abs(tmp(start_index:end_index,left_index:right_index,:)));
+            % Set save structure and associated directory
+            clear PAT
+            PAT.input_dir=job.input_dir{scanIdx};
+            filesdir=job.input_dir{scanIdx};
+            files=dir(fullfile(filesdir,'*.iq.pamode'));
             
-            nifti_filename=fullfile(PAT.output_dir,[stripped_filename,'.nii']);
-            dim = [size(tmp,1), size(tmp,2), 1];
-            dt = [spm_type('float64') spm_platform('bigend')];
-            pinfo = ones(3,1);
-            % Affine transformation matrix: Scaling
-            matScaling = eye(4);
-            matScaling(2,2) = PAT.pixel_width;
-            matScaling(1,1) = PAT.pixel_height;
-            % Affine transformation matrix: Rotation
-            matRotation = eye(4);
-            matRotation(1,1) = 0;
-            matRotation(1,2) = 1;
-            matRotation(2,1) = -1;
-            matRotation(2,2) = 0;
-            % Affine transformation matrix: Translation
-            matTranslation = eye(4);
-            matTranslation(1,4) = PAT.depth_offset;
-            matTranslation(2,4) = PAT.left_offset;
-            % Final Affine transformation matrix: 
-            mat =  matRotation * matTranslation * matScaling;
-            % Save all frames temporally to use lambda as time
-            for istack=1:size(tmp,3)
-                hdr = pat_create_vol(nifti_filename, dim, dt, pinfo, mat,istack,squeeze(tmp(:,:,istack)));
+            % Following 3 lines are commented out: asking user to provide
+            % input_data_topdir is unnecessary, because we can find the parent dir
+            % of the input folder.
+            % dirlen=size(job.input_data_topdir{1},2);
+            % [pathstr, temp]=fileparts(filesdir);
+            % PAT.output_dir=fullfile(job.output_dir{1},pathstr(dirlen+1:end));
+            
+            % //EGC 2013/03/28
+            % Find backslashes
+            filesepIdx = regexp(job.input_dir{scanIdx},['\' filesep]);
+            % Get path
+            [pathstr, ~] = fileparts(filesdir);
+            % Current output dir
+            PAT.output_dir = fullfile(job.output_dir{1},pathstr(filesepIdx(end-1)+1:end));
+            % //EGC 2013/03/28
+            
+            if ~exist(PAT.output_dir,'dir'),mkdir(PAT.output_dir); end
+            PATmat = fullfile(PAT.output_dir,'PAT.mat');
+            %
+            PAT.nifti_files=cell(1,length(files));
+            for fileIdx=1:length(files)
+                % Beamform image and save as Nifti in results dir
+                stripped_filename=files(fileIdx).name(1:end-10);
+                [tmp, PAT.pixel_width, PAT.pixel_height, PAT.depth_offset]=beamform(fullfile(PAT.input_dir,files(fileIdx).name));
+                % Data is filled with zeros, find where they are
+                start_index =1;
+                end_index=size(tmp,1);
+                left_index=1;
+                right_index=size(tmp,2);
+                for itop=1:size(tmp,1)
+                    if( sum(tmp(itop,:,1)) > 0)
+                        start_index=itop;
+                        break;
+                    end
+                end
+                for ibot=size(tmp,1):-1:1
+                    if( sum(tmp(ibot,:,1)) > 0)
+                        end_index=ibot;
+                        break;
+                    end
+                end
+                for ileft=1:size(tmp,2)
+                    if( sum(tmp(:,ileft,1),1) > 0)
+                        left_index=ileft;
+                        break;
+                    end
+                end
+                for iright=size(tmp,2):-1:1
+                    if( sum(tmp(:,iright,1),1) > 0)
+                        right_index=iright;
+                        break;
+                    end
+                end
+                % Reset the offsets with this new definition for the PAT images
+                PAT.depth_offset = PAT.depth_offset + (itop-1)*PAT.pixel_height;
+                PAT.left_offset = (ileft-1)*PAT.pixel_width;
+                
+                tmp=log(abs(tmp(start_index:end_index,left_index:right_index,:)));
+                
+                nifti_filename=fullfile(PAT.output_dir,[stripped_filename,'.nii']);
+                dim = [size(tmp,1), size(tmp,2), 1];
+                dt = [spm_type('float64') spm_platform('bigend')];
+                pinfo = ones(3,1);
+                % Affine transformation matrix: Scaling
+                matScaling = eye(4);
+                matScaling(2,2) = PAT.pixel_width;
+                matScaling(1,1) = PAT.pixel_height;
+                % Affine transformation matrix: Rotation
+                matRotation = eye(4);
+                matRotation(1,1) = 0;
+                matRotation(1,2) = 1;
+                matRotation(2,1) = -1;
+                matRotation(2,2) = 0;
+                % Affine transformation matrix: Translation
+                matTranslation = eye(4);
+                matTranslation(1,4) = PAT.depth_offset;
+                matTranslation(2,4) = PAT.left_offset;
+                % Final Affine transformation matrix:
+                mat =  matRotation * matTranslation * matScaling;
+                % Save all frames temporally to use lambda as time
+                for istack=1:size(tmp,3)
+                    hdr = pat_create_vol(nifti_filename, dim, dt, pinfo, mat,istack,squeeze(tmp(:,:,istack)));
+                end
+                PAT.nifti_files{fileIdx}=nifti_filename;
             end
-            PAT.nifti_files{fileIdx}=nifti_filename;
+            
+            
+            PAT.jobsdone.extract_raw=1;
+            save(PATmat,'PAT');
+            out.PATmat{scanIdx} = PATmat;
         end
         
-        
-        PAT.jobsdone.extract_raw=1;
-        save(PATmat,'PAT');
+    catch exception
+        disp(exception.identifier)
+        disp(exception.stack(1))
         out.PATmat{scanIdx} = PATmat;
     end
-    
-catch exception
-    disp(exception.identifier)
-    disp(exception.stack(1))
-    out.PATmat{scanIdx} = PATmat;
 end
 end
 

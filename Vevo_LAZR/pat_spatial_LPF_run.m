@@ -28,7 +28,10 @@ for scanIdx=1:length(job.PATmat)
                 colorNames = fieldnames(PAT.color);
                 % Radius of the gaussian kernel
                 K.radius = round(job.spatial_LPF.spatial_LPF_On.spatial_LPF_radius);
-                
+                % Save LPF settings
+                PAT.fcPAT.LPF(1).radius = K.radius;
+                PAT.fcPAT.LPF(1).sigma = K.radius/2;
+
                 % Loop over available colors
                 for c1=1:length(PAT.nifti_files)
                     doColor = pat_doColor(PAT,c1,IC);
@@ -104,9 +107,6 @@ for scanIdx=1:length(job.PATmat)
             end
             % LPF succesful!
             PAT.jobsdone(1).LPFOK = true;
-            % Save LPF settings
-            PAT.fcPAT.LPF(1).radius = K.radius;
-            PAT.fcPAT.LPF(1).sigma = K.radius/2;
             save(PATmat,'PAT');
         end % LPF OK or redo job
         disp(['Elapsed time: ' datestr(datenum(0,0,0,0,0,toc),'HH:MM:SS')]);

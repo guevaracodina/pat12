@@ -7,14 +7,14 @@ function extract_rawPA1 = pat_raw_pamode_read_cfg
 %                    Ecole Polytechnique de Montreal
 %_______________________________________________________________________________
 
-% Inpuit folders
+% Input folders
 input_dir               = cfg_files;
 input_dir.name          = 'Directory with raw files';
 input_dir.tag           = 'input_dir';       
 input_dir.filter        = 'dir';
 input_dir.ufilter       = '.*';
 input_dir.num           = [1 Inf];     
-input_dir.help          = {'Directory(ies) containing raw files (raw.pamode).'}'; 
+input_dir.help          = {'Directory(ies) containing raw files (*.raw.pamode).'}'; 
 
 % Results top folder
 output_dir              = cfg_files;
