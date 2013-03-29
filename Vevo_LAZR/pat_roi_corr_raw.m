@@ -1,4 +1,4 @@
-function [corrMatrixRaw corrMatrixRawFname] = pat_roi_corr_raw(job,SubjIdx)
+function [corrMatrixRaw corrMatrixRawFname] = pat_roi_corr_raw(job,scanIdx)
 % Gets the correlation matrix for every seed/ROI raw time trace. (Before
 % filtering/downsampling and GLM regression).
 %_______________________________________________________________________________
@@ -11,10 +11,10 @@ function [corrMatrixRaw corrMatrixRawFname] = pat_roi_corr_raw(job,SubjIdx)
 all_sessions = 1;
 selected_sessions = [];
 %Load IOI.mat information
-[IOI IOImat dir_ioimat]= ioi_get_IOI(job,SubjIdx);
+[IOI IOImat dir_ioimat]= ioi_get_IOI(job,scanIdx);
 
 if ~isfield(IOI.res, 'ROIOK') % ROI OK
-    disp(['No ROIs available for subject ' int2str(SubjIdx) ' ... skipping raw seed to seed correlation matrix']);
+    disp(['No ROIs available for subject ' int2str(scanIdx) ' ... skipping raw seed to seed correlation matrix']);
 else
     % Get colors to include information
     IC = job.IC;
