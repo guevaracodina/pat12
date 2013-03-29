@@ -146,8 +146,9 @@ for scanIdx=1:length(job.PATmat)
                                             
                                             if job.generate_figures
                                                 % Display plots on SPM graphics window
-                                                spm_figure('GetWin', 'Graphics');
+                                                h = spm_figure('GetWin', 'Graphics');
                                                 spm_figure('Clear', 'Graphics');
+                                                figure(h);
                                                 subplot(311); plot(y);
                                                 title(sprintf('Seed %d time-course, C%d (%s)',r1,c1,colorNames{1+c1}),'FontSize',14);
                                                 subplot(312); plot(brainSignal);
@@ -216,9 +217,10 @@ for scanIdx=1:length(job.PATmat)
                                                     PAT.fcPAT.SPM(1).fnameROIregress = fnameROIregress;
                                                     fprintf('\nGlobal brain signal regressed from %s ROI %d (%s) Color %d (%s) done!\n',scanName,r1,PAT.ROI.ROIname{r1},c1,colorNames{1+c1})
                                                     if job.generate_figures
-                                                        spm_figure('GetWin', 'Graphics');
+                                                        figure(h);
                                                         subplot(313); plot(ROIregress{r1}{s1, c1});
                                                         title(sprintf('Global signal regressed from ROI time-course %d, C%d (%s)',r1,c1,colorNames{1+c1}),'FontSize',14);
+                                                        pat_save_figs(job, h, 'GLM', scanIdx, c1, r1, 'GLMfigs')
                                                     end
                                                 else
                                                     %% Another ROI as regressor

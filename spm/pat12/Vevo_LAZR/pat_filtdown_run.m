@@ -129,7 +129,7 @@ for scanIdx = 1:length(job.PATmat)
                                     % Band-passs filtering
                                     ROIsignal = temporalBPFrun(ROIsignal, z, p, k);
                                     % Plot and print data if required
-                                    subfunction_plot_filtNdown_data(job, PAT, dir_patmat, ROIdata, ROIsignal, r1, c1);
+                                    subfunction_plot_filtNdown_data(job, PAT, ROIdata, ROIsignal, scanIdx, r1, c1);
                                 catch
                                     if msg_ColorNotOK
                                         msg = ['Problem filtering/downsampling for color ' int2str(c1) ', session ' int2str(s1) ...
@@ -197,7 +197,7 @@ end % End of main for
 end % End of function
 
 
-function subfunction_plot_filtNdown_data(job, PAT, dir_patmat, ROIdata, ROIsignal, r1, c1)
+function subfunction_plot_filtNdown_data(job, PAT, ROIdata, ROIsignal, scanIdx, r1, c1)
 % Plots time course and spectrum for both the raw and filtered data
 if job.generate_figures
     % ------------------------ Plot options ------------------------------------
@@ -265,19 +265,8 @@ if job.generate_figures
     % --------------------------------------------------------------------------
     
     % --------------------------- Saving plots ---------------------------------
-    newName = [sprintf('%s_R%02d_C%d',scanName,r1,c1) '_filt'];
-    if job.save_figures
-        if isfield(job.PATmatCopyChoice,'PATmatCopy')
-            dir_filtfig = fullfile(dir_patmat,strcat('fig_',job.PATmatCopyChoice.PATmatCopy.NewPATdir));
-        else
-            dir_filtfig = fullfile(dir_patmat,'fig_FiltNDown');
-        end
-        if ~exist(dir_filtfig,'dir'), mkdir(dir_filtfig); end
-        % Save as PNG
-        print(h, '-dpng', fullfile(dir_filtfig,newName), '-r300');
-        % Save as a figure
-        saveas(h, fullfile(dir_filtfig,newName), 'fig');
-    end % Save figures
+    pat_save_figs(job, h, 'filt', scanIdx, c1, r1, ...
+        strcat('fig_',job.PATmatCopyChoice.PATmatCopy.NewPATdir))
     % --------------------------------------------------------------------------
 end % Generate figures
 end % subfunction_plot_filtNdown_data

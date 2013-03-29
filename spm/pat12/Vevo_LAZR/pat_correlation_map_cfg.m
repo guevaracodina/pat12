@@ -179,10 +179,26 @@ circleLS.strtype        = 's';
 circleLS.num            = [1 2];
 circleLS.help           = {'Circle Line Style'};
 
+circleFC                = cfg_entry;
+circleFC.tag            = 'circleFC';
+circleFC.name           = 'Seed FaceColor';
+circleFC.val            = {'w'};
+circleFC.strtype        = 'e';
+circleFC.num            = [1 Inf];
+circleFC.help           = {'Seed Face Color'};
+
+circleEC                = cfg_entry;
+circleEC.tag            = 'circleEC';
+circleEC.name           = 'Seed EdgeColor';
+circleEC.val            = {'w'};
+circleEC.strtype        = 'e';
+circleEC.num            = [1 Inf];
+circleEC.help           = {'Seed Edge Color'};
+
 drawCircle_On           = cfg_branch;
 drawCircle_On.tag       = 'drawCircle_On';
 drawCircle_On.name      = 'Draw circle';
-drawCircle_On.val       = {circleLW circleLS};
+drawCircle_On.val       = {circleLW circleLS circleFC circleEC};
 drawCircle_On.help      = {'Draw a circle in seed position'};
 
 drawCircle_Off          = cfg_branch;

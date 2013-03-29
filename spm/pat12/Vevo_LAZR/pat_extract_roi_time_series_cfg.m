@@ -28,16 +28,13 @@ extractBrainMask.help   = {'Extract mean signal from the non-masked brain pixels
 % Extract mean signal (from the brain mask pixels) -- this time using an
 % activation map
 activMask_choice        = pat_activation_mask_choice_cfg(false);
-[generate_figures ...
-    save_figures]       = pat_generate_figures_cfg;
 
 % Executable Branch
 extract_roi1            = cfg_exbranch;       % This is the branch that has information about how to run this module
 extract_roi1.name       = 'Extract ROI/seed';             % The display name
 extract_roi1.tag        = 'extract_roi1'; %Very important: tag is used when calling for execution
 extract_roi1.val        = {PATmat redo1 PATmatCopyChoice ...
-    ROI_choice IC extractBrainMask activMask_choice ...
-    generate_figures save_figures};    % The items that belong to this branch. All items must be filled before this branch can run or produce virtual outputs
+    ROI_choice IC extractBrainMask activMask_choice };    % The items that belong to this branch. All items must be filled before this branch can run or produce virtual outputs
 extract_roi1.prog       = @pat_extract_roi_time_series_run;  % A function handle that will be called with the harvested job to run the computation
 extract_roi1.vout       = @pat_cfg_vout_extract_roi; % A function handle that will be called with the harvested job to determine virtual outputs
 extract_roi1.help       = {'Create regions of interest.'};
