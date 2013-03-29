@@ -37,7 +37,6 @@ try
         filesdir = job.input_dir{scanIdx};
         % Extract only raw.pamode files
         files = dir(fullfile(filesdir,'*.raw.pamode'));
-        % dirlen = size(job.input_data_topdir{1},2);
         % Find backslashes
         filesepIdx = regexp(job.input_dir{scanIdx},['\' filesep]);
         [pathstr, ~] = fileparts(filesdir);
@@ -46,7 +45,6 @@ try
         if ~exist(PAT.output_dir,'dir'),mkdir(PAT.output_dir); end
         % current PAT structure
         PATmat = fullfile(PAT.output_dir,'PAT.mat');
-        
         % Color names
         str_HbT         = 'T';
         str_SO2         = 'S'; 
@@ -56,7 +54,6 @@ try
         PAT.color.HbT   = str_HbT;
         PAT.color.SO2   = str_SO2;
         PAT.color.Bmode = str_Bmode;
-    
         % Preallocate cell with filenames
         PAT.nifti_files = cell(length(files),length(PAT.color.eng));
         PAT.nifti_files_affine_matrix = cell(length(files),length(PAT.color.eng));
@@ -72,9 +69,6 @@ try
             % SO2
             PAT.nifti_files_affine_matrix{fileIdx,2} = affine_mat_filename{2};
         end % files loop
-        % Create anatomical file from HbT data 
-        % (it should be done from B-mode data, but coregistration is challenging)
-        % PAT = local_create_anatomical_file(PAT);
         % raw.pamode extraction done!
         PAT.jobsdone(1).extract_rawPAmode = true;
         save(PATmat,'PAT');

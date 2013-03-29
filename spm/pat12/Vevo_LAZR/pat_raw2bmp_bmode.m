@@ -1,5 +1,6 @@
 function fileNameTXT = pat_raw2bmp_bmode(rawBmodeFname, dir_patmat, bmp_dir)
 % Extraction of B-Mode RAW data. Saves frames as a series of figures (.BMP).
+% Always compresses images as .PNG files in order to save disk space.
 %_______________________________________________________________________________
 % Copyright (C) 2012 LIOM Laboratoire d'Imagerie Optique et Moleculaire
 %                    Ecole Polytechnique de Montreal

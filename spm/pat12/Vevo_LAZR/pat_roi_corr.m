@@ -73,15 +73,24 @@ else
                         end
                         if IOI.fcIOS.SPM.ROIregressOK{r1}{s1,c1}
                             if job.generate_figures
-                                h = figure; set(gcf,'color','w')
+                                h = figure; set(h,'color','w')
                                 imagesc(corrMatrix{1}{s1,c1},[-1 1]); axis image; colorbar
                                 colormap(get_colormaps('rwbdoppler'));
                                 set(gca,'yTick',1:numel(IOI.res.ROI))
-                                set(gca,'yTickLabel',IOI.ROIname)
-                                set(gca,'xTickLabel',[])
+                                set(gca,'yTickLabel',IOI.ROIname,'FontSize',10)
+                                set(gca,'xTickLabel',IOI.ROIname,'FontSize',10)
+                                % Moves x-axis on top
+                                set(gca,'xAxisLocation','top')
                                 newName = sprintf('%s_S%d_C%d(%s)_s2sCorrMat',IOI.subj_name,s1,c1,colorNames{1+c1});
-                                title(newName,'interpreter','none')
+                                title(newName,'interpreter','none','FontSize',10)
                                 if job.save_figures
+                                    % Allow printing of black background
+                                    set(h, 'InvertHardcopy', 'off');
+                                    % Specify window units
+                                    set(h, 'units', 'inches')
+                                    % Change figure and paper size (fixed to 3x3 in)
+                                    set(h, 'Position', [0.1 0.1 3 3])
+                                    set(h, 'PaperPosition', [0.1 0.1 3 3])
                                     % Save as EPS
                                     spm_figure('Print', 'Graphics', fullfile(dir_ioimat,newName));
                                     % Save as PNG

@@ -328,16 +328,38 @@ function fcPAT_display_corrMap(PAT, job, scanIdx, r1, s1, c1, dir_corrfig, newNa
         brainMask = pat_imresize(brainMask, [size(tempCorrMap,1) size(tempCorrMap,2)]);
     end
     
-    if job.bonferroni
-        nComparisons = sum(brainMask(:) == true);
-        % Make NaN all the transparent or non-significant pixels
-        tempCorrMap(~brainMask | (pValuesMap>(job.pValue / nComparisons))) = NaN;
-        percActPix = sum((pValuesMap(brainMask)<(job.pValue / nComparisons))) / sum(brainMask(:));
-        fprintf('%0.2f %% positively correlated pixels. %s (%s) R%02d\n',100*percActPix,...
-            scanName, colorNames{1+c1}, r1);
-    else
-        % Make NaN all the transparent or non-significant pixels
-        tempCorrMap(~brainMask | (pValuesMap>job.pValue)) = NaN;
+%     if job.bonferroni
+%         nComparisons = sum(brainMask(:) == true);
+%         % Make NaN all the transparent or non-significant pixels
+%         tempCorrMap(~brainMask | (pValuesMap>(job.pValue / nComparisons))) = NaN;
+%         percActPix = sum((pValuesMap(brainMask)<(job.pValue / nComparisons))) / sum(brainMask(:));
+%         fprintf('%0.2f %% positively correlated pixels. %s (%s) R%02d\n',100*percActPix,...
+%             scanName, colorNames{1+c1}, r1);
+%     else
+%         % Make NaN all the transparent or non-significant pixels
+%         tempCorrMap(~brainMask | (pValuesMap>job.pValue)) = NaN;
+%     end
+
+    switch (job.multComp)
+        case 0
+            % Make NaN all the transparent or non-significant pixels
+            tempCorrMap(~brainMask | (pValuesMap>job.pValue)) = NaN;
+        case 1
+            % Bonferroni
+            nComparisons = sum(brainMask(:) == true);
+            % Make NaN all the transparent or non-significant pixels
+            tempCorrMap(~brainMask | (pValuesMap>(job.pValue / nComparisons))) = NaN;
+            percActPix = sum((pValuesMap(brainMask)<(job.pValue / nComparisons))) / sum(brainMask(:));
+            fprintf('%0.2f %% positively correlated pixels. %s (%s) R%02d\n',100*percActPix,...
+                scanName, colorNames{1+c1}, r1);
+        case 2
+            % FDR-corrected p-value (q)
+            q = pat_fdr(pValuesMap);
+            % Make NaN all the transparent or non-significant pixels
+            tempCorrMap(~brainMask | (q>job.pValue)) = NaN;
+        otherwise
+            % Make NaN all the transparent or non-significant pixels
+            tempCorrMap(~brainMask | (pValuesMap>job.pValue)) = NaN;
     end
     y = tempCorrMap;
     PAT.fcPAT.corr.corrMapNameMask{r1}{s1, c1} = fullfile(dir_corrMapMaskedfig,[newName oldExt]);
@@ -368,7 +390,7 @@ function fcPAT_display_corrMap(PAT, job, scanIdx, r1, s1, c1, dir_corrfig, newNa
 %     seedW = seedW * PAT.PAparam.pixWidth;
 %     seedH = seedH * PAT.PAparam.pixDepth;
     internal_overlay_map(anatomical, corrMap,  job, newName, [seedX seedY seedW seedH], scanIdx, c1, r1, dir_corrMapMaskedfig);
-end
+end % fcPAT_display_corrMap
 
 function [h, varargout] = internal_overlay_map(anatomical, positiveMap, job, titleString, seedDims, scanIdx, c1, r1, dir_corrMapMaskedfig)
 % Creates an overlay image composed of positive & negative functional maps (any

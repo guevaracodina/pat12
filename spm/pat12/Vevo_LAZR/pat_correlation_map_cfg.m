@@ -36,15 +36,27 @@ pValue.num              = [1 1];                    % Number of inputs required
 pValue.val              = {0.05};                   % Default value
 pValue.help             = {'p-value for testing the hypothesis of no correlation against the alternative that there is a nonzero correlation. If p-value is small, say less than 0.05, then the correlation r is significantly different from zero.'};
 
-% Multiple comparisons correction (Bonferroni)
-bonferroni              = cfg_menu;
-bonferroni.tag          = 'bonferroni';
-bonferroni.name         = 'Bonferroni correction';
-bonferroni.labels       = {'No','Yes'};
-bonferroni.values       = {false, true};
-bonferroni.val          = {true};
-bonferroni.help         = {'Perform Bonferroni correction for multiple comparisons.'}';
+% % Multiple comparisons correction (Bonferroni)
+% bonferroni              = cfg_menu;
+% bonferroni.tag          = 'bonferroni';
+% bonferroni.name         = 'Bonferroni correction';
+% bonferroni.labels       = {'No','Yes'};
+% bonferroni.values       = {false, true};
+% bonferroni.val          = {true};
+% bonferroni.help         = {'Perform Bonferroni correction for multiple comparisons.'}';
 
+% Multiple comparisons correction
+multComp                = cfg_menu;
+multComp.tag            = 'multComp';
+multComp.name           = 'Multiple comparisons';
+multComp.labels         = {'None', 'Bonferroni', 'FDR'};
+multComp.values         = {0, 1, 2};
+multComp.val            = {2};                      % Default value
+multComp.help           = { 'Choose whether to perform multiple testing correction:'
+                            'None'
+                            'Bonferroni'
+                            'False Discovery Rate (FDR)'}';
+                        
 % Fisher's z transform
 fisherZ                 = cfg_menu;
 fisherZ.tag             = 'fisherZ';
@@ -60,7 +72,7 @@ seed2seedCorrMat.tag    = 'seed2seedCorrMat';
 seed2seedCorrMat.name   = 'seed2seedCorrMat';
 seed2seedCorrMat.labels = {'No', 'Yes'};
 seed2seedCorrMat.values = {false, true};
-seed2seedCorrMat.val    = {false};                      % Default value
+seed2seedCorrMat.val    = {true};                      % Default value
 seed2seedCorrMat.help   = {'Choose whether to compute a seed-to-seed correlation matrix'}';
 
 % Correlation on 1st derivative
@@ -110,7 +122,7 @@ figRange.name           = 'Colormap range';
 figRange.strtype        = 'r';
 figRange.num            = [1 2];
 figRange.val{1}         = [-1 1];
-figRange.help           = {'Enter colormap range. For correlation maps default is [-1 1]'};
+figRange.help           = {'Enter colormap range to display. For correlation maps default is [-1 1]'};
 
 % Show Colorbar
 showColorbar            = cfg_menu;
@@ -214,7 +226,7 @@ correlation_map1        = cfg_exbranch; % This is the branch that has informatio
 correlation_map1.name   = 'Functional connectivity (fcPAT) map'; % The display name
 correlation_map1.tag    = 'correlation_map1'; %Very important: tag is used when calling for execution
 correlation_map1.val	= { PATmat redo1 PATmatCopyChoice ROI_choice IC pValue...
-                        bonferroni fisherZ seed2seedCorrMat derivative rawData...
+                        multComp fisherZ seed2seedCorrMat derivative rawData...
                         generate_figures save_figures figSize figRes ...
                         figRange showColorbar figAlpha figIntensity figCmap drawCircle ...
                         transM};    % The items that belong to this branch. All items must be filled before this branch can run or produce virtual outputs
@@ -224,10 +236,10 @@ correlation_map1.help	= {'A functional connectivity (fcIOS) map is made by corre
 return
 
 % Make IOI.mat available as a dependency
-function vout = pat_cfg_vout_correlation_map(job)
-vout                        = cfg_dep;                  % The dependency object
-vout.sname                  = 'PAT.mat';                % Displayed dependency name
-vout.src_output             = substruct('.','PATmat');  %{1}); %,'PATmat');
-vout.tgt_spec               = cfg_findspec({{'filter','mat','strtype','e'}});
+function vout           = pat_cfg_vout_correlation_map(job)
+vout                    = cfg_dep;                  % The dependency object
+vout.sname              = 'PAT.mat';                % Displayed dependency name
+vout.src_output         = substruct('.','PATmat');  %{1}); %,'PATmat');
+vout.tgt_spec           = cfg_findspec({{'filter','mat','strtype','e'}});
 
 % EOF
