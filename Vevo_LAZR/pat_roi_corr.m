@@ -8,8 +8,12 @@ function [corrMatrix corrMatrixDiff corrMatrixFname corrMatrixDiffFname] = pat_r
 % Load PAT.mat information
 [PAT PATmat dir_patmat]= pat_get_PATmat(job,scanIdx);
 
-if ~isfield(PAT.fcIOS.SPM, 'GLMOK') % GLM OK
+if ~isfield(PAT.jobsdone, 'GLMOK') % GLM OK
     disp(['No GLM regression available for subject ' int2str(scanIdx) ' ... skipping seed to seed correlation matrix']);
+    corrMatrix          = [];
+    corrMatrixDiff      = [];
+    corrMatrixFname     = [];
+    corrMatrixDiffFname = [];
 else
     % Get colors to include information
     IC = job.IC;
@@ -19,17 +23,17 @@ else
     nROI = 1:length(PAT.res.ROI); % All the ROIs
     
     % Load regressed ROI data in cell ROIregress
-    load(PAT.fcIOS.SPM.fnameROIregress)
+    load(PAT.fcPAT.SPM.fnameROIregress)
     
     % Loop over sessions (in PAT always 1 session per scan)
     s1=1;
     % Loop over available colors
-    for c1=1:length(PAT.sess_res{s1}.fname)
+    for c1=1:length(PAT.nifti_files)
         doColor = pat_doColor(PAT,c1,IC);
         if doColor
             % Loop over ROI/seeds
             for r1 = nROI,
-                if PAT.fcIOS.SPM.ROIregressOK{r1}{s1,c1}
+                if PAT.fcPAT.SPM.ROIregressOK{r1}{s1,c1}
                     % Preallocate map for the seed-to-seed correlation matrix
                     tVector = numel(ROIregress{r1}{s1,c1});
                     if isfield (job,'derivative')
@@ -53,7 +57,7 @@ else
                 % Loop over ROI/seeds
                 for r1 = nROI,
                     if all_ROIs || sum(r1==selected_ROIs)
-                        if PAT.fcIOS.SPM.ROIregressOK{r1}{s1,c1}
+                        if PAT.fcPAT.SPM.ROIregressOK{r1}{s1,c1}
                             roiMatrix(:, r1) = ROIregress{r1}{s1,c1};
                             if isfield (job,'derivative')
                                 roiMatrixDiff(:, r1) = diff(ROIregress{r1}{s1,c1});
@@ -70,18 +74,22 @@ else
                     % Compute seed-to-seed correlation matrix of the derivative
                     corrMatrixDiff{1}{s1,c1} = corrcoef(roiMatrixDiff);
                 end
-                if PAT.fcIOS.SPM.ROIregressOK{r1}{s1,c1}
+                if PAT.fcPAT.SPM.ROIregressOK{r1}{s1,c1}
                     if job.generate_figures
                         h = figure; set(h,'color','w')
                         imagesc(corrMatrix{1}{s1,c1},[-1 1]); axis image; colorbar
+                        set(gca,'FontSize',8)
                         colormap(get_colormaps('rwbdoppler'));
-                        set(gca,'yTick',1:numel(PAT.res.ROI))
-                        set(gca,'yTickLabel',PAT.ROIname,'FontSize',10)
-                        set(gca,'xTickLabel',PAT.ROIname,'FontSize',10)
+                        set(gca,'yTick',1:2:numel(PAT.res.ROI))
+                        set(gca,'yTickLabel',PAT.ROI.ROIname(1:2:end),'FontSize',8)
+                        set(gca,'xTick',1:2:numel(PAT.res.ROI))
+                        set(gca,'xTickLabel',PAT.ROI.ROIname(1:2:end),'FontSize',8)
                         % Moves x-axis on top
                         set(gca,'xAxisLocation','top')
-                        newName = sprintf('%s_S%d_C%d(%s)_s2sCorrMat',PAT.subj_name,s1,c1,colorNames{1+c1});
-                        title(newName,'interpreter','none','FontSize',10)
+                        [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
+                        scanName = splitStr{end-1};
+                        newName = sprintf('%s_S%d_C%d(%s)_s2sCorrMat',scanName,s1,c1,colorNames{1+c1});
+                        title(newName,'interpreter','none','FontSize',8)
                         if job.save_figures
                             % Allow printing of black background
                             set(h, 'InvertHardcopy', 'off');
@@ -101,11 +109,15 @@ else
                         if isfield (job,'derivative')
                             h = figure; set(gcf,'color','w')
                             imagesc(corrMatrixDiff{1}{s1,c1},[-1 1]); axis image; colorbar
+                            set(gca,'FontSize',8)
                             colormap(get_colormaps('rwbdoppler'));
-                            set(gca,'yTick',1:numel(PAT.res.ROI))
-                            set(gca,'yTickLabel',PAT.ROIname)
-                            set(gca,'xTickLabel',[])
-                            newName = sprintf('%s_S%d_C%d(%s)_s2sCorrMatDiff',PAT.subj_name,s1,c1,colorNames{1+c1});
+                            set(gca,'yTick',1:2:numel(PAT.res.ROI))
+                            set(gca,'yTickLabel',PAT.ROI.ROIname(1:2:end),'FontSize',8)
+                            set(gca,'xTick',1:2:numel(PAT.res.ROI))
+                            set(gca,'xTickLabel',PAT.ROI.ROIname(1:2:end),'FontSize',8)
+                            % Moves x-axis on top
+                            set(gca,'xAxisLocation','top','FontSize',8)
+                            newName = sprintf('%s_S%d_C%d(%s)_s2sCorrMatDiff',scanName,s1,c1,colorNames{1+c1});
                             title(newName,'interpreter','none')
                             if job.save_figures
                                 % Allow printing of black background
