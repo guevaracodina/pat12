@@ -96,14 +96,15 @@ for scanIdx = 1:length(job.PATmat)
                                         % Assign data to be saved to  .mat file
                                         seed_based_fcPAT_map{r1}{s1,c1}.pearson = tempCorrMap;
                                         seed_based_fcPAT_map{r1}{s1,c1}.pValue = pValuesMap;
-                                        
-                                        % Here save as nifti
-                                        if ~isempty(PAT.fcPAT.SPM.fnameROInifti{r1}{s1, c1})
+
+                                        % Quick dirty way to get old name
+                                        try
                                             [~, oldName, oldExt] = fileparts(PAT.fcPAT.SPM.fnameROInifti{r1}{s1, c1});
-                                        else
+                                        catch
                                             oldName = sprintf('ROI%02d_C%d', r1, c1);
                                             oldExt = '.nii';
                                         end
+                                        
                                         newName = [oldName '_fcPAT_map'];
                                         if isfield(job.PATmatCopyChoice,'PATmatCopy')
                                             dir_corrfig = fullfile(dir_patmat,strcat('fig_',job.PATmatCopyChoice.PATmatCopy.NewPATdir));
@@ -170,7 +171,7 @@ for scanIdx = 1:length(job.PATmat)
             end % correlation OK or redo job
         end % GLM OK
         disp(['Elapsed time: ' datestr(datenum(0,0,0,0,0,toc(eTime)),'HH:MM:SS')]);
-        fprintf('Scan %s, %d of %d complete %30s\n', splitStr{end-1}, scanIdx, length(job.PATmat), spm('time'));
+        fprintf('Scan %s, %d of %d complete %30s\n', scanName, scanIdx, length(job.PATmat), spm('time'));
         out.PATmat{scanIdx} = PATmat;
     catch exception
         out.PATmat{scanIdx} = PATmat;
