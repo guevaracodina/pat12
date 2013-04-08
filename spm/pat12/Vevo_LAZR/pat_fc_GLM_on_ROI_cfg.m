@@ -65,7 +65,7 @@ fc_GLM_on_ROI1.help         = {'GLM regression of global brain signal from ROI/s
 
 return
 
-% Make IOI.mat available as a dependency
+% Make PAT.mat available as a dependency
 function vout = pat_cfg_vout_fc_GLM_on_ROI(job)
 vout                        = cfg_dep;                  % The dependency object
 vout.sname                  = 'PAT.mat';                % Displayed dependency name
