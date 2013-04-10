@@ -6,11 +6,32 @@ function network1 = pat_network_analyses_cfg
 %_______________________________________________________________________________
 
 % Select PAT.mat list of control group
-PATmat1                 = pat_PATmat_cfg(2,'Select PAT.mat list of controls');
-% Select PAT.mat list of LPS group
-PATmat2                 = pat_PATmat_cfg(2,'Select PAT.mat list of LPS');
-% Select PAT.mat list of LPS group
-PATmat3                 = pat_PATmat_cfg(2,'Select PAT.mat list of LPS + IL-1Ra');
+PATmat                  = pat_PATmat_cfg(2,'Select PAT.mat list of whole population');
+
+% Select PAT.mat index of control group
+PATmatIdxCtrl           = cfg_entry;
+PATmatIdxCtrl.tag       = 'PATmatIdxCtrl';  % file names
+PATmatIdxCtrl.name      = 'Control';        % The displayed name
+PATmatIdxCtrl.strtype   = 'r';              % Real numbers
+PATmatIdxCtrl.num       = [1 Inf];          % Number of inputs required
+PATmatIdxCtrl.val       = {[4 6 11 13 16]}; % Default value
+PATmatIdxCtrl.help      = {'Vector with indices of control group'}';
+% Select PAT.mat index of LPS group
+PATmatIdxLPS            = cfg_entry;
+PATmatIdxLPS.tag        = 'PATmatIdxLPS';   % file names
+PATmatIdxLPS.name       = 'LPS';            % The displayed name
+PATmatIdxLPS.strtype    = 'r';              % Real numbers
+PATmatIdxLPS.num        = [1 Inf];          % Number of inputs required
+PATmatIdxLPS.val        = {[1 2 9 10 12 14 15]}; % Default value
+PATmatIdxLPS.help       = {'Vector with indices of LPS group'}';
+% Select PAT.mat index of LPS + IL-1Ra group
+PATmatIdxIL1Ra          = cfg_entry;
+PATmatIdxIL1Ra.tag      = 'PATmatIdxIL1Ra'; % file names
+PATmatIdxIL1Ra.name     = 'LPS+IL-1Ra';     % The displayed name
+PATmatIdxIL1Ra.strtype  = 'r';              % Real numbers
+PATmatIdxIL1Ra.num      = [1 Inf];          % Number of inputs required
+PATmatIdxIL1Ra.val      = {[3 5 7 8 17 18]};% Default value
+PATmatIdxIL1Ra.help     = {'Vector with indices of LPS + IL-1Ra group.'}';
 
 % Force processing
 redo1                   = pat_redo_cfg(0);
@@ -93,17 +114,17 @@ Xname.tag               = 'Xname';
 Xname.name              = 'Regressor names';
 Xname.strtype           = 'e';
 Xname.num               = [1 Inf];
-Xname.val{1}            = {'Ctrl','LPS','LPS+IL-1Ra';};
-Xname.help              = {'Specify the cell string with regressor names. Default Xname is {''NaCl'',''CaCl_2'';}'}';
+Xname.val{1}            = {'Ctrl','LPS','LPS+IL-1Ra','Grand mean';};
+Xname.help              = {'Specify the cell string with regressor names. Default Xname is {''Ctrl'',''LPS'',''LPS+IL-1Ra'',''Grand mean'';}'}';
 
 % Contrast
 C                       = cfg_entry;
 C.tag                   = 'C';
 C.name                  = 'Contrast';
 C.strtype               = 'r';
-C.num                   = [2 3];
-C.val{1}                = [1, -1, 0; 0, 1, -1];
-C.help                  = { 'Specify the contrast vector/matrix. Default C is [1, -1, 0; 0, 1, -1],'
+C.num                   = [Inf Inf];
+C.val{1}                = [ 1, 0, -1, 0];
+C.help                  = { 'Specify the contrast vector/matrix. Default C is [], to test the main effect of 3 conditions'
                             'invariance test i.e. those areas where the connectivity with a seed differs between some or all of the 3 groups.'}';
 
 % Contrast name
@@ -112,8 +133,8 @@ Cname.tag               = 'Cname';
 Cname.name              = 'Contrast Name';
 Cname.strtype           = 's';
 Cname.num               = [1 Inf];
-Cname.val{1}            = 'Invariance';
-Cname.help              = {'Specify the contrast name. Default Cname is {''Control - Treatment'';}'}';
+Cname.val{1}            = 'Control - (LPS+IL-1Ra)';
+Cname.help              = {'Specify the contrast name. Default Cname is {''Invariance'';}'}';
 
 % Ask options
 ask                     = cfg_menu;
@@ -156,7 +177,7 @@ figRes.tag              = 'figRes';
 figRes.name             = 'Figure resolution';
 figRes.strtype          = 'r';
 figRes.num              = [1 1];
-figRes.val{1}           = 150;
+figRes.val{1}           = 300;
 figRes.help             = {'Enter figure resolution in dpi. Suggested [150-1200]'};
 
 optFig                  = cfg_branch;
@@ -232,12 +253,11 @@ fc_diagram.val          = {rThreshold circleLW circleLS circleFC circleEC cirleM
 fc_diagram.help         = {'Functional connectivity diagram options. Edge thicknesses depend on the average correlation coefficients from the 2 groups. Circle sizes are proportional to global efficiency of each seed. Positive correlations are depicted in warm colors. Negative correlations are depicted in cool colors. The letter in the circle indicates name of the seeds.'};
 % ------------------------------------------------------------------------------
 
-
 % Executable Branch
 network1                = cfg_exbranch; % This is the branch that has information about how to run this module
 network1.name           = 'Network analyses'; % The display name
 network1.tag            = 'network1'; %Very important: tag is used when calling for execution
-network1.val            = {PATmat1 PATmat2 PATmat3 redo1 PATmatCopyChoice...
+network1.val            = {PATmat PATmatIdxCtrl PATmatIdxLPS PATmatIdxIL1Ra redo1 PATmatCopyChoice...
     ROI_choice IC results_dir opt1stLvl opt2ndLvl ...
     generate_figures save_figures fc_diagram  optFig};    % The items that belong to this branch. All items must be filled before this branch can run or produce virtual outputs
 network1.prog           = @pat_network_analyses_run; % A function handle that will be called with the harvested job to run the computation

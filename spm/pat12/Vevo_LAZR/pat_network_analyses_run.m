@@ -14,9 +14,9 @@ function out = pat_network_analyses_run(job)
 % ------------------------------------------------------------------------------
 % REMOVE AFTER FINISHING THE FUNCTION //EGC
 % ------------------------------------------------------------------------------
-fprintf('Work in progress...\nEGC\n')
-out.PATmat = job.PATmat;
-return
+% fprintf('Work in progress...\nEGC\n')
+% out.PATmat = job.PATmat;
+% return
 % ------------------------------------------------------------------------------
 
 tic
@@ -24,136 +24,141 @@ tic
 addpath(genpath('D:\Edgar\conn'))
 % current folder
 currFolder = pwd;
-% Load first IOI matrix
-[IOI IOImat dir_ioimat] = ioi_get_IOI(job, 1);
-% Get sessions info
-% [all_sessions selected_sessions] = ioi_get_sessions(job);
+% Load first PAT matrix
+[PAT PATmat dir_patmat] = pat_get_PATmat(job, 1);
 % Get colors to include information
 IC = job.IC;
-colorNames = fieldnames(IOI.color);
+colorNames = fieldnames(PAT.color);
 % Flag to indicate replacement of seeds names
-REPLACE_ROI_NAME = true;
+REPLACE_ROI_NAME = false;
 % Seeds names
-% newROIname = {  'Frontal Right'
-%                 'Frontal Left'
-%                 'Motor Right'
-%                 'Motor Left'
-%                 'Cingulate Right'
-%                 'Cingulate Left'
-%                 'Somatosensory Right'
-%                 'Somatosensory Left'
-%                 'Retrosplenial Right'
-%                 'Retrosplenial Left'
-%                 'Visual Right'
-%                 'Visual Left' };
-newROIname = {  'F_R'
-                'F_L'
+newROIname = {  'Cg_L'      % Cingulate cortex
+                'Cg_R'
+                'M_L'       % Motor cortex
                 'M_R'
-                'M_L'
-                'C_R'
-                'C_L'
-                'S_R'
-                'S_L'
-                'R_R'
-                'R_L'
-                'V_R'
-                'V_L' };
+                'S1HL_L'    % hindlimb primary somatosensory cortex
+                'S1HL_R'
+                'S1FL_L'    % forelimb primary somatosensory cortex
+                'S1FL_R'
+                'S1BF_L'    % barrel field primary somatosensory cortex
+                'S1BF_R'
+                'S2_L'      % secondary somatosensory cortex
+                'S2_R'
+                'cc_L'      % corpus callosum
+                'cc_R'
+                'LV_L'      % Lateral ventricle
+                'LV_R'
+                'CPu_L'     % Caudate putamen
+                'CPu_R' };
 % Get ROIs
-[all_ROIs selected_ROIs] = ioi_get_ROIs(job);
+[all_ROIs selected_ROIs] = pat_get_rois(job);
 if all_ROIs
     % All the ROIs
-    nROI = length(IOI.res.ROI);
+    nROI = numel(PAT.ROI.ROIname);
     % Index vector of ROIs
     roiIndex = 1:nROI;
 else
     nROI = numel(selected_ROIs);
     roiIndex = selected_ROIs;
 end
-% Variable with the source rois names {1 x nROI}
-names = newROIname';
-% Variable with the target rois names {1 x nROI}
-names2 = names;
-% Preallocate connectivity (Fisher's Z) values [nROI x nROI x length(job.IOImat)]
-Z = zeros([nROI nROI length(job.IOImat)]);
-% Preallocate connectivity (correlation) values [nROI x nROI x length(job.IOImat)]
-r = zeros([nROI nROI length(job.IOImat)]);
+if REPLACE_ROI_NAME
+    % Variable with the source rois names {1 x nROI}
+    names = newROIname';
+    % Variable with the target rois names {1 x nROI}
+    names2 = names;
+else
+    % Variable with the source rois names {1 x nROI}
+    names = PAT.ROI.ROIname';
+    % Variable with the target rois names {1 x nROI}
+    names2 = names;
+end
+% Preallocate connectivity (Fisher's Z) values [nROI x nROI x length(job.PATmat)]
+Z = zeros([nROI nROI length(job.PATmat)]);
+% Preallocate connectivity (correlation) values [nROI x nROI x length(job.PATmat)]
+r = zeros([nROI nROI length(job.PATmat)]);
 % Go to network results folder
 cd(job.results_dir{1});
 % Loop over sessions
 s1 = 1;
 % Initialize progress bar
-spm_progress_bar('Init', length(IOI.sess_res{s1}.fname), sprintf('Network analysis'), 'Colors');
+spm_progress_bar('Init', length(PAT.nifti_files), sprintf('Network analysis'), 'Contrasts');
+pat_text_waitbar(0, 'Network analysis, please wait...');
 % Loop over available colors
-for c1=1:length(IOI.sess_res{s1}.fname)
-    doColor = ioi_doColor(IOI,c1,IC);
+for c1 = 1:length(PAT.nifti_files)
+    doColor = pat_doColor(PAT,c1,IC);
     if doColor
-        %skip laser - only extract for flow
-        if ~(IOI.color.eng(c1)==IOI.color.laser)
+        % skip B-mode
+        if ~(PAT.color.eng(c1)==PAT.color.Bmode)
             %% Main processing loop
             % Create filename coherent with conn_network.m
             currentFname = fullfile(job.results_dir{1}, sprintf('resultsROI_Condition%02d_%s', s1, colorNames{1+c1}));
-            % loop over subjects
-            for SubjIdx = 1:length(job.IOImat)
+            % loop over scans
+            for scanIdx = 1:numel(job.PATmat)
                 try
-                    %Load IOI.mat information
-                    [IOI IOImat dir_ioimat] = ioi_get_IOI(job,SubjIdx);
+                    %Load PAT.mat information
+                    [PAT PATmat dir_patmat] = pat_get_PATmat(job,scanIdx);
                     if REPLACE_ROI_NAME
-                        IOI.ROIname = newROIname;
+                        PAT.ROIname = newROIname;
                     end
-                    if ~isfield(IOI.fcIOS.corr, 'corrOK') % correlation analysis OK
-                        fprintf('No correlation analysis available for subject %d of %d... skipping network analysis\n', SubjIdx, length(job.IOImat));
+                    if ~isfield(PAT.jobsdone, 'corrOK') % correlation analysis OK
+                        fprintf('No correlation analysis available for subject %d of %d... skipping network analysis\n', scanIdx, length(job.PATmat));
                     else
-                        if ~isfield(IOI.fcIOS.corr,'networkOK') || job.force_redo
+                        if ~isfield(PAT.jobsdone,'networkOK') || job.force_redo
                             % Check if seed to seed correlation matrix was computed
-                            if ~IOI.fcIOS.corr.corrMatrixOK
-                                [seed2seedCorrMat seed2seedCorrMatDiff IOI.fcIOS.corr(1).corrMatrixFname IOI.fcIOS.corr(1).corrMatrixDiffFname] = ioi_roi_corr(job, SubjIdx);
+                            if ~PAT.fcPAT.corr.corrMatrixOK
+                                [seed2seedCorrMat seed2seedCorrMatDiff PAT.fcPAT.corr(1).corrMatrixFname PAT.fcPAT.corr(1).corrMatrixDiffFname] = pat_roi_corr(job, scanIdx);
                                 % Save seed-to-seed correlation data
-                                save(IOI.fcIOS.corr(1).corrMatrixFname,'seed2seedCorrMat')
+                                save(PAT.fcPAT.corr(1).corrMatrixFname,'seed2seedCorrMat')
                                 % Save seed-to-seed derivatives correlation data
-                                save(IOI.fcIOS.corr(1).corrMatrixDiffFname,'seed2seedCorrMatDiff')
+                                save(PAT.fcPAT.corr(1).corrMatrixDiffFname,'seed2seedCorrMatDiff')
                             end
                             % Check if mouse is tratment (1) or control (0)
-                            isTreatment(SubjIdx,1) = ~isempty(regexp(IOI.subj_name, [job.treatmentString '[0-9]+'], 'once'));
+                            % isTreatment(scanIdx,1) = ~isempty(regexp(PAT.subj_name, [job.treatmentString '[0-9]+'], 'once'));
                             % Load seed to seed correlation matrix
-                            load(IOI.fcIOS.corr(1).corrMatrixFname,'seed2seedCorrMat')
+                            load(PAT.fcPAT.corr(1).corrMatrixFname,'seed2seedCorrMat')
                             % Update data in r
-                            r(:,:,SubjIdx) = seed2seedCorrMat{1}{s1, c1};
+                            r(:,:,scanIdx) = seed2seedCorrMat{1}{s1, c1};
                             % Fisher transform
                             seed2seedCorrMat{1}{s1, c1} = fisherz(seed2seedCorrMat{1}{s1, c1});
                             % Replace Inf by NaN
                             seed2seedCorrMat{1}{s1, c1}(~isfinite(seed2seedCorrMat{1}{s1, c1})) = NaN;
                             % Update data in Z
-                            Z(:,:,SubjIdx) = seed2seedCorrMat{1}{s1, c1};
+                            Z(:,:,scanIdx) = seed2seedCorrMat{1}{s1, c1};
                             % Create filename coherent with conn_network.m
-                            IOI.fcIOS.corr.networkDataFname{s1, c1} = currentFname;
+                            PAT.fcPAT.corr.networkDataFname{s1, c1} = currentFname;
                             % Network analysis succesful!
-                            IOI.fcIOS.corr(1).networkOK = true;
-                            % Save IOI matrix
-                            save(IOImat,'IOI');
+                            PAT.jobsdone.networkOK = true;
+                            % Save PAT matrix
+                            save(PATmat,'PAT');
                         end % network OK or redo job
                     end % correlation maps OK
-                    out.IOImat{SubjIdx} = IOImat;
+                    out.PATmat{scanIdx} = PATmat;
                 catch exception
-                    out.IOImat{SubjIdx} = IOImat;
+                    out.PATmat{scanIdx} = PATmat;
                     disp(exception.identifier)
                     disp(exception.stack(1))
                 end
-            end % loop over subjects
+            end % loop over scans
+            % Sort by groups
+            [job, Z, r] = sort_PATmat(job, Z, r);
+            orderedPATlist = job.PATmat;
             % Save resultsROI_Condition*_Color
-            save(IOI.fcIOS.corr.networkDataFname{s1, c1}, ...
-                'Z', 'r', 'names', 'names2');
+            save(PAT.fcPAT.corr.networkDataFname{s1, c1}, ...
+                'Z', 'r', 'names', 'names2', 'orderedPATlist');
             
             % First level analysis (within subject)
-            results = first_level_analysis(job, IOI, s1, c1, roiIndex);
+            results = first_level_analysis(job, PAT, s1, c1, roiIndex);
             
             % Second level analysis (between subjects)
-            ss = second_level_analysis(job, IOI, s1, c1, isTreatment, results);
+            ss = second_level_analysis(job, PAT, s1, c1, results);
             
             % Functional connectivity diagram
-            fc_diagram(job, IOI, s1, c1, results, ss);
+            % fc_diagram(job, PAT, s1, c1, results, ss);
             
             % Update progress bar
             spm_progress_bar('Set', c1);
+            % Update progress bar
+            pat_text_waitbar(c1/length(PAT.nifti_files), sprintf('Processing contrast %d from %d', c1, length(PAT.nifti_files)));
         end
     end
 end % colors loop
@@ -161,19 +166,49 @@ end % colors loop
 cd(currFolder);
 % Clear progress bar
 spm_progress_bar('Clear');
+pat_text_waitbar('Clear');
 fprintf('Elapsed time: %s', datestr(datenum(0,0,0,0,0,toc),'HH:MM:SS\n') );
-end % ioi_network_analysis_run
+end % pat_network_analyses_run
 
-function results = first_level_analysis(job, IOI, s1, c1, roiIndex)
+function [job, newZ, newr] = sort_PATmat(job, Z, r)
+% Sorts PAT matrix according to groups (Ctrl, LPS, and LPS+IL-1Ra)
+if numel([job.PATmatIdxCtrl job.PATmatIdxLPS job.PATmatIdxIL1Ra]) == numel(job.PATmat)
+    newPATmat = cell(size(job.PATmat));
+    newZ = zeros(size(Z));
+    newr = zeros(size(r));
+    % Update indices
+    job.PATmatIdxCtrlSorted = 1:numel(job.PATmatIdxCtrl);
+    job.PATmatIdxLPSSorted = numel(job.PATmatIdxCtrl)+1:numel(job.PATmatIdxCtrl)+numel(job.PATmatIdxLPS);
+    job.PATmatIdxIL1RaSorted = numel(job.PATmatIdxCtrl)+numel(job.PATmatIdxLPS)+1:numel(job.PATmatIdxCtrl)+numel(job.PATmatIdxLPS)+numel(job.PATmatIdxIL1Ra);
+    % Control
+    newPATmat(job.PATmatIdxCtrlSorted) = job.PATmat(job.PATmatIdxCtrl);
+    newZ(:,:,job.PATmatIdxCtrlSorted) = Z(:,:,job.PATmatIdxCtrl);
+    newr(:,:,job.PATmatIdxCtrlSorted) = r(:,:,job.PATmatIdxCtrl);
+    % LPS
+    newPATmat(job.PATmatIdxLPSSorted) = job.PATmat(job.PATmatIdxLPS);
+    newZ(:,:,job.PATmatIdxLPSSorted) = Z(:,:,job.PATmatIdxLPS);
+    newr(:,:,job.PATmatIdxLPSSorted) = r(:,:,job.PATmatIdxLPS);
+    % LPS + IL-1Ra
+    newPATmat(job.PATmatIdxIL1RaSorted) = job.PATmat(job.PATmatIdxIL1Ra);
+    newZ(:,:,job.PATmatIdxIL1RaSorted) = Z(:,:,job.PATmatIdxIL1Ra);
+    newr(:,:,job.PATmatIdxIL1RaSorted) = r(:,:,job.PATmatIdxIL1Ra);
+    % Update PAT matrix list
+    job.PATmat = newPATmat;
+else
+    error('Wrong number of indexed subjects')
+end
+end % sort_PATmat
+
+function results = first_level_analysis(job, PAT, s1, c1, roiIndex)
 % Process network first-level analysis here (within subject)
-colorNames = fieldnames(IOI.color);
+colorNames = fieldnames(PAT.color);
 varName = sprintf('results_S%02d_%s', s1, colorNames{1+c1});
 if job.opt1stLvl.threshold ~= 0,
-    results = conn_network(IOI.fcIOS.corr.networkDataFname{s1, c1}, ...
+    results = conn_network(PAT.fcPAT.corr.networkDataFname{s1, c1}, ...
         roiIndex, job.opt1stLvl.measures, job.opt1stLvl.normalType, job.opt1stLvl.threshold);
 else
     % Creates figure with small-world properties
-    [results, h1] = conn_network(IOI.fcIOS.corr.networkDataFname{s1, c1}, ...
+    [results, h1] = conn_network(PAT.fcPAT.corr.networkDataFname{s1, c1}, ...
         roiIndex, job.opt1stLvl.measures, job.opt1stLvl.normalType);
     if job.generate_figures
         figName = get(h1, 'Name');
@@ -198,19 +233,25 @@ end
 fclose('all');
 end % first_level_analysis
 
-function ss = second_level_analysis(job, IOI, s1, c1, isTreatment, results)
+function ss = second_level_analysis(job, PAT, s1, c1, results) %#ok
 % Second-level analysis
-colorNames = fieldnames(IOI.color);
+colorNames = fieldnames(PAT.color);
 varName = sprintf('results_S%02d_%s', s1, colorNames{1+c1});
-
-controlGroupIdx = find(~isTreatment);
-treatmentGroupIdx = find(isTreatment);
+% Group indices
+controlGroupIdx     = job.PATmatIdxCtrlSorted;
+LPSGroupIdx         = job.PATmatIdxLPSSorted;
+IL1RaIdx            = job.PATmatIdxIL1RaSorted;
+% current results file name
 currentResults = fullfile(job.results_dir{1}, [varName '.mat']);
-
 % Prepare design matrix ss
-ss(1).n = numel(isTreatment);
-% Subjects in group 1 (Control NaCl) and 2 (Treatment CaCl_2)
-ss(1).X=zeros(ss.n,2);ss.X(controlGroupIdx,1)=1;ss.X(treatmentGroupIdx,2)=1;
+ss(1).n = numel(job.PATmat);
+% Subjects in group 1 (Control), 2 (LPS), 3 (LPS+IL-1Ra) and grand mean.
+ss(1).X = zeros(ss.n, 3+1);
+ss.X(controlGroupIdx,1) = 1;
+ss.X(LPSGroupIdx,2)     = 1;
+ss.X(IL1RaIdx,3)        = 1;
+% Grand mean
+ss.X(:,4)               = 1;
 % 1: one-sample t-test, 2: Two-sample t-test, 3: multiple regression
 ss(1).model = job.opt2ndLvl.model;
 % Regressor names
@@ -225,14 +266,15 @@ ss(1).ask = ask;
 
 % Save results and design matrix ss in .mat file
 save(currentResults, 'results', 'ss',...
-    'controlGroupIdx', 'treatmentGroupIdx');
+    'controlGroupIdx', 'LPSGroupIdx', 'IL1RaIdx');
 
 % Second-level analysis (between subjects) (updates currentResults .mat file)
 ss = conn_network_results(currentResults, ask);
 
 h = gcf;
 if job.generate_figures
-    set(h,'Name',varName)
+    figName = sprintf('results_%s_%s_2nd_level', colorNames{1+c1}, job.opt2ndLvl.Cname);
+    set(h,'Name',figName)
     if job.save_figures
         % Specify window units
         set(h, 'units', 'inches')
@@ -240,9 +282,9 @@ if job.generate_figures
         set(h, 'Position', [0.1 0.1 job.optFig.figSize(1) job.optFig.figSize(2)])
         set(h, 'PaperPosition', [0.1 0.1 job.optFig.figSize(1) job.optFig.figSize(2)])
         % Save as PNG
-        print(h, '-dpng', fullfile(job.results_dir{1},[varName '_2nd_level.png']), sprintf('-r%d',job.optFig.figRes));
+        print(h, '-dpng', fullfile(job.results_dir{1},[figName '.png']), sprintf('-r%d',job.optFig.figRes));
         % Save as a figure
-        saveas(h, fullfile(job.results_dir{1},[varName '_2nd_level.fig']), 'fig');
+        saveas(h, fullfile(job.results_dir{1},[figName '.fig']), 'fig');
         % Return the property to its default
         set(h, 'units', 'pixels')
         close(h); % close figure anyway
@@ -250,7 +292,7 @@ if job.generate_figures
 end
 end % second_level_analysis
 
-function fc_diagram(job, IOI, s1, c1, results, ss)
+function fc_diagram(job, PAT, s1, c1, results, ss)
 % Functional connectivity diagram. Edge thicknesses depend on the average
 % correlation coefficients from the 2 groups. Circle sizes are proportional to
 % global efficiency of each seed. Positive correlations are depicted in warm
@@ -258,8 +300,8 @@ function fc_diagram(job, IOI, s1, c1, results, ss)
 % circle indicates name of the seeds.
 if job.generate_figures
     % Retrieve correlation values
-    load(IOI.fcIOS.corr.networkDataFname{s1, c1});
-    colorNames = fieldnames(IOI.color);
+    load(PAT.fcPAT.corr.networkDataFname{s1, c1});
+    colorNames = fieldnames(PAT.color);
     nColors = 256;
     posCmap = hot(nColors);
     negCmap = winter(nColors);
@@ -267,13 +309,13 @@ if job.generate_figures
     %% NaCl (control) group fc diagram
     varName = sprintf('results_S%02d_%s_%s', s1, colorNames{1+c1}, ss.Xname{1});
     % load control group anatomical template (NC09) idxSubject = 13
-    % [IOI IOImat dir_ioimat] = ioi_get_IOI(job,10);
-    load('D:\Edgar\Data\IOS_Carotid_Res\12_10_18,NC09\IOI.mat')
+    % [PAT PATmat dir_patmat] = pat_get_PATmat(job,10);
+    load('D:\Edgar\Data\IOS_Carotid_Res\12_10_18,NC09\PAT.mat')
     % Read anatomical image
-    imAnatVol = spm_vol(IOI.res.file_anat);
+    imAnatVol = spm_vol(PAT.res.file_anat);
     NaCl_imAnat = spm_read_vols(imAnatVol)';
     % Read brain mask
-    maskVol = spm_vol(IOI.fcIOS.mask.fname);
+    maskVol = spm_vol(PAT.fcPAT.mask.fname);
     NaCl_mask = spm_read_vols(maskVol)';
     % Display anatomical image
     hCtrl = figure; set(hCtrl,'color','k');
@@ -372,9 +414,9 @@ if job.generate_figures
     %% CaCl2 (treatment) group fc diagram
     varName = sprintf('results_S%02d_%s_%s', s1, colorNames{1+c1}, ss.Xname{2});
     % load control group anatomical template (CC10) idxSubject = 14
-    % [IOI IOImat dir_ioimat] = ioi_get_IOI(job,10);
+    % [PAT PATmat dir_patmat] = pat_get_PATmat(job,10);
     % Read anatomical image
-    imAnatVol = spm_vol(IOI.res.file_anat);
+    imAnatVol = spm_vol(PAT.res.file_anat);
     CaCl2_imAnat = spm_read_vols(imAnatVol)';
     % Display anatomical image
     hTreat = figure; set(hTreat,'color','k');
@@ -383,7 +425,7 @@ if job.generate_figures
     % Change window name
     set(hTreat,'Name',[varName '_fc_diagram'])
     % Read brain mask
-    maskVol = spm_vol(IOI.fcIOS.mask.fname);
+    maskVol = spm_vol(PAT.fcPAT.mask.fname);
     CaCl2_mask = spm_read_vols(maskVol)';
     imagesc(CaCl2_imAnat .* CaCl2_mask); axis image; colormap(gray(256));
     set(gca, 'XTick', []); set(gca, 'YTick', []);
