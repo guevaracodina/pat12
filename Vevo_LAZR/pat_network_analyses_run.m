@@ -140,7 +140,7 @@ for c1 = 1:length(PAT.nifti_files)
                 end
             end % loop over scans
             % Sort by groups
-            [job, Z, r] = sort_PATmat(job, Z, r);
+            [job, Z, r, oldList] = sort_PATmat(job, Z, r);
             orderedPATlist = job.PATmat;
             % Save resultsROI_Condition*_Color
             save(PAT.fcPAT.corr.networkDataFname{s1, c1}, ...
@@ -154,6 +154,9 @@ for c1 = 1:length(PAT.nifti_files)
             
             % Functional connectivity diagram
             % fc_diagram(job, PAT, s1, c1, results, ss);
+            
+            % Return to the original list order
+            job.PATmat = oldList;
             
             % Update progress bar
             spm_progress_bar('Set', c1);
@@ -170,9 +173,10 @@ pat_text_waitbar('Clear');
 fprintf('Elapsed time: %s', datestr(datenum(0,0,0,0,0,toc),'HH:MM:SS\n') );
 end % pat_network_analyses_run
 
-function [job, newZ, newr] = sort_PATmat(job, Z, r)
+function [job, newZ, newr, oldList] = sort_PATmat(job, Z, r)
 % Sorts PAT matrix according to groups (Ctrl, LPS, and LPS+IL-1Ra)
 if numel([job.PATmatIdxCtrl job.PATmatIdxLPS job.PATmatIdxIL1Ra]) == numel(job.PATmat)
+    oldList = job.PATmat;
     newPATmat = cell(size(job.PATmat));
     newZ = zeros(size(Z));
     newr = zeros(size(r));
