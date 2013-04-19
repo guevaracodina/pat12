@@ -6,7 +6,7 @@ function network1 = pat_network_analyses_cfg
 %_______________________________________________________________________________
 
 % Select PAT.mat list of control group
-PATmat                  = pat_PATmat_cfg(2,'Select PAT.mat list of whole population');
+PATmat                  = pat_PATmat_cfg(2,'PATmat','Select PAT.mat list of whole population');
 
 % Select PAT.mat index of control group
 PATmatIdxCtrl           = cfg_entry;

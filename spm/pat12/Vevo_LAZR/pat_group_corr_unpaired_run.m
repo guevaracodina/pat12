@@ -11,13 +11,12 @@ function out = pat_group_corr_unpaired_run(job)
 % ------------------------------------------------------------------------------
 % REMOVE AFTER FINISHING THE FUNCTION //EGC
 % ------------------------------------------------------------------------------
-fprintf('Work in progress...\nEGC\n')
-out.PATmat = job.PATmat;
-return
+% fprintf('Work in progress...\nEGC\n')
+% out.PATmat = job.PATmatCtrl;
+% return
 % ------------------------------------------------------------------------------
 
-% For each subject:
-% Define string to ID a group (NC, CC, etc.)
+% For each scan:
 % - choose the pairs of ROIs (1-2, 3-4, ..., 11-12 by default) (batch)
 % for each color
 %   - get the seed-to-seed correlation matrix
@@ -30,96 +29,115 @@ return
 % - Display a graph with ROI labels
 % - Save a .csv file in parent folder for each contrast
 
-% Load first IOI matrix to check the number of colors
-[IOI IOImat dir_ioimat]= ioi_get_IOI(job,1);
+% Concatenate all PAT matrices
+job.PATmat = cat(1, job.PATmatCtrl, job.PATmatLPS);
+
+% Load first PAT matrix to check the number of colors
+[PAT PATmat dir_patmat] = pat_get_PATmat(job,1);
 
 % Initialize cell to hold group data {pairs_of_seeds, nColors}
-groupCorrData = cell([size(job.paired_seeds, 1) numel(IOI.color.eng)]);
-groupCorrIdx = cell([size(job.paired_seeds, 1) numel(IOI.color.eng)]);
+groupCorrData = cell([size(job.paired_seeds, 1) numel(PAT.color.eng)]);
+groupCorrIdx = cell([size(job.paired_seeds, 1) numel(PAT.color.eng)]);
 
 % Process data from the derivative of the seeds time course
 if isfield (job.optStat,'derivative')
-    groupCorrDataDiff = cell([size(job.paired_seeds, 1) numel(IOI.color.eng)]);
+    groupCorrDataDiff = cell([size(job.paired_seeds, 1) numel(PAT.color.eng)]);
 end
 
 % Process raw data from the seeds time course
 if isfield (job.optStat,'rawData')
-    groupCorrDataRaw = cell([size(job.paired_seeds, 1) numel(IOI.color.eng)]);
+    groupCorrDataRaw = cell([size(job.paired_seeds, 1) numel(PAT.color.eng)]);
 end
 
-if job.optStat.bonferroni
-    job.optStat.alpha = job.optStat.alpha ./ size(job.paired_seeds, 1);
+%% Multiple comparisons adjustment
+switch job.optStat.multComp
+    case 0
+        % No correction
+        fprintf('No adjustment for multiple comparisons\n')
+    case 1
+        % Bonferroni
+        fprintf('Bonferroni adjustment for multiple comparisons\n')
+        job.optStat.alpha = job.optStat.alpha ./ size(job.paired_seeds, 1);
+    case 2
+        fprintf('FDR adjustment for multiple comparisons\n')
+        % Do nothing for the moment
+    otherwise
+        % Do nothing
 end
 
-%Big loop over subjects
-% for SubjIdx = 1:size(job.IOImat, 1)
-for SubjIdx = 1:numel(job.IOImat)
+
+%% Big loop over scans
+for scanIdx = 1:numel(job.PATmat)
     try
         tic
-        %Load IOI.mat information
-        [IOI IOImat dir_ioimat]= ioi_get_IOI(job,SubjIdx);
-        if ~isfield(IOI.fcIOS.corr,'corrMatrixOK') % correlation matrix OK
-            disp(['No seed-to-seed correlation matrix available for subject ' int2str(SubjIdx) ' ... skipping correlation map']);
+        %Load PAT.mat information
+        [PAT PATmat dir_patmat]= pat_get_PATmat(job, scanIdx);
+        if ~isfield(PAT.fcPAT.corr,'corrMatrixOK') % correlation matrix OK
+            disp(['No seed-to-seed correlation matrix available for subject ' int2str(scanIdx) ' ... skipping correlation map']);
         else
-            if ~isfield(IOI.fcIOS.corr,'corrGroupOK') || job.force_redo
+            if ~isfield(PAT.jobsdone,'corrGroupOK') || job.force_redo
+                [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
+                scanName = splitStr{end-1};
                 % Get colors to include information
                 IC = job.IC;
-                colorNames = fieldnames(IOI.color);
+                colorNames = fieldnames(PAT.color);
                 % File name where correlation data is saved
-                IOI.fcIOS.corr(1).fnameGroup = fullfile(job.parent_results_dir{1},'group_corr_pair_seeds.mat');
+                PAT.fcPAT.corr(1).fnameGroup = fullfile(job.parent_results_dir{1},'group_corr_pair_seeds.mat');
                 % File name where correlation data of 1st derivative is saved
                 if isfield(job.optStat,'derivative')
-                    IOI.fcIOS.corr(1).fnameGroupDiff = fullfile(job.parent_results_dir{1},'group_corr_pair_seeds_diff.mat');
+                    PAT.fcPAT.corr(1).fnameGroupDiff = fullfile(job.parent_results_dir{1},'group_corr_pair_seeds_diff.mat');
                 end
                 if isfield(job.optStat, 'rawData')
-                    IOI.fcIOS.corr(1).fnameGroupRaw = fullfile(job.parent_results_dir{1},'group_corr_pair_seeds_raw.mat');
+                    PAT.fcPAT.corr(1).fnameGroupRaw = fullfile(job.parent_results_dir{1},'group_corr_pair_seeds_raw.mat');
                 end
                 % Check if mouse is tratment (1) or control (0)
-                isTreatment(SubjIdx,1) = ~isempty(regexp(IOI.subj_name, [job.ID.treatmentString '[0-9]+'], 'once'));
+                if any(scanIdx <= 1:numel(job.PATmatCtrl))
+                    % It is a control
+                    isTreatment(scanIdx,1) = false;
+                else
+                    % It is a LPS
+                    isTreatment(scanIdx,1) = true;
+                end
                 % Treatment/control sessions is always 1
                 idxSess(1,1:2) = 1;
                 % Additional 3rd column with subject index
-                idxSess(:,3) = SubjIdx;
+                idxSess(:,3) = scanIdx;
                 % Get the seed-to-seed correlation matrix (seed2seedCorrMat)
-                load(IOI.fcIOS.corr.corrMatrixFname)
+                load(PAT.fcPAT.corr.corrMatrixFname)
                 if isfield (job.optStat,'derivative')
                     if job.optStat.derivative
                         % Get the seed-to-seed correlation of 1st derivative matrix
                         % (seed2seedCorrMatDiff)
-                        load(IOI.fcIOS.corr.corrMatrixDiffFname)
+                        load(PAT.fcPAT.corr.corrMatrixDiffFname)
                     end
                 end
                 if isfield(job.optStat, 'rawData')
                     if job.optStat.rawData
                         % Compute the seed-to-seed correlation of raw data
-                        [seed2seedCorrMatRaw IOI.fcIOS.corr(1).corrMatrixRawFname] = ioi_roi_corr_raw(job,SubjIdx);
+                        [seed2seedCorrMatRaw PAT.fcPAT.corr(1).corrMatrixRawFname] = pat_roi_corr_raw(job,scanIdx);
                         % Save seed-to-seed correlation data
-                        save(IOI.fcIOS.corr(1).corrMatrixRawFname, 'seed2seedCorrMatRaw')
+                        save(PAT.fcPAT.corr(1).corrMatrixRawFname, 'seed2seedCorrMatRaw')
                     end
                 end
                 % Initialize cell to hold paired seeds correlation data
                 pairedSeeds = cell([size(job.paired_seeds, 1) 1]);
                 for iCell = 1:size(job.paired_seeds, 1),
-                    pairedSeeds{iCell} = cell([1 numel(IOI.color.eng)]);
+                    pairedSeeds{iCell} = cell([1 numel(PAT.color.eng)]);
                     if isfield (job.optStat,'derivative')
-                        pairedSeedsDiff{iCell} = cell([1 numel(IOI.color.eng)]);
+                        pairedSeedsDiff{iCell} = cell([1 numel(PAT.color.eng)]);
                     end
                     if isfield (job.optStat,'rawData')
-                        pairedSeedsRaw{iCell} = cell([1 numel(IOI.color.eng)]);
+                        pairedSeedsRaw{iCell} = cell([1 numel(PAT.color.eng)]);
                     end
                     % Get paired ROIs names
-                    pairedSeedsNames{SubjIdx,1}{iCell,1} = [IOI.ROIname{job.paired_seeds(iCell,1)} ' & ' IOI.ROIname{job.paired_seeds(iCell,2)}];
-                    subjectName{SubjIdx,1}{iCell,1} = IOI.subj_name;
-                    groupID{SubjIdx,1}{iCell,1} = isTreatment(SubjIdx,1);
+                    pairedSeedsNames{scanIdx,1}{iCell,1} = [PAT.ROI.ROIname{job.paired_seeds(iCell,1)} ' & ' PAT.ROI.ROIname{job.paired_seeds(iCell,2)}];
+                    subjectName{scanIdx,1}{iCell,1} = scanName;
+                    groupID{scanIdx,1}{iCell,1} = isTreatment(scanIdx,1);
                 end % paired seeds loop
                 
-%                 if SubjIdx == 17 && c1 == 8
-%                     keyboard
-%                 end % Error in SubBand2 analysis IOI.fcIOS.corr.corrMapName missing CMRO2 //EGC
-                
                 % Loop over available colors
-                for c1 = 1:size(IOI.fcIOS.corr.corrMapName{1}, 2)
-                    doColor = ioi_doColor(IOI,c1,IC);
+                for c1 = 1:size(PAT.fcPAT.corr.corrMapName{1}, 2)
+                    doColor = pat_doColor(PAT,c1,IC);
                     if doColor
                         % Loop over sessions
                         for s1 = 1,
@@ -143,7 +161,7 @@ for SubjIdx = 1:numel(job.IOImat)
                                     % Get current correlation matrix
                                     currCorrMatDiff = seed2seedCorrMatDiff{1}{s1,c1};
                                     % transform Pearson's r to Fisher's z
-                                    currCorrMatDiff = fisherz(currCorrMatDiff);
+                                    currCorrMatDiff = pat_fisherz(currCorrMatDiff);
                                     for iROI = 1:size(job.paired_seeds, 1)
                                         % Need to check this for every seed pair //EGC
                                         if isempty(currCorrMatDiff)
@@ -162,7 +180,7 @@ for SubjIdx = 1:numel(job.IOImat)
                                     % Get current correlation matrix
                                     currCorrMatRaw = seed2seedCorrMatRaw{1}{s1,c1};
                                     % transform Pearson's r to Fisher's z
-                                    currCorrMatRaw = fisherz(currCorrMatRaw);
+                                    currCorrMatRaw = pat_fisherz(currCorrMatRaw);
                                     for iROI = 1:size(job.paired_seeds, 1)
                                         % Need to check this for every seed pair //EGC
                                         if isempty(currCorrMatRaw)
@@ -178,7 +196,7 @@ for SubjIdx = 1:numel(job.IOImat)
                             end % raw time course
                         end % sessions loop
                         % Arrange the paired seeds according to idxSessions
-                        fprintf('Retrieving data %s C%d (%s)...\n',IOI.subj_name, c1,colorNames{1+c1});
+                        fprintf('Retrieving data %s C%d (%s)...\n',scanName, c1,colorNames{1+c1});
                         tmpArray = zeros([size(job.paired_seeds, 1), 1]);
                         if isfield (job.optStat,'derivative')
                             if job.optStat.derivative
@@ -207,9 +225,9 @@ for SubjIdx = 1:numel(job.IOImat)
                         end % paired-seeds loop
                         for iROI = 1:size(job.paired_seeds, 1)
                             % Full group index
-                            groupCorrIdx{iROI,c1} = [groupCorrIdx{iROI,c1}; SubjIdx];
+                            groupCorrIdx{iROI,c1} = [groupCorrIdx{iROI,c1}; scanIdx];
                             % if c1 == 8
-                            %    fprintf('\ntmpArray = %f Subject: %d (%s)\n', squeeze(tmpArray(iROI,:,:)), SubjIdx, IOI.subj_name);
+                            %    fprintf('\ntmpArray = %f Subject: %d (%s)\n', squeeze(tmpArray(iROI,:,:)), scanIdx, scanName);
                             % end
                             if ~isempty(squeeze(tmpArray(iROI,:,:)))
                                 % Full group data
@@ -239,24 +257,24 @@ for SubjIdx = 1:numel(job.IOImat)
                     end
                 end % colors loop
                 % Save group correlation data data (data is appended for more subjects)
-                save(IOI.fcIOS.corr(1).fnameGroup, 'subjectName', 'groupID', 'pairedSeedsNames', 'isTreatment','groupCorrData','groupCorrIdx','groupCorrDataDiff','groupCorrDataRaw')
+                save(PAT.fcPAT.corr(1).fnameGroup, 'subjectName', 'groupID', 'pairedSeedsNames', 'isTreatment','groupCorrData','groupCorrIdx','groupCorrDataDiff','groupCorrDataRaw')
                 if isfield (job,'derivative')
-                    save(IOI.fcIOS.corr(1).fnameGroupDiff,'groupCorrDataDiff');
+                    save(PAT.fcPAT.corr(1).fnameGroupDiff,'groupCorrDataDiff');
                 end
                 if isfield (job,'rawData')
-                    save(IOI.fcIOS.corr(1).fnameGroupRaw,'groupCorrDataRaw');
+                    save(PAT.fcPAT.corr(1).fnameGroupRaw,'groupCorrDataRaw');
                 end
                 % group analysis succesful
-                IOI.fcIOS.corr.corrGroupOK = true;
-                % Save IOI matrix
-                save(IOImat,'IOI');
+                PAT.fcPAT.corr.corrGroupOK = true;
+                % Save PAT matrix
+                save(PATmat,'PAT');
             end % correlation OK or redo job
         end % corrMap OK
         disp(['Elapsed time: ' datestr(datenum(0,0,0,0,0,toc),'HH:MM:SS')]);
-        disp(['Subject ' int2str(SubjIdx) ' (' IOI.subj_name ')' ' complete']);
-        out.IOImat{SubjIdx} = IOImat;
+        disp(['Subject ' int2str(scanIdx) ' (' scanName ')' ' complete']);
+        out.PATmat{scanIdx} = PATmat;
     catch exception
-        out.IOImat{SubjIdx} = IOImat;
+        out.PATmat{scanIdx} = PATmat;
         disp(exception.identifier)
         disp(exception.stack(1))
     end
@@ -289,21 +307,21 @@ if ~exist(fullfile(job.parent_results_dir{1},'groupOK.mat'),'file') || job.force
     
     % dbstop if error
     
-    for c1 = 1:size(IOI.fcIOS.corr.corrMapName{1}, 2)
-        doColor = ioi_doColor(IOI,c1,IC);
+    for c1 = 1:size(PAT.fcPAT.corr.corrMapName{1}, 2)
+        doColor = pat_doColor(PAT,c1,IC);
         if doColor
             % Perform test on ROIs time course
-            [job, IOI, e, y, eTotal, yTotal, statTest, meanCorr, stdCorr, groupCorrData] = subfunction_group_corr_test_unpaired(job, IOI, c1, groupCorrData, statTest, meanCorr, stdCorr, eTotal, yTotal, isTreatment);
+            [job, PAT, e, y, eTotal, yTotal, statTest, meanCorr, stdCorr, groupCorrData] = subfunction_group_corr_test_unpaired(job, PAT, c1, groupCorrData, statTest, meanCorr, stdCorr, eTotal, yTotal, isTreatment);
             % Perform tests on the derivative of ROIs time-course
-            [job, IOI, eDiff, yDiff, eTotalDiff, yTotalDiff, statTestDiff, meanCorrDiff, stdCorrDiff, groupCorrDataDiff] = subfunction_group_corr_test_diff_unpaired(job, IOI, c1, groupCorrDataDiff, statTestDiff, meanCorrDiff, stdCorrDiff, eTotalDiff, yTotalDiff, isTreatment);
+            [job, PAT, eDiff, yDiff, eTotalDiff, yTotalDiff, statTestDiff, meanCorrDiff, stdCorrDiff, groupCorrDataDiff] = subfunction_group_corr_test_diff_unpaired(job, PAT, c1, groupCorrDataDiff, statTestDiff, meanCorrDiff, stdCorrDiff, eTotalDiff, yTotalDiff, isTreatment);
             % Perform tests on raw data of ROIs time-course
-            [job, IOI, eRaw, yRaw, eTotalRaw, yTotalRaw, statTestRaw, meanCorrRaw, stdCorrRaw] = subfunction_group_corr_test_raw_unpaired(job, IOI, c1, groupCorrDataRaw, statTestRaw, meanCorrRaw, stdCorrRaw, eTotalRaw, yTotalRaw, isTreatment);
+            [job, PAT, eRaw, yRaw, eTotalRaw, yTotalRaw, statTestRaw, meanCorrRaw, stdCorrRaw] = subfunction_group_corr_test_raw_unpaired(job, PAT, c1, groupCorrDataRaw, statTestRaw, meanCorrRaw, stdCorrRaw, eTotalRaw, yTotalRaw, isTreatment);
             % Plot results
-            subfunction_plot_group_corr_test(job, IOI, c1, e, y, statTest);
+            subfunction_plot_group_corr_test(job, PAT, c1, e, y, statTest);
             % Plot results based on 1st derivative
-            subfunction_plot_group_corr_test_diff(job, IOI, c1, eDiff, yDiff, statTestDiff);
+            subfunction_plot_group_corr_test_diff(job, PAT, c1, eDiff, yDiff, statTestDiff);
             % Plot results based on raw data
-            subfunction_plot_group_corr_test_raw(job, IOI, c1, eRaw, yRaw, statTestRaw);
+            subfunction_plot_group_corr_test_raw(job, PAT, c1, eRaw, yRaw, statTestRaw);
             % Arrange all bilateral connectivity measurements in a big cell
             dataCell = subfunction_full_group_data(c1, subjectName, pairedSeedsNames, groupCorrData, groupCorrDataDiff, groupCorrDataRaw, groupID, groupCorrIdx);
             % create csv file name
@@ -317,7 +335,7 @@ if ~exist(fullfile(job.parent_results_dir{1},'groupOK.mat'),'file') || job.force
     save(fullfile(job.parent_results_dir{1},'groupOK.mat'),'groupOK');
     fprintf('Group comparison of bilateral correlation succesful!\n');
 end % force or groupOK
-end % ioi_group_corr_run
+end % pat_group_corr_run
 
 function dataCell = subfunction_full_group_data(c1, subjectName, pairedSeedsNames, groupCorrData, groupCorrDataDiff, groupCorrDataRaw, groupID, groupCorrIdx)
 % Organize all correlation data in a big cell for group analysis
@@ -373,7 +391,7 @@ for iSubjects = 1:size(subjectName,1),
 end
 if nCols == 6,
     % Append header
-    hdr = {'Subject Name' 'Seed Pairs' 'z(r)' 'z(r'')' 'z(r_raw)' 'NaCl=0; CaCl_2=1'};
+    hdr = {'Subject Name' 'Seed Pairs' 'z(r)' 'z(r'')' 'z(r_raw)' 'Ctrl=0; LPS=1'};
     dataCell = [hdr; dataCell];
 end
 end % subfunction_full_group_data
@@ -401,7 +419,7 @@ end
 fclose(fid);
 end % subfunction_cell2csv
 
-function [job, IOI, e, y, eTotal, yTotal, statTest, meanCorr, stdCorr, groupCorrData] = subfunction_group_corr_test_unpaired(job, IOI, c1, groupCorrData, statTest, meanCorr, stdCorr, eTotal, yTotal, isTreatment)
+function [job, PAT, e, y, eTotal, yTotal, statTest, meanCorr, stdCorr, groupCorrData] = subfunction_group_corr_test_unpaired(job, PAT, c1, groupCorrData, statTest, meanCorr, stdCorr, eTotal, yTotal, isTreatment)
 % Do a separate paired t-test for each seed data
 for iSeeds = 1:size(job.paired_seeds, 1)
     % Average of control group
@@ -485,20 +503,20 @@ end
 yTotal{c1} = y;
 eTotal{c1} = e;
 
-if exist(IOI.fcIOS.corr(1).fnameGroup,'file')
+if exist(PAT.fcPAT.corr(1).fnameGroup,'file')
     % Append results to .mat file
-    save(IOI.fcIOS.corr(1).fnameGroup,'groupCorrData', 'isTreatment',...
+    save(PAT.fcPAT.corr(1).fnameGroup,'groupCorrData', 'isTreatment',...
         'meanCorr','stdCorr','statTest','yTotal','eTotal','-append');
 else
     % Write results to .mat file
-    save(IOI.fcIOS.corr(1).fnameGroup,'groupCorrData', 'isTreatment',...
+    save(PAT.fcPAT.corr(1).fnameGroup,'groupCorrData', 'isTreatment',...
         'meanCorr','stdCorr','statTest','yTotal','eTotal');
 end
 
 
 end % subfunction_group_corr_test_unpaired
 
-function [job, IOI, eDiff, yDiff, eTotalDiff, yTotalDiff, statTestDiff, meanCorrDiff, stdCorrDiff, groupCorrDataDiff] = subfunction_group_corr_test_diff_unpaired(job, IOI, c1, groupCorrDataDiff, statTestDiff, meanCorrDiff, stdCorrDiff, eTotalDiff, yTotalDiff, isTreatment)
+function [job, PAT, eDiff, yDiff, eTotalDiff, yTotalDiff, statTestDiff, meanCorrDiff, stdCorrDiff, groupCorrDataDiff] = subfunction_group_corr_test_diff_unpaired(job, PAT, c1, groupCorrDataDiff, statTestDiff, meanCorrDiff, stdCorrDiff, eTotalDiff, yTotalDiff, isTreatment)
 % empty outputs
 eDiff = [];
 yDiff = [];
@@ -588,21 +606,21 @@ if isfield (job.optStat,'derivative')
         yTotalDiff{c1} = yDiff;
         eTotalDiff{c1} = eDiff;
         
-        if exist(IOI.fcIOS.corr(1).fnameGroupDiff,'file')
+        if exist(PAT.fcPAT.corr(1).fnameGroupDiff,'file')
             % Append results to .mat file
-            save(IOI.fcIOS.corr(1).fnameGroupDiff,'groupCorrDataDiff','isTreatment',...
+            save(PAT.fcPAT.corr(1).fnameGroupDiff,'groupCorrDataDiff','isTreatment',...
                 'meanCorrDiff','stdCorrDiff','statTestDiff','yTotalDiff','eTotalDiff',...
                 '-append');
         else
             % Save results to .mat file
-            save(IOI.fcIOS.corr(1).fnameGroupDiff,'groupCorrDataDiff','isTreatment',...
+            save(PAT.fcPAT.corr(1).fnameGroupDiff,'groupCorrDataDiff','isTreatment',...
                 'meanCorrDiff','stdCorrDiff','statTestDiff','yTotalDiff','eTotalDiff');
         end
     end
 end % derivative
 end % subfunction_group_corr_test_diff_unpaired
 
-function [job, IOI, eRaw, yRaw, eTotalRaw, yTotalRaw, statTestRaw, meanCorrRaw, stdCorrRaw] = subfunction_group_corr_test_raw_unpaired(job, IOI, c1, groupCorrDataRaw, statTestRaw, meanCorrRaw, stdCorrRaw, eTotalRaw, yTotalRaw, isTreatment)
+function [job, PAT, eRaw, yRaw, eTotalRaw, yTotalRaw, statTestRaw, meanCorrRaw, stdCorrRaw] = subfunction_group_corr_test_raw_unpaired(job, PAT, c1, groupCorrDataRaw, statTestRaw, meanCorrRaw, stdCorrRaw, eTotalRaw, yTotalRaw, isTreatment)
 % empty outputs
 eRaw = [];
 yRaw = [];
@@ -676,23 +694,23 @@ if isfield (job,'rawData')
         yTotalRaw{c1} = yRaw;
         eTotalRaw{c1} = eRaw;
         
-        if exist(IOI.fcIOS.corr(1).fnameGroupRaw, 'file')
+        if exist(PAT.fcPAT.corr(1).fnameGroupRaw, 'file')
             % Append results to .mat file
-            save(IOI.fcIOS.corr(1).fnameGroupRaw,'groupCorrDataRaw','isTreatment',...
+            save(PAT.fcPAT.corr(1).fnameGroupRaw,'groupCorrDataRaw','isTreatment',...
                 'meanCorrRaw','stdCorrRaw','statTestRaw', 'yTotalRaw', 'eTotalRaw',...
                 '-append');
         else
             % Save results in .mat file
-            save(IOI.fcIOS.corr(1).fnameGroupRaw,'groupCorrDataRaw','isTreatment',...
+            save(PAT.fcPAT.corr(1).fnameGroupRaw,'groupCorrDataRaw','isTreatment',...
                 'meanCorrRaw','stdCorrRaw','statTestRaw', 'yTotalRaw', 'eTotalRaw');
         end
     end
 end % raw data
 end % subfunction_group_corr_test_raw_unpaired
 
-function subfunction_plot_group_corr_test(job, IOI, c1, e, y, statTest)
+function subfunction_plot_group_corr_test(job, PAT, c1, e, y, statTest)
 % Plots statistical analysis group results
-colorNames      = fieldnames(IOI.color);
+colorNames      = fieldnames(PAT.color);
 % Positioning factor for the * mark, depends on max data value at the given seed
 starPosFactor   = 1.05;
 % Font Sizes
@@ -704,7 +722,7 @@ if job.optStat.ttest1
     % Display a graph with ROI labels
     if job.generate_figures
         % Display plots on new figure
-        h = figure(999); set(gcf,'color','w')
+        h = figure; set(gcf,'color','w')
         % Specify window units
         set(h, 'units', 'inches')
         % Change figure and paper size
@@ -714,17 +732,14 @@ if job.optStat.ttest1
         barwitherr(e, y)
         % Display colormap according to the contrast
         switch(c1)
-            case 5
-                % HbO contrast
-                colormap([1 0 0; 1 1 1]);
-            case 6
-                % HbR contrast
-                colormap([0 0 1; 1 1 1]);
-            case 7
-                % Flow contrast
+            case 1
+                % HbT contrast
                 colormap([0.5 0.5 0.5; 1 1 1]);
-            case 8
-                % CMRO2 contrast
+            case 2
+                % SO2 contrast
+                colormap([0.25 0.25 0.25; 1 1 1]);
+            case 3
+                % B-mode contrast
                 colormap([0 0 0; 1 1 1]);
             otherwise
                 colormap(gray)
@@ -743,6 +758,16 @@ if job.optStat.ttest1
         end
         % Show a * when a significant difference is found.
         for iSeeds = 1:size(job.paired_seeds, 1)
+            % FDR-corrected p-value (q)
+            if job.optStat.multComp == 2
+                if pat_fdr(statTest(1).t(1).P{iSeeds,c1}) < job.pValue
+                    % Significant difference
+                    statTest(1).t(1).H{iSeeds,c1} = true;
+                else
+                    % Non significant difference
+                    statTest(1).t(1).H{iSeeds,c1} = false;
+                end
+            end
             if statTest(1).t(1).H{iSeeds,c1}
                 if max(y(iSeeds,:))>=0
                     yPos = starPosFactor*(max(y(iSeeds,:)) + max(e(iSeeds,:)));
@@ -755,16 +780,26 @@ if job.optStat.ttest1
         end
         if job.save_figures
             newName = sprintf('groupCorr_Ttest_C%d_(%s)',c1,colorNames{1+c1});
+            switch job.optStat.multComp
+                case 0 % None
+                    %Do nothing
+                case 1 % Bonferroni
+                    newName = [newName '_Bonferroni'];
+                case 2 % FDR
+                    newName = [newName '_FDR'];
+                otherwise
+                    % Do nothing
+            end
             % Save as EPS
-            spm_figure('Print', 'Graphics', fullfile(job.parent_results_dir{1}, newName));
+            % spm_figure('Print', 'Graphics', fullfile(job.parent_results_dir{1}, newName));
             % Save as PNG
             print(h, '-dpng', fullfile(job.parent_results_dir{1},newName), sprintf('-r%d',job.optFig.figRes));
             % Save as a figure
             saveas(h, fullfile(job.parent_results_dir{1},newName), 'fig');
+            % Return the property to its default
+            set(h, 'units', 'pixels')
+            close(h)
         end
-        % Return the property to its default
-        set(h, 'units', 'pixels')
-        close(h)
     end % end generate figures
 end
 
@@ -782,17 +817,14 @@ if job.optStat.wilcoxon1
         barwitherr(e, y)
         % Display colormap according to the contrast
         switch(c1)
-            case 5
-                % HbO contrast
-                colormap([1 0 0; 1 1 1]);
-            case 6
-                % HbR contrast
-                colormap([0 0 1; 1 1 1]);
-            case 7
-                % Flow contrast
+            case 1
+                % HbT contrast
                 colormap([0.5 0.5 0.5; 1 1 1]);
-            case 8
-                % CMRO2 contrast
+            case 2
+                % SO2 contrast
+                colormap([0.25 0.25 0.25; 1 1 1]);
+            case 3
+                % B-mode contrast
                 colormap([0 0 0; 1 1 1]);
             otherwise
                 colormap(gray)
@@ -811,6 +843,16 @@ if job.optStat.wilcoxon1
         end
         % Show a * when a significant difference is found.
         for iSeeds = 1:size(job.paired_seeds, 1)
+            % FDR-corrected p-value (q)
+            if job.optStat.multComp == 2
+                if pat_fdr(statTest(1).w(1).P{iSeeds,c1}) < job.pValue
+                    % Significant difference
+                    statTest(1).w(1).H{iSeeds,c1} = true;
+                else
+                    % Non significant difference
+                    statTest(1).w(1).H{iSeeds,c1} = false;
+                end
+            end
             if statTest(1).w(1).H{iSeeds,c1}
                 if max(y(iSeeds,:))>=0
                     yPos = starPosFactor*(max(y(iSeeds,:)) + max(e(iSeeds,:)));
@@ -823,25 +865,35 @@ if job.optStat.wilcoxon1
         end
         if job.save_figures
             newName = sprintf('groupCorr_Wtest_C%d_(%s)',c1,colorNames{1+c1});
+            switch job.optStat.multComp
+                case 0 % None
+                    %Do nothing
+                case 1 % Bonferroni
+                    newName = [newName '_Bonferroni'];
+                case 2 % FDR
+                    newName = [newName '_FDR'];
+                otherwise
+                    % Do nothing
+            end
             % Save as EPS
-            spm_figure('Print', 'Graphics', fullfile(job.parent_results_dir{1},newName));
+            % spm_figure('Print', 'Graphics', fullfile(job.parent_results_dir{1},newName));
             % Save as PNG
             print(h, '-dpng', fullfile(job.parent_results_dir{1},newName), sprintf('-r%d',job.optFig.figRes));
             % Save as a figure
             saveas(h, fullfile(job.parent_results_dir{1},newName), 'fig');
+            % Return the property to its default
+            set(h, 'units', 'pixels')
+            close(h)
         end
-        % Return the property to its default
-        set(h, 'units', 'pixels')
-        close(h)
     end % End generate figures
 end
 end % subfunction_plot_group_corr_test
 
-function subfunction_plot_group_corr_test_diff(job, IOI, c1, eDiff, yDiff, statTestDiff)
+function subfunction_plot_group_corr_test_diff(job, PAT, c1, eDiff, yDiff, statTestDiff)
 if isfield (job.optStat,'derivative')
     if job.optStat.derivative
         % Plots statistical analysis group results
-        colorNames = fieldnames(IOI.color);
+        colorNames = fieldnames(PAT.color);
         % Positioning factor for the * mark, depends on max data value at the given seed
         starPosFactor   = 1.05;
         % Font Sizes
@@ -863,17 +915,14 @@ if isfield (job.optStat,'derivative')
                 barwitherr(eDiff, yDiff)
                 % Display colormap according to the contrast
                 switch(c1)
-                    case 5
-                        % HbO contrast
-                        colormap([1 0 0; 1 1 1]);
-                    case 6
-                        % HbR contrast
-                        colormap([0 0 1; 1 1 1]);
-                    case 7
-                        % Flow contrast
+                    case 1
+                        % HbT contrast
                         colormap([0.5 0.5 0.5; 1 1 1]);
-                    case 8
-                        % CMRO2 contrast
+                    case 2
+                        % SO2 contrast
+                        colormap([0.25 0.25 0.25; 1 1 1]);
+                    case 3
+                        % B-mode contrast
                         colormap([0 0 0; 1 1 1]);
                     otherwise
                         colormap(gray)
@@ -892,6 +941,16 @@ if isfield (job.optStat,'derivative')
                 end
                 % Show a * when a significant difference is found.
                 for iSeeds = 1:size(job.paired_seeds, 1)
+                    % FDR-corrected p-value (q)
+                    if job.optStat.multComp == 2
+                        if pat_fdr(statTestDiff(1).t(1).P{iSeeds,c1}) < job.pValue
+                            % Significant difference
+                            statTestDiff(1).t(1).H{iSeeds,c1} = true;
+                        else
+                            % Non significant difference
+                            statTestDiff(1).t(1).H{iSeeds,c1} = false;
+                        end
+                    end
                     if statTestDiff(1).t(1).H{iSeeds,c1}
                         if max(yDiff(iSeeds,:))>=0
                             yPos = starPosFactor*(max(yDiff(iSeeds,:)) + max(eDiff(iSeeds,:)));
@@ -904,16 +963,26 @@ if isfield (job.optStat,'derivative')
                 end
                 if job.save_figures
                     newName = sprintf('groupCorr_Ttest_C%d_(%s)_diff',c1,colorNames{1+c1});
+                    switch job.optStat.multComp
+                        case 0 % None
+                            %Do nothing
+                        case 1 % Bonferroni
+                            newName = [newName '_Bonferroni'];
+                        case 2 % FDR
+                            newName = [newName '_FDR'];
+                        otherwise
+                            % Do nothing
+                    end
                     % Save as EPS
-                    spm_figure('Print', 'Graphics', fullfile(job.parent_results_dir{1}, newName));
+                    % spm_figure('Print', 'Graphics', fullfile(job.parent_results_dir{1}, newName));
                     % Save as PNG
                     print(h, '-dpng', fullfile(job.parent_results_dir{1},newName), sprintf('-r%d',job.optFig.figRes));
                     % Save as a figure
                     saveas(h, fullfile(job.parent_results_dir{1},newName), 'fig');
+                    % Return the property to its default
+                    set(h, 'units', 'pixels')
+                    close(h)
                 end
-                % Return the property to its default
-                set(h, 'units', 'pixels')
-                close(h)
             end % end generate figures
         end
         
@@ -931,17 +1000,14 @@ if isfield (job.optStat,'derivative')
                 barwitherr(eDiff, yDiff)
                 % Display colormap according to the contrast
                 switch(c1)
-                    case 5
-                        % HbO contrast
-                        colormap([1 0 0; 1 1 1]);
-                    case 6
-                        % HbR contrast
-                        colormap([0 0 1; 1 1 1]);
-                    case 7
-                        % Flow contrast
+                    case 1
+                        % HbT contrast
                         colormap([0.5 0.5 0.5; 1 1 1]);
-                    case 8
-                        % CMRO2 contrast
+                    case 2
+                        % SO2 contrast
+                        colormap([0.25 0.25 0.25; 1 1 1]);
+                    case 3
+                        % B-mode contrast
                         colormap([0 0 0; 1 1 1]);
                     otherwise
                         colormap(gray)
@@ -960,6 +1026,16 @@ if isfield (job.optStat,'derivative')
                 end
                 % Show a * when a significant difference is found.
                 for iSeeds = 1:size(job.paired_seeds, 1)
+                    % FDR-corrected p-value (q)
+                    if job.optStat.multComp == 2
+                        if pat_fdr(statTestDiff(1).w(1).P{iSeeds,c1}) < job.pValue
+                            % Significant difference
+                            statTestDiff(1).w(1).H{iSeeds,c1} = true;
+                        else
+                            % Non significant difference
+                            statTestDiff(1).w(1).H{iSeeds,c1} = false;
+                        end
+                    end
                     if statTestDiff(1).w(1).H{iSeeds,c1}
                         if max(yDiff(iSeeds,:))>=0
                             yPos = starPosFactor*(max(yDiff(iSeeds,:)) + max(eDiff(iSeeds,:)));
@@ -972,27 +1048,37 @@ if isfield (job.optStat,'derivative')
                 end
                 if job.save_figures
                     newName = sprintf('groupCorr_Wtest_C%d_(%s)_diff',c1,colorNames{1+c1});
+                    switch job.optStat.multComp
+                        case 0 % None
+                            %Do nothing
+                        case 1 % Bonferroni
+                            newName = [newName '_Bonferroni'];
+                        case 2 % FDR
+                            newName = [newName '_FDR'];
+                        otherwise
+                            % Do nothing
+                    end
                     % Save as EPS
-                    spm_figure('Print', 'Graphics', fullfile(job.parent_results_dir{1},newName));
+                    % spm_figure('Print', 'Graphics', fullfile(job.parent_results_dir{1},newName));
                     % Save as PNG
                     print(h, '-dpng', fullfile(job.parent_results_dir{1},newName), sprintf('-r%d',job.optFig.figRes));
                     % Save as a figure
                     saveas(h, fullfile(job.parent_results_dir{1},newName), 'fig');
+                    % Return the property to its default
+                    set(h, 'units', 'pixels')
+                    close(h)
                 end
-                % Return the property to its default
-                set(h, 'units', 'pixels')
-                close(h)
             end % End generate figures
         end % Wilcoxon
     end
 end % derivative
 end % subfunction_plot_group_corr_test_diff
 
-function subfunction_plot_group_corr_test_raw(job, IOI, c1, eRaw, yRaw, statTestRaw)
+function subfunction_plot_group_corr_test_raw(job, PAT, c1, eRaw, yRaw, statTestRaw)
 if isfield (job,'rawData')
     if job.optStat.rawData
         % Plots statistical analysis group results
-        colorNames = fieldnames(IOI.color);
+        colorNames = fieldnames(PAT.color);
         % Positioning factor for the * mark, depends on max data value at the given seed
         starPosFactor   = 1.05;
         % Font Sizes
@@ -1014,17 +1100,14 @@ if isfield (job,'rawData')
                 barwitherr(eRaw, yRaw)
                 % Display colormap according to the contrast
                 switch(c1)
-                    case 5
-                        % HbO contrast
-                        colormap([1 0 0; 1 1 1]);
-                    case 6
-                        % HbR contrast
-                        colormap([0 0 1; 1 1 1]);
-                    case 7
-                        % Flow contrast
+                    case 1
+                        % HbT contrast
                         colormap([0.5 0.5 0.5; 1 1 1]);
-                    case 8
-                        % CMRO2 contrast
+                    case 2
+                        % SO2 contrast
+                        colormap([0.25 0.25 0.25; 1 1 1]);
+                    case 3
+                        % B-mode contrast
                         colormap([0 0 0; 1 1 1]);
                     otherwise
                         colormap(gray)
@@ -1043,6 +1126,16 @@ if isfield (job,'rawData')
                 end
                 % Show a * when a significant difference is found.
                 for iSeeds = 1:size(job.paired_seeds, 1)
+                    % FDR-corrected p-value (q)
+                    if job.optStat.multComp == 2
+                        if pat_fdr(statTestRaw(1).t(1).H{iSeeds,c1}) < job.pValue
+                            % Significant difference
+                            statTestRaw(1).t(1).H{iSeeds,c1} = true;
+                        else
+                            % Non significant difference
+                            statTestRaw(1).t(1).H{iSeeds,c1} = false;
+                        end
+                    end
                     if statTestRaw(1).t(1).H{iSeeds,c1}
                         if max(yRaw(iSeeds,:))>=0
                             yPos = starPosFactor*(max(yRaw(iSeeds,:)) + max(eRaw(iSeeds,:)));
@@ -1055,16 +1148,26 @@ if isfield (job,'rawData')
                 end
                 if job.save_figures
                     newName = sprintf('groupCorr_Ttest_C%d_(%s)_raw',c1,colorNames{1+c1});
+                    switch job.optStat.multComp
+                        case 0 % None
+                            %Do nothing
+                        case 1 % Bonferroni
+                            newName = [newName '_Bonferroni'];
+                        case 2 % FDR
+                            newName = [newName '_FDR'];
+                        otherwise
+                            % Do nothing
+                    end
                     % Save as EPS
-                    spm_figure('Print', 'Graphics', fullfile(job.parent_results_dir{1}, newName));
+                    % spm_figure('Print', 'Graphics', fullfile(job.parent_results_dir{1}, newName));
                     % Save as PNG
                     print(h, '-dpng', fullfile(job.parent_results_dir{1},newName), sprintf('-r%d',job.optFig.figRes));
                     % Save as a figure
                     saveas(h, fullfile(job.parent_results_dir{1},newName), 'fig');
+                    % Return the property to its default
+                    set(h, 'units', 'pixels')
+                    close(h)
                 end
-                % Return the property to its default
-                set(h, 'units', 'pixels')
-                close(h)
             end % end generate figures
         end
         
@@ -1082,17 +1185,14 @@ if isfield (job,'rawData')
                 barwitherr(eRaw, yRaw)
                 % Display colormap according to the contrast
                 switch(c1)
-                    case 5
-                        % HbO contrast
-                        colormap([1 0 0; 1 1 1]);
-                    case 6
-                        % HbR contrast
-                        colormap([0 0 1; 1 1 1]);
-                    case 7
-                        % Flow contrast
+                    case 1
+                        % HbT contrast
                         colormap([0.5 0.5 0.5; 1 1 1]);
-                    case 8
-                        % CMRO2 contrast
+                    case 2
+                        % SO2 contrast
+                        colormap([0.25 0.25 0.25; 1 1 1]);
+                    case 3
+                        % B-mode contrast
                         colormap([0 0 0; 1 1 1]);
                     otherwise
                         colormap(gray)
@@ -1111,6 +1211,16 @@ if isfield (job,'rawData')
                 end
                 % Show a * when a significant difference is found.
                 for iSeeds = 1:size(job.paired_seeds, 1)
+                    % FDR-corrected p-value (q)
+                    if job.optStat.multComp == 2
+                        if pat_fdr(statTestRaw(1).w(1).H{iSeeds,c1}) < job.pValue
+                            % Significant difference
+                            statTestRaw(1).w(1).H{iSeeds,c1} = true;
+                        else
+                            % Non significant difference
+                            statTestRaw(1).w(1).H{iSeeds,c1} = false;
+                        end
+                    end
                     if statTestRaw(1).w(1).H{iSeeds,c1}
                         if max(yRaw(iSeeds,:))>=0
                             yPos = starPosFactor*(max(yRaw(iSeeds,:)) + max(eRaw(iSeeds,:)));
@@ -1123,16 +1233,26 @@ if isfield (job,'rawData')
                 end
                 if job.save_figures
                     newName = sprintf('groupCorr_Wtest_C%d_(%s)_raw',c1,colorNames{1+c1});
+                    switch job.optStat.multComp
+                        case 0 % None
+                            %Do nothing
+                        case 1 % Bonferroni
+                            newName = [newName '_Bonferroni'];
+                        case 2 % FDR
+                            newName = [newName '_FDR'];
+                        otherwise
+                            % Do nothing
+                    end
                     % Save as EPS
-                    spm_figure('Print', 'Graphics', fullfile(job.parent_results_dir{1},newName));
+                    % spm_figure('Print', 'Graphics', fullfile(job.parent_results_dir{1},newName));
                     % Save as PNG
                     print(h, '-dpng', fullfile(job.parent_results_dir{1},newName), sprintf('-r%d',job.optFig.figRes));
                     % Save as a figure
                     saveas(h, fullfile(job.parent_results_dir{1},newName), 'fig');
+                    % Return the property to its default
+                    set(h, 'units', 'pixels')
+                    close(h)
                 end
-                % Return the property to its default
-                set(h, 'units', 'pixels')
-                close(h)
             end % End generate figures
         end % Wilcoxon
     end
