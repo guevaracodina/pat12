@@ -6,11 +6,12 @@ function group_corr2        = pat_group_corr_unpaired_cfg
 %_______________________________________________________________________________
 
 % Select PAT.mat (2 files minimum)
-PATmat                      = pat_PATmat_cfg(2,'Select PAT.mat list of whole population');
+PATmatCtrl                  = pat_PATmat_cfg(2,'PATmatCtrl','Ctrl group','Select PAT.mat list of controls');
+PATmatLPS                   = pat_PATmat_cfg(2,'PATmatLPS','LPS group','Select PAT.mat list of LPS');
 % Force processing
 redo1                       = pat_redo_cfg(0);
 % IOI copy/overwrite method
-PATmatCopyChoice            = pat_PATmatCopyChoice_cfg('network');
+PATmatCopyChoice            = pat_PATmatCopyChoice_cfg('group_corr');
 % Colors to include (OD,HbO,HbR,HbT,Flow)
 IC                          = pat_include_colors_cfg(1,1);
 
@@ -20,11 +21,11 @@ IC                          = pat_include_colors_cfg(1,1);
 % Regressor names
 ID                          = cfg_entry;
 ID.tag                      = 'ID';
-ID.name                     = 'Regressor names';
+ID.name                     = 'Group names';
 ID.strtype                  = 'e';
 ID.num                      = [1 Inf];
-ID.val{1}                   = {'Ctrl','LPS','LPS+IL-1Ra','Grand mean';};
-ID.help                     = {'Specify the cell string with regressor names. Default ID is {''Ctrl'',''LPS'',''LPS+IL-1Ra'',''Grand mean'';}'}';
+ID.val{1}                   = {'Ctrl','LPS'};
+ID.help                     = {'Specify the cell string with group names. Default ID is {''Ctrl'',''LPS'';}'}';
 % ------------------------------------------------------------------------------
 
 % Paired seeds
@@ -87,15 +88,26 @@ alpha.val                   = {0.05};               % Default value
 alpha.help                  = {'Performs the test at the significance level (100*alpha)%.' 
     'alpha must be a scalar'};
 
-% Multiple comparisons correction (Bonferroni)
-bonferroni              	= cfg_menu;
-bonferroni.tag              = 'bonferroni';
-bonferroni.name             = 'Bonferroni correction';
-bonferroni.labels           = {'No','Yes'};
-bonferroni.values           = {false, true};
-bonferroni.val              = {true};
-bonferroni.help             = {'Perform Bonferroni correction for multiple comparisons.'}';
+% Multiple comparisons correction None / Bonferroni / FDR
+% bonferroni              	= cfg_menu;
+% bonferroni.tag              = 'bonferroni';
+% bonferroni.name             = 'Bonferroni correction';
+% bonferroni.labels           = {'No','Yes'};
+% bonferroni.values           = {false, true};
+% bonferroni.val              = {true};
+% bonferroni.help             = {'Perform Bonferroni correction for multiple comparisons.'}';
 
+% Multiple comparisons correction
+multComp                    = cfg_menu;
+multComp.tag                = 'multComp';
+multComp.name               = 'Multiple comparisons';
+multComp.labels             = {'None', 'Bonferroni', 'FDR'};
+multComp.values             = {0, 1, 2};
+multComp.val                = {2};                      % Default value
+multComp.help               = { 'Choose whether to perform multiple testing correction:'
+                                'None'
+                                'Bonferroni'
+                                'False Discovery Rate (FDR)'}';
 % ------------------------------------------------------------------------------
 % Remove outliers
 % ------------------------------------------------------------------------------
@@ -133,7 +145,7 @@ derivative.tag              = 'derivative';
 derivative.name             = '1st derivative';
 derivative.labels           = {'No', 'Yes'};
 derivative.values           = {false, true};
-derivative.val              = {true};                      % Default value
+derivative.val              = {false};                      % Default value
 derivative.help             = {'Choose whether to perform correlation analysis on 1st derivative of seeds/pixels time-course'}';
 
 % Correlation on raw data time course (before filtering, downsampling and GLM regression)
@@ -142,13 +154,13 @@ rawData.tag                 = 'rawData';
 rawData.name                = 'Raw time course';
 rawData.labels              = {'No', 'Yes'};
 rawData.values              = {false, true};
-rawData.val                 = {true};                      % Default value
+rawData.val                 = {false};                      % Default value
 rawData.help                = {'Choose whether to perform correlation analysis on seeds raw time course'}';
 % ------------------------------------------------------------------------------
 optStat                     = cfg_branch;
 optStat.tag                 = 'optStat';
 optStat.name                = 'Statistical test options';
-optStat.val                 = {ttest1 wilcoxon1  alpha bonferroni remOutlier derivative rawData};
+optStat.val                 = {ttest1 wilcoxon1  alpha multComp remOutlier derivative rawData};
 optStat.help                = {'Options for 2nd-level analysis. If in doubt, simply keep the default values.'}';
 % ------------------------------------------------------------------------------
 % ------------------------------------------------------------------------------
@@ -196,7 +208,7 @@ yLimValue.tag               = 'yLimValue';
 yLimValue.name              = 'Y axis limits';
 yLimValue.strtype           = 'r';
 yLimValue.num               = [1 2];
-yLimValue.val               = {[-0.15 1.7]};
+yLimValue.val               = {[-1 1.5]};
 yLimValue.help              = {'Enter limits for Y axis'};
 
 yLimManual                  = cfg_branch;
@@ -225,8 +237,17 @@ xAxisLabels.tag             = 'xAxisLabels';
 xAxisLabels.name            = 'X-Tick labels';
 xAxisLabels.strtype         = 'e';
 xAxisLabels.num             = [1 Inf];
-xAxisLabels.val             = {{'F', 'M', 'C', 'S', 'R', 'V'}};
-xAxisLabels.help            = {'Enter X-Tick label. Default: {''F'', ''M'', ''C'', ''S'', ''R'', ''V''}'};
+xAxisLabels.val             = {{'Cg'      % Cingulate cortex
+                                'M'       % Motor cortex
+                                'S1HL'    % hindlimb primary somatosensory cortex
+                                'S1FL'    % forelimb primary somatosensory cortex
+                                'S1BF'    % barrel field primary somatosensory cortex
+                                'S2'      % secondary somatosensory cortex
+                                'cc'      % corpus callosum
+                                'LV'      % Lateral ventricle
+                                'CPu'}'};  % Caudate putamen
+                    
+xAxisLabels.help            = {'Enter X-Tick label. Default: {''Cg'', ''M'', ''S1HL'', ''S1FL'', ''S1BF'', ''S2'', ''cc'', ''LV'', ''CPu''}'};
 
 % X-axis font size
 xLabelFontSize              = cfg_entry;
@@ -234,7 +255,7 @@ xLabelFontSize.tag          = 'xLabelFontSize';
 xLabelFontSize.name         = 'X-tick label font size';
 xLabelFontSize.strtype      = 'r';
 xLabelFontSize.num          = [1 1];
-xLabelFontSize.val          = {14};
+xLabelFontSize.val          = {10};
 xLabelFontSize.help         = {'Enter X-tick label font size'};
 
 % Y-axis font size
@@ -243,7 +264,7 @@ yLabelFontSize.tag          = 'yLabelFontSize';
 yLabelFontSize.name         = 'Y axis label font size';
 yLabelFontSize.strtype      = 'r';
 yLabelFontSize.num          = [1 1];
-yLabelFontSize.val          = {14};
+yLabelFontSize.val          = {10};
 yLabelFontSize.help         = {'Enter Y axis label font size'};
 
 % Title font size
@@ -252,7 +273,7 @@ titleFontSize.tag          = 'titleFontSize';
 titleFontSize.name         = 'Title font size';
 titleFontSize.strtype      = 'r';
 titleFontSize.num          = [1 1];
-titleFontSize.val          = {12};
+titleFontSize.val          = {10};
 titleFontSize.help         = {'Enter title font size'};
 
 % ------------------------------------------------------------------------------
@@ -263,15 +284,15 @@ legendStr.tag               = 'legendStr';
 legendStr.name              = 'Legend string';
 legendStr.strtype           = 'e';
 legendStr.num               = [1 2];
-legendStr.val               = {{'NaCl' 'CaCl_2'}};
-legendStr.help              = {'Enter legends. Default: {''NaCl'' ''CaCl_2''}'};
+legendStr.val               = {{'Ctrl' 'LPS'}};
+legendStr.help              = {'Enter legends. Default: {''Ctrl'' ''LPS''}'};
 
 legendLocation              = cfg_entry;
 legendLocation.tag          = 'legendLocation';
 legendLocation.name         = 'Legend location';
 legendLocation.strtype      = 's';
 legendLocation.num          = [1 Inf];
-legendLocation.val          = {'NorthWest'};
+legendLocation.val          = {'NorthEast'};
 legendLocation.help         = {'Enter legend location'};
 
 legendFontSize              = cfg_entry;
@@ -279,7 +300,7 @@ legendFontSize.tag          = 'legendFontSize';
 legendFontSize.name         = 'Legend Font Size';
 legendFontSize.strtype      = 'r';
 legendFontSize.num          = [1 1];
-legendFontSize.val          = {14};
+legendFontSize.val          = {10};
 legendFontSize.help         = {'Enter legend font size'};
 
 legendShow                  = cfg_branch;
@@ -313,7 +334,7 @@ optFig.help                 = {'Print figure options. If in doubt, simply keep t
 group_corr2                 = cfg_exbranch; % This is the branch that has information about how to run this module
 group_corr2.name            = 'Bilateral correlation group comparison (unpaired)'; % The display name
 group_corr2.tag             = 'group_corr2'; %Very important: tag is used when calling for execution
-group_corr2.val             = {PATmat redo1 PATmatCopyChoice IC ID paired_seeds...
+group_corr2.val             = {PATmatCtrl PATmatLPS redo1 PATmatCopyChoice IC ID paired_seeds...
     parent_results_dir optStat generate_figures save_figures optFig};    % The items that belong to this branch. All items must be filled before this branch can run or produce virtual outputs
 % bonferroni ttest1 wilcoxon1 alpha derivative rawData remOutlier
 % stderror figSize figRes yLimits xAxisLabels xLabelFontSize yLabelFontSize titleFontSize legends
