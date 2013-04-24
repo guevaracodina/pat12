@@ -493,6 +493,38 @@ for iSeeds = 1:size(job.paired_seeds, 1)
     
 end % paired-seeds loop
 
+if job.optStat.ttest1
+    % FDR-corrected p-value (q)
+    if job.optStat.multComp == 2
+        FDRpValue = pat_fdr(cell2mat(statTest(1).t(1).P(:,c1)));
+        for iSeeds = 1:size(job.paired_seeds, 1)
+            statTest(1).t(1).P{iSeeds,c1} = FDRpValue(iSeeds);
+            if statTest(1).t(1).P{iSeeds,c1} < job.optStat.alpha
+                statTest(1).t(1).H{iSeeds,c1} = true;
+            else
+                statTest(1).t(1).H{iSeeds,c1} = false;
+            end
+        end
+        statTest(1).t(1).id = [statTest(1).t(1).id ' FDR adjusted'];
+    end
+end
+
+if job.optStat.wilcoxon1
+    % FDR-corrected p-value (q)
+    if job.optStat.multComp == 2
+        FDRpValue = pat_fdr(cell2mat(statTest(1).w(1).P(:,c1)));
+        for iSeeds = 1:size(job.paired_seeds, 1)
+            statTest(1).w(1).P{iSeeds,c1} = FDRpValue(iSeeds);
+            if statTest(1).w(1).P{iSeeds,c1} < job.optStat.alpha
+                statTest(1).w(1).H{iSeeds,c1} = true;
+            else
+                statTest(1).w(1).H{iSeeds,c1} = false;
+            end
+        end
+        statTest(1).w(1).id = [statTest(1).w(1).id ' FDR adjusted'];
+    end
+end
+
 % Show standard error bars instead of standard deviation
 if job.optFig.stderror
     % std error bars: sigma/sqrt(N)
@@ -595,6 +627,37 @@ if isfield (job.optStat,'derivative')
             
         end % paired-seeds loop
         
+        if job.optStat.ttest1
+            % FDR-corrected p-value (q)
+            if job.optStat.multComp == 2
+                FDRpValue = pat_fdr(cell2mat(statTestDiff(1).t(1).P(:,c1)));
+                for iSeeds = 1:size(job.paired_seeds, 1)
+                    statTestDiff(1).t(1).P{iSeeds,c1} = FDRpValue(iSeeds);
+                    if statTestDiff(1).t(1).P{iSeeds,c1} < job.optStat.alpha
+                        statTestDiff(1).t(1).H{iSeeds,c1} = true;
+                    else
+                        statTestDiff(1).t(1).H{iSeeds,c1} = false;
+                    end
+                end
+                statTestDiff(1).t(1).id = [statTestDiff(1).t(1).id ' FDR adjusted'];
+            end
+        end
+        
+        if job.optStat.wilcoxon1
+            % FDR-corrected p-value (q)
+            if job.optStat.multComp == 2
+                FDRpValue = pat_fdr(cell2mat(statTestDiff(1).w(1).P(:,c1)));
+                for iSeeds = 1:size(job.paired_seeds, 1)
+                    statTestDiff(1).w(1).P{iSeeds,c1} = FDRpValue(iSeeds);
+                    if statTestDiff(1).w(1).P{iSeeds,c1} < job.optStat.alpha
+                        statTestDiff(1).w(1).H{iSeeds,c1} = true;
+                    else
+                        statTestDiff(1).w(1).H{iSeeds,c1} = false;
+                    end
+                end
+                statTestDiff(1).w(1).id = [statTestDiff(1).w(1).id ' FDR adjusted'];
+            end
+        end
         
         % Show standard error bars instead of standard deviation
         if job.optFig.stderror
@@ -683,6 +746,37 @@ if isfield (job,'rawData')
             end % Wilcoxon test
             
         end % paired-seeds loop
+        if job.optStat.ttest1
+            % FDR-corrected p-value (q)
+            if job.optStat.multComp == 2
+                FDRpValue = pat_fdr(cell2mat(statTestRaw(1).t(1).P(:,c1)));
+                for iSeeds = 1:size(job.paired_seeds, 1)
+                    statTestRaw(1).t(1).P{iSeeds,c1} = FDRpValue(iSeeds);
+                    if statTestRaw(1).t(1).P{iSeeds,c1} < job.optStat.alpha
+                        statTestRaw(1).t(1).H{iSeeds,c1} = true;
+                    else
+                        statTestRaw(1).t(1).H{iSeeds,c1} = false;
+                    end
+                end
+                statTestRaw(1).t(1).id = [statTestRaw(1).t(1).id ' FDR adjusted'];
+            end
+        end
+        
+        if job.optStat.wilcoxon1
+            % FDR-corrected p-value (q)
+            if job.optStat.multComp == 2
+                FDRpValue = pat_fdr(cell2mat(statTestRaw(1).w(1).P(:,c1)));
+                for iSeeds = 1:size(job.paired_seeds, 1)
+                    statTestRaw(1).w(1).P{iSeeds,c1} = FDRpValue(iSeeds);
+                    if statTestRaw(1).w(1).P{iSeeds,c1} < job.optStat.alpha
+                        statTestRaw(1).w(1).H{iSeeds,c1} = true;
+                    else
+                        statTestRaw(1).w(1).H{iSeeds,c1} = false;
+                    end
+                end
+                statTestRaw(1).w(1).id = [statTestRaw(1).w(1).id ' FDR adjusted'];
+            end
+        end
         
         % Show standard error bars instead of standard deviation
         if job.optFig.stderror
@@ -718,6 +812,7 @@ axisFontSize    = 12;
 starFontSize    = 22;
 axMargin        = 0.5;
 
+    
 if job.optStat.ttest1
     % Display a graph with ROI labels
     if job.generate_figures
@@ -757,17 +852,18 @@ if job.optStat.ttest1
             set(gca, 'ylim', job.optFig.yLimits.yLimManual.yLimValue)
         end
         % Show a * when a significant difference is found.
+
         for iSeeds = 1:size(job.paired_seeds, 1)
-            % FDR-corrected p-value (q)
-            if job.optStat.multComp == 2
-                if pat_fdr(statTest(1).t(1).P{iSeeds,c1}) < job.pValue
-                    % Significant difference
-                    statTest(1).t(1).H{iSeeds,c1} = true;
-                else
-                    % Non significant difference
-                    statTest(1).t(1).H{iSeeds,c1} = false;
-                end
-            end
+%             % FDR-corrected p-value (q)
+%             if job.optStat.multComp == 2
+%                 if pat_fdr(statTest(1).t(1).P{iSeeds,c1}) < job.pValue
+%                     % Significant difference
+%                     statTest(1).t(1).H{iSeeds,c1} = true;
+%                 else
+%                     % Non significant difference
+%                     statTest(1).t(1).H{iSeeds,c1} = false;
+%                 end
+%             end
             if statTest(1).t(1).H{iSeeds,c1}
                 if max(y(iSeeds,:))>=0
                     yPos = starPosFactor*(max(y(iSeeds,:)) + max(e(iSeeds,:)));
@@ -843,16 +939,16 @@ if job.optStat.wilcoxon1
         end
         % Show a * when a significant difference is found.
         for iSeeds = 1:size(job.paired_seeds, 1)
-            % FDR-corrected p-value (q)
-            if job.optStat.multComp == 2
-                if pat_fdr(statTest(1).w(1).P{iSeeds,c1}) < job.pValue
-                    % Significant difference
-                    statTest(1).w(1).H{iSeeds,c1} = true;
-                else
-                    % Non significant difference
-                    statTest(1).w(1).H{iSeeds,c1} = false;
-                end
-            end
+%             % FDR-corrected p-value (q)
+%             if job.optStat.multComp == 2
+%                 if pat_fdr(statTest(1).w(1).P{iSeeds,c1}) < job.pValue
+%                     % Significant difference
+%                     statTest(1).w(1).H{iSeeds,c1} = true;
+%                 else
+%                     % Non significant difference
+%                     statTest(1).w(1).H{iSeeds,c1} = false;
+%                 end
+%             end
             if statTest(1).w(1).H{iSeeds,c1}
                 if max(y(iSeeds,:))>=0
                     yPos = starPosFactor*(max(y(iSeeds,:)) + max(e(iSeeds,:)));
@@ -941,16 +1037,16 @@ if isfield (job.optStat,'derivative')
                 end
                 % Show a * when a significant difference is found.
                 for iSeeds = 1:size(job.paired_seeds, 1)
-                    % FDR-corrected p-value (q)
-                    if job.optStat.multComp == 2
-                        if pat_fdr(statTestDiff(1).t(1).P{iSeeds,c1}) < job.pValue
-                            % Significant difference
-                            statTestDiff(1).t(1).H{iSeeds,c1} = true;
-                        else
-                            % Non significant difference
-                            statTestDiff(1).t(1).H{iSeeds,c1} = false;
-                        end
-                    end
+%                     % FDR-corrected p-value (q)
+%                     if job.optStat.multComp == 2
+%                         if pat_fdr(statTestDiff(1).t(1).P{iSeeds,c1}) < job.pValue
+%                             % Significant difference
+%                             statTestDiff(1).t(1).H{iSeeds,c1} = true;
+%                         else
+%                             % Non significant difference
+%                             statTestDiff(1).t(1).H{iSeeds,c1} = false;
+%                         end
+%                     end
                     if statTestDiff(1).t(1).H{iSeeds,c1}
                         if max(yDiff(iSeeds,:))>=0
                             yPos = starPosFactor*(max(yDiff(iSeeds,:)) + max(eDiff(iSeeds,:)));
@@ -1026,16 +1122,16 @@ if isfield (job.optStat,'derivative')
                 end
                 % Show a * when a significant difference is found.
                 for iSeeds = 1:size(job.paired_seeds, 1)
-                    % FDR-corrected p-value (q)
-                    if job.optStat.multComp == 2
-                        if pat_fdr(statTestDiff(1).w(1).P{iSeeds,c1}) < job.pValue
-                            % Significant difference
-                            statTestDiff(1).w(1).H{iSeeds,c1} = true;
-                        else
-                            % Non significant difference
-                            statTestDiff(1).w(1).H{iSeeds,c1} = false;
-                        end
-                    end
+%                     % FDR-corrected p-value (q)
+%                     if job.optStat.multComp == 2
+%                         if pat_fdr(statTestDiff(1).w(1).P{iSeeds,c1}) < job.pValue
+%                             % Significant difference
+%                             statTestDiff(1).w(1).H{iSeeds,c1} = true;
+%                         else
+%                             % Non significant difference
+%                             statTestDiff(1).w(1).H{iSeeds,c1} = false;
+%                         end
+%                     end
                     if statTestDiff(1).w(1).H{iSeeds,c1}
                         if max(yDiff(iSeeds,:))>=0
                             yPos = starPosFactor*(max(yDiff(iSeeds,:)) + max(eDiff(iSeeds,:)));
@@ -1126,16 +1222,16 @@ if isfield (job,'rawData')
                 end
                 % Show a * when a significant difference is found.
                 for iSeeds = 1:size(job.paired_seeds, 1)
-                    % FDR-corrected p-value (q)
-                    if job.optStat.multComp == 2
-                        if pat_fdr(statTestRaw(1).t(1).H{iSeeds,c1}) < job.pValue
-                            % Significant difference
-                            statTestRaw(1).t(1).H{iSeeds,c1} = true;
-                        else
-                            % Non significant difference
-                            statTestRaw(1).t(1).H{iSeeds,c1} = false;
-                        end
-                    end
+%                     % FDR-corrected p-value (q)
+%                     if job.optStat.multComp == 2
+%                         if pat_fdr(statTestRaw(1).t(1).H{iSeeds,c1}) < job.pValue
+%                             % Significant difference
+%                             statTestRaw(1).t(1).H{iSeeds,c1} = true;
+%                         else
+%                             % Non significant difference
+%                             statTestRaw(1).t(1).H{iSeeds,c1} = false;
+%                         end
+%                     end
                     if statTestRaw(1).t(1).H{iSeeds,c1}
                         if max(yRaw(iSeeds,:))>=0
                             yPos = starPosFactor*(max(yRaw(iSeeds,:)) + max(eRaw(iSeeds,:)));
@@ -1211,16 +1307,16 @@ if isfield (job,'rawData')
                 end
                 % Show a * when a significant difference is found.
                 for iSeeds = 1:size(job.paired_seeds, 1)
-                    % FDR-corrected p-value (q)
-                    if job.optStat.multComp == 2
-                        if pat_fdr(statTestRaw(1).w(1).H{iSeeds,c1}) < job.pValue
-                            % Significant difference
-                            statTestRaw(1).w(1).H{iSeeds,c1} = true;
-                        else
-                            % Non significant difference
-                            statTestRaw(1).w(1).H{iSeeds,c1} = false;
-                        end
-                    end
+%                     % FDR-corrected p-value (q)
+%                     if job.optStat.multComp == 2
+%                         if pat_fdr(statTestRaw(1).w(1).H{iSeeds,c1}) < job.pValue
+%                             % Significant difference
+%                             statTestRaw(1).w(1).H{iSeeds,c1} = true;
+%                         else
+%                             % Non significant difference
+%                             statTestRaw(1).w(1).H{iSeeds,c1} = false;
+%                         end
+%                     end
                     if statTestRaw(1).w(1).H{iSeeds,c1}
                         if max(yRaw(iSeeds,:))>=0
                             yPos = starPosFactor*(max(yRaw(iSeeds,:)) + max(eRaw(iSeeds,:)));

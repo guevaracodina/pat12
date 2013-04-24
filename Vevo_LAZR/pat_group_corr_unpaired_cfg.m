@@ -10,7 +10,7 @@ PATmatCtrl                  = pat_PATmat_cfg(2,'PATmatCtrl','Ctrl group','Select
 PATmatLPS                   = pat_PATmat_cfg(2,'PATmatLPS','LPS group','Select PAT.mat list of LPS');
 % Force processing
 redo1                       = pat_redo_cfg(0);
-% IOI copy/overwrite method
+% PAT copy/overwrite method
 PATmatCopyChoice            = pat_PATmatCopyChoice_cfg('group_corr');
 % Colors to include (OD,HbO,HbR,HbT,Flow)
 IC                          = pat_include_colors_cfg(1,1);
@@ -167,7 +167,7 @@ optStat.help                = {'Options for 2nd-level analysis. If in doubt, sim
 
 % Generate / save figures
 [generate_figures ...
-    save_figures]           = ioi_dfg_generate_figures;
+    save_figures]           = pat_generate_figures_cfg;
 % ------------------------------------------------------------------------------
 % ------------------------------------------------------------------------------
 % Print figure options
