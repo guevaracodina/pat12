@@ -313,4 +313,3 @@ for scanIdx=1:length(job.PATmat)
 end % Big loop over scans
 
 % EOF
-
