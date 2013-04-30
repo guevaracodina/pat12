@@ -16,3 +16,5 @@ function z = pat_fisherz(r)
 %                    École Polytechnique de Montréal
 %_______________________________________________________________________________
 z = 0.5*log( (1+r)./(1-r) );
+
+% EOF

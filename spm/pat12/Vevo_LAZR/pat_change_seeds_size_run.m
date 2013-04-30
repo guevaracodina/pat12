@@ -14,13 +14,13 @@ function out = pat_change_seeds_size_run(job)
 % ------------------------------------------------------------------------------
 
 % Get radius
-radius          = job.ManualROIradius;
+radius = job.ManualROIradius;
 % Get ROI info
 [all_ROIs selected_ROIs] = pat_get_rois(job);
 for scanIdx=1:length(job.PATmat)
     try
         %Load PAT.mat information
-        [PAT PATmat dir_patmat]= pat_get_PATmat(job,scanIdx);
+        [PAT PATmat dir_patmat] = pat_get_PATmat(job,scanIdx);
         % Read anatomical image
         try
             vol_anat = spm_vol(PAT.res.file_anat);
@@ -30,9 +30,7 @@ for scanIdx=1:length(job.PATmat)
             PAT.res.file_anat = t;
             vol_anat = spm_vol(PAT.res.file_anat);
         end
-        % [dir1 fil1] = fileparts(vol_anat.fname);
         im_anat = spm_read_vols(vol_anat);
-        
         if ~isfield(PAT.jobsdone,'ROIOK') || job.force_redo
             for iSeeds = 1:length(PAT.res.ROI)
                 if all_ROIs || sum(r1==selected_ROIs)
@@ -42,9 +40,9 @@ for scanIdx=1:length(job.PATmat)
                     PAT.res.ROI{iSeeds}.name = sprintf('%s_r_%02d_pix',PAT.res.ROI{iSeeds}.name, radius);
                     % Circular seed setup
                     t = 0:pi/100:2*pi;
-                    % Center of the seed coordinates
-                    x0 = PAT.res.ROI{iSeeds}.center(1);
-                    y0 = PAT.res.ROI{iSeeds}.center(2);
+                    % Center of the seed coordinates (NOTE: X and Y are inverted)
+                    x0 = PAT.res.ROI{iSeeds}.center(2);
+                    y0 = PAT.res.ROI{iSeeds}.center(1);
                     % Parametric function for a circle
                     xi = radius * cos(t) + x0;
                     yi = radius * sin(t) + y0;
@@ -82,3 +80,4 @@ end % Scans loop
 end % pat_change_seeds_size_run
 
 % EOF
+

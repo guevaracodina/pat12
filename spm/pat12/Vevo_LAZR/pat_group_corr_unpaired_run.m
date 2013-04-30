@@ -864,6 +864,9 @@ if job.optStat.ttest1
 %                     statTest(1).t(1).H{iSeeds,c1} = false;
 %                 end
 %             end
+            if isnan(statTest(1).t(1).H{iSeeds,c1})
+                statTest(1).t(1).H{iSeeds,c1} = false;
+            end
             if statTest(1).t(1).H{iSeeds,c1}
                 if max(y(iSeeds,:))>=0
                     yPos = starPosFactor*(max(y(iSeeds,:)) + max(e(iSeeds,:)));
@@ -949,6 +952,9 @@ if job.optStat.wilcoxon1
 %                     statTest(1).w(1).H{iSeeds,c1} = false;
 %                 end
 %             end
+            if isnan(statTest(1).w(1).H{iSeeds,c1})
+                statTest(1).w(1).H{iSeeds,c1} = false;
+            end
             if statTest(1).w(1).H{iSeeds,c1}
                 if max(y(iSeeds,:))>=0
                     yPos = starPosFactor*(max(y(iSeeds,:)) + max(e(iSeeds,:)));
