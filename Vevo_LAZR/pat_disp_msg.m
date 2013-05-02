@@ -1,13 +1,13 @@
-function IOI = pat_disp_msg(IOI,msg)
+function PAT = pat_disp_msg(PAT,msg)
 %_______________________________________________________________________________
 % Copyright (C) 2012 LIOM Laboratoire d'Imagerie Optique et Moléculaire
 %                    École Polytechnique de Montréal
 %_______________________________________________________________________________
 disp(msg);
 try
-    IOI.warning = [IOI.warning; msg];
+    PAT(1).warning = [PAT(1).warning; msg];
 catch
-    IOI.warning = [IOI.warning msg];
+    PAT(1).warning = [PAT(1).warning msg];
 end
 
 % EOF
