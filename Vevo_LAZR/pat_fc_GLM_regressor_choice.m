@@ -23,7 +23,8 @@ regressROI              = cfg_branch;
 regressROI.tag          = 'regressROI';
 regressROI.name         = 'ROIs/seeds as regressors';
 regressROI.val          = {ROI_list};
-regressROI.help         = {'Include ROIs/seeds as regressors'};
+regressROI.help         = { 'Include ROIs/seeds as regressors.' 
+                            'See PAT.ROI.ROIname for the complete ROIs name list.'};
 
 regressor_choice        = cfg_choice;
 regressor_choice.tag    = 'regressor_choice';

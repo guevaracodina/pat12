@@ -72,12 +72,23 @@ for scanIdx=1:length(job.PATmat)
                                         % Preallocating output images
                                         yRegress = zeros(size(y));
                                         
-                                        % All regressors are identified
-                                        % here, lets take the mean global
-                                        % signal just to test
-                                        SPM.xX.name = cellstr(['Global Brain Signal']);
-                                        SPM.xX.X = brainSignal';        % Regression is along first dimension. For one regressor it is a column vector.
-                                        
+                                        if isfield(job.regressor_choice,'regressBrainSignal'),
+                                            % All regressors are identified
+                                            % here, lets take the mean global
+                                            % signal just to test
+                                            SPM.xX.name = cellstr(['Global Brain Signal']);
+                                            SPM.xX.X = brainSignal';        % Regression is along first dimension. For one regressor it is a column vector.
+                                        else
+                                             % Any ROI(s) as regressor(s)
+                                             SPM.xX.name = PAT.ROI.ROIname(job.regressor_choice.regressROI.ROI_list);
+                                             % regression is along first dimension
+                                             selectedROIregressors = filtNdownData.filtNdownROI(job.regressor_choice.regressROI.ROI_list);
+                                             selectedROIregressorsArray = [];
+                                             for iROIs = 1:numel(job.regressor_choice.regressROI.ROI_list)
+                                                 selectedROIregressorsArray = [selectedROIregressorsArray selectedROIregressors{iROIs}{c1}'];
+                                             end
+                                             SPM.xX.X = selectedROIregressorsArray;
+                                        end
                                         % A revoir
                                         SPM.xX.iG = [];
                                         SPM.xX.iH = [];
@@ -87,42 +98,52 @@ for scanIdx=1:length(job.PATmat)
                                         
                                         SPM.xVi.Vi = {speye(size(SPM.xX.X,1))}; % Time correlation
                                         
-                                        % Directory to save SPM and img/hdr
-                                        % files
+                                        % Directory to save SPM and img/hdr  files
                                         SPM.swd = colorDir;
                                         if ~exist(SPM.swd,'dir'),mkdir(SPM.swd); end
                                         fprintf('\nPerforming GLM on whole images (%s) Color %d (%s)...\n',scanName,c1,colorNames{1+c1})
                                         try
                                             % GLM is performed here
                                             SPM = spm_spm(SPM);
-                                            
                                             if isfield(job.regressor_choice,'regressBrainSignal'),
-                                                % Subtract global brain signal
-                                                % from every pixel time course
+                                                % Read the regression coefficients beta
                                                 betaVol = spm_vol(fullfile(SPM.swd,SPM.Vbeta.fname));
                                                 beta = spm_read_vols(betaVol);
-                                                % Create a single voxel 4-D
-                                                % series
+                                                % Create a single voxel 4-D series
                                                 brainSignalRep(1,1,1,:) = brainSignal;
+                                                % Subtract global brain signal from every pixel time course
                                                 yRegress = y - repmat(beta,[1 1 1 size(y,4)]) .* repmat(brainSignalRep,[size(beta,1) size(beta,2) 1 1]);
-                                                filtNdownfnameRegress = fullfile(dir_patmat,[scanName '_' PAT.color.eng(c1) '_regress_' sprintf('%05d',1) 'to' sprintf('%05d', size(yRegress,4)) '.nii']);
-                                                % Create 4-D NIFTI file with filtered time trace of each pixel
-                                                pat_create_vol_4D(filtNdownfnameRegress, SPM.xY.VY, yRegress);
-                                                % Brain signal regression succesful!
-                                                PAT.fcPAT.SPM(1).wholeImageRegressOK{s1, c1} = true;
                                                 fprintf('\nGlobal brain signal regressed from whole images (%s) Color %d (%s) done!\n',scanName,c1,colorNames{1+c1})
                                             else
-                                                %% Another ROI as regressor
-                                                % TO DO... //EGC
+                                                % Another ROI as regressor
+                                                % Read the regression coefficients beta
+                                                beta = [];
+                                                for iROIs = 1:numel(job.regressor_choice.regressROI.ROI_list)
+                                                    betaVol{iROIs} = spm_vol(fullfile(SPM.swd,SPM.Vbeta(iROIs).fname));
+                                                    betaCell{iROIs} = spm_read_vols(betaVol{iROIs});
+                                                    beta = [beta, betaCell{iROIs}(:)];
+                                                end
+                                                signaltoRegress = beta * selectedROIregressorsArray';
+                                                % Create a single voxel 4-D series
+                                                signaltoRegress = reshape(signaltoRegress,[size(y,1) size(y,2) 1 size(y,4)]);
+                                                % Subtract ROIs signal from every pixel time course
+                                                yRegress = y - signaltoRegress;
+                                                fprintf('\nROI signals (%s) regressed from whole images (%s) Color %d (%s) done!\n',pat_strjoin(SPM.xX.name, ' '), scanName,c1,colorNames{1+c1})
                                             end
-                                            
+                                            filtNdownfnameRegress = fullfile(dir_patmat,[scanName '_' PAT.color.eng(c1) '_regress_' sprintf('%05d',1) 'to' sprintf('%05d', size(yRegress,4)) '.nii']);
+                                            % Create 4-D NIFTI file with filtered time trace of each pixel
+                                            pat_create_vol_4D(filtNdownfnameRegress, SPM.xY.VY, yRegress);
+                                            % Brain signal regression succesful!
+                                            PAT.fcPAT.SPM(1).wholeImageRegressOK{s1, c1} = true;
+                                            % Saves the used regressors names
+                                            PAT.fcPAT.SPM.regressorID = SPM.xX.name;
                                             % Update SPM matrix info
                                             PAT.fcPAT.SPM(1).fnameSPM{s1, c1} = SPM.swd;
                                             PAT.fcPAT.SPM(1).fname{s1, c1} = filtNdownfnameRegress;
                                         catch exception
                                             % Brain signal regression failed!
                                             PAT.fcPAT.SPM(1).wholeImageRegressOK{s1, c1} = false;
-                                            fprintf('\nGlobal brain signal regressed from (%s) whole images Color %d (%s) failed!\n',scanName,c1,colorNames{1+c1})
+                                            fprintf('\nSignal regressed from (%s) whole images Color %d (%s) failed!\n',scanName,c1,colorNames{1+c1})
                                             disp(exception.identifier)
                                             disp(exception.stack(1))
                                         end
@@ -137,13 +158,11 @@ for scanIdx=1:length(job.PATmat)
                                             ROIregress{r1}{s1,c1} = [];
                                             ROIregressStd{r1}{s1,c1} = [];
                                             ROIregressSem{r1}{s1,c1} = [];
-                                            
                                             %% GLM on ROI code
                                             y = filtNdownData.filtNdownROI{r1}{s1, c1};
                                             % Initialize single voxel
                                             % 4-D series
                                             y2 = zeros([1 1 1 numel(y)]);
-                                            
                                             if job.generate_figures
                                                 % Display plots on SPM graphics window
                                                 h = spm_figure('GetWin', 'Graphics');
@@ -151,8 +170,16 @@ for scanIdx=1:length(job.PATmat)
                                                 figure(h);
                                                 subplot(311); plot(y);
                                                 title(sprintf('Seed %d time-course, C%d (%s)',r1,c1,colorNames{1+c1}),'FontSize',14);
-                                                subplot(312); plot(brainSignal);
-                                                title(sprintf('Mean global signal time-course, C%d (%s)',c1,colorNames{1+c1}),'FontSize',14);
+                                                subplot(312);
+                                                if isfield(job.regressor_choice,'regressBrainSignal')
+                                                    plot(brainSignal);
+                                                    title(sprintf('Mean global signal time-course, C%d (%s)',c1,colorNames{1+c1}),'FontSize',14);
+                                                else
+                                                    % Plot ROIs time course used as regressors
+                                                    plot(selectedROIregressorsArray);
+                                                    title(sprintf('ROIs time-course, C%d (%s)',c1,colorNames{1+c1}),'FontSize',14);
+                                                    legend(SPM.xX.name)
+                                                end
                                             end
                                             
                                             % Creating nifti files to be able to use SPM later
@@ -181,12 +208,23 @@ for scanIdx=1:length(job.PATmat)
                                             clear SPM
                                             SPM.xY.VY = spm_vol(fnameNIFTI);
                                             
-                                            % All regressors are
-                                            % identified here, lets take
-                                            % the mean global signal
-                                            % just to test
-                                            SPM.xX.name = cellstr(['Global Brain Signal']);
-                                            SPM.xX.X = brainSignal';        % Regression is along first dimension. For one regressor it is a column vector.
+                                            if isfield(job.regressor_choice,'regressBrainSignal'),
+                                                % All regressors are identified
+                                                % here, lets take the mean
+                                                % global signal just to test
+                                                SPM.xX.name = cellstr(['Global Brain Signal']);
+                                                SPM.xX.X = brainSignal';        % Regression is along first dimension. For one regressor it is a column vector.
+                                            else
+                                                % Any ROI(s) as regressor(s)
+                                                SPM.xX.name = PAT.ROI.ROIname(job.regressor_choice.regressROI.ROI_list);
+                                                % regression is along first dimension
+                                                selectedROIregressors = filtNdownData.filtNdownROI(job.regressor_choice.regressROI.ROI_list);
+                                                selectedROIregressorsArray = [];
+                                                for iROIs = 1:numel(job.regressor_choice.regressROI.ROI_list)
+                                                    selectedROIregressorsArray = [selectedROIregressorsArray selectedROIregressors{iROIs}{c1}'];
+                                                end
+                                                SPM.xX.X = selectedROIregressorsArray;
+                                            end
                                             
                                             % A revoir
                                             SPM.xX.iG = [];
@@ -205,9 +243,7 @@ for scanIdx=1:length(job.PATmat)
                                                 % GLM is performed here
                                                 SPM = spm_spm(SPM);
                                                 if isfield(job.regressor_choice,'regressBrainSignal'),
-                                                    % Subtract global brain
-                                                    % signal from ROI time
-                                                    % courses
+                                                    % Subtract global brain signal from ROI time courses
                                                     betaVol = spm_vol(fullfile(SPM.swd,SPM.Vbeta.fname));
                                                     beta = spm_read_vols(betaVol);
                                                     ROIregress{r1}{s1, c1} = y - beta * brainSignal;
@@ -216,17 +252,35 @@ for scanIdx=1:length(job.PATmat)
                                                     % Identify in PAT the file name of the time series
                                                     PAT.fcPAT.SPM(1).fnameROIregress = fnameROIregress;
                                                     fprintf('\nGlobal brain signal regressed from %s ROI %d (%s) Color %d (%s) done!\n',scanName,r1,PAT.ROI.ROIname{r1},c1,colorNames{1+c1})
-                                                    if job.generate_figures
+                                                else
+                                                    % TO DO...
+                                                    % Another ROI as regressor
+                                                    % Read the regression coefficients beta
+                                                    beta = [];
+                                                    for iROIs = 1:numel(job.regressor_choice.regressROI.ROI_list)
+                                                        betaVol{iROIs} = spm_vol(fullfile(SPM.swd,SPM.Vbeta(iROIs).fname));
+                                                        betaCell{iROIs} = spm_read_vols(betaVol{iROIs});
+                                                        beta = [beta, betaCell{iROIs}(:)];
+                                                    end
+                                                    signaltoRegress = beta * selectedROIregressorsArray';
+                                                    % Subtract ROIs signal from every pixel time course
+                                                    ROIregress{r1}{s1, c1} = y - signaltoRegress;
+                                                    % ROI signal regression succesful!
+                                                    PAT.fcPAT.SPM(1).ROIregressOK{r1}{s1, c1} = true;
+                                                    % Identify in PAT the file name of the time series
+                                                    PAT.fcPAT.SPM(1).fnameROIregress = fnameROIregress;
+                                                    fprintf('\nROI signals (%s) regressed from whole images (%s) Color %d (%s) done!\n',pat_strjoin(SPM.xX.name, ' '), scanName,c1,colorNames{1+c1})
+                                                end
+                                                if job.generate_figures
                                                         figure(h);
                                                         subplot(313); plot(ROIregress{r1}{s1, c1});
-                                                        title(sprintf('Global signal regressed from ROI time-course %d, C%d (%s)',r1,c1,colorNames{1+c1}),'FontSize',14);
+                                                        if isfield(job.regressor_choice,'regressBrainSignal')
+                                                            title(sprintf('Global signal regressed from ROI time-course %d, C%d (%s)',r1,c1,colorNames{1+c1}),'FontSize',14);
+                                                        else
+                                                            title(sprintf('ROIs regressed from ROI time-course %d, C%d (%s)',r1,c1,colorNames{1+c1}),'FontSize',14);
+                                                        end
                                                         pat_save_figs(job, h, 'GLM', scanIdx, c1, r1, 'GLMfigs')
                                                     end
-                                                else
-                                                    %% Another ROI as regressor
-                                                    % TO DO... //EGC
-                                                end
-                                                
                                                 % Update SPM matrix info
                                                 PAT.fcPAT.SPM(1).fnameROISPM{r1}{s1, c1} = SPM.swd;
                                                 PAT.fcPAT.SPM(1).fnameROInifti{r1}{s1, c1} = fnameNIFTI;
@@ -288,7 +342,7 @@ for scanIdx=1:length(job.PATmat)
                         
                         %% GLM regression succesful!
                         PAT.jobsdone(1).GLMOK = true;
-                        if isfield(job.regressor_choice,'regressBrainSignal'),
+                        if isfield(job,'regressor_choice'),
                             save(fnameROIregress,'ROIregress', 'ROIregressStd', 'ROIregressSem');
                         end
                         if job.cleanupGLM
