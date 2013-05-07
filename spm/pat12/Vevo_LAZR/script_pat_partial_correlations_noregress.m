@@ -196,11 +196,11 @@ semLPS = std(lpsNoRegress)/sqrt(size(lpsNoRegress,1));
 %% Graph display
 close all; h = figure;
 % ROI pairs to display
-idx = 1:9;
+idxROI = 1:5;
 figSize = [0.1 0.1 11 8.5];
 fontSize = 20;
 set(h, 'color', 'w')
-barwitherr([semCtrl(idx)', semLPS(idx)'], [mCtrl(idx)', mLPS(idx)']);
+barwitherr([semCtrl(idxROI)', semLPS(idxROI)'], [mCtrl(idxROI)', mLPS(idxROI)']);
 colormap([0.5 0.5 0.5; 1 1 1])
 ylabel('Bilateral correlation (r)', 'FontSize', fontSize, 'FontWeight', 'b');
 ROIlabels  = {                  'Cg'      % Cingulate cortex
@@ -212,7 +212,7 @@ ROIlabels  = {                  'Cg'      % Cingulate cortex
     'cc'      % corpus callosum
     'LV'      % Lateral ventricle
     'CPu'}';  % Caudate putamen
-set(gca, 'XTickLabel', ROIlabels(idx), 'FontSize', fontSize, 'FontWeight', 'b');
+set(gca, 'XTickLabel', ROIlabels(idxROI), 'FontSize', fontSize, 'FontWeight', 'b');
 set(gca, 'FontSize', fontSize, 'FontWeight', 'b');
 legend({'Ctrl' 'LPS'}, 'FontSize', fontSize, 'FontWeight', 'b');
 ylim([-0.4 0.9]);
