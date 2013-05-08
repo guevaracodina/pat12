@@ -202,7 +202,7 @@ semLPS = std(lps)/sqrt(size(lps,1));
 %% Graph display
 close all; h = figure;
 % ROI pairs to display
-idxROI = 1:5;
+idxROI = 1:9;
 figSize = [0.1 0.1 11 8.5];
 fontSize = 20;
 set(h, 'color', 'w')
