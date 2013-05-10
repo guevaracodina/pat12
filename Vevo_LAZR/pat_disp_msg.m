@@ -7,7 +7,11 @@ disp(msg);
 try
     PAT(1).warning = [PAT(1).warning; msg];
 catch
-    PAT(1).warning = [PAT(1).warning msg];
+    if isfield(PAT, 'warning')
+        PAT(1).warning = [PAT(1).warning msg];  
+    else
+        PAT(1).warning = msg;
+    end
 end
 
 % EOF

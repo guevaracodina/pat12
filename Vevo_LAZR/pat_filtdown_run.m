@@ -265,8 +265,13 @@ if job.generate_figures
     % --------------------------------------------------------------------------
     
     % --------------------------- Saving plots ---------------------------------
-    pat_save_figs(job, h, 'filt', scanIdx, c1, r1, ...
-        strcat('fig_',job.PATmatCopyChoice.PATmatCopy.NewPATdir))
+    if isfield(job.PATmatCopyChoice, 'PATmatCopy')
+        pat_save_figs(job, h, 'filt', scanIdx, c1, r1, ...
+            strcat('fig_',job.PATmatCopyChoice.PATmatCopy.NewPATdir))
+    else
+        pat_save_figs(job, h, 'filt', scanIdx, c1, r1, ...
+            'fig_Filter')
+    end
     % --------------------------------------------------------------------------
 end % Generate figures
 end % subfunction_plot_filtNdown_data
