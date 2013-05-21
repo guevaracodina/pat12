@@ -72,7 +72,7 @@ volBmode = spm_vol(PAT.nifti_files{1,idxBmode});
 im_anat = spm_read_vols(volBmode);
 % Quick dirty way to have only the 1st image
 im_anat = squeeze(im_anat(:,:,1,1));
-
+% HbT image
 idxPAmode = regexp(PAT.color.eng, PAT.color.HbT);
 volPAmode = spm_vol(PAT.nifti_files{1,idxPAmode});
 im_PA = spm_read_vols(volPAmode);
@@ -86,8 +86,11 @@ end
 % Create filename according the existing nomenclature at scan level
 PAT.res.file_anat = fullfile(PAT.output_dir, 'anatomical.nii');
 % Create and write a NIFTI file in the scan folder
+% pat_create_vol(PAT.res.file_anat, volPAmode(1).dim, volPAmode(1).dt,...
+%     volPAmode(1).pinfo, volPAmode(1).mat, 1, im_anat2);
+%Save PA HbT image
 pat_create_vol(PAT.res.file_anat, volPAmode(1).dim, volPAmode(1).dt,...
-    volPAmode(1).pinfo, volPAmode(1).mat, 1, im_anat2);
+    volPAmode(1).pinfo, volPAmode(1).mat, 1, im_PA);
 end
 
 % EOF
