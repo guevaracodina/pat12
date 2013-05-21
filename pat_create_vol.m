@@ -1,4 +1,4 @@
-function hdr = pat_create_vol(fname, dim, dt, pinfo, mat, n, data)
+function hdr = pat_create_vol(fname, dim, dt, pinfo, mat, n, data, varargin)
 % Create a NIfTI volume slice by slice.
 % SYNTAX
 % hdr = pat_create_vol(fname, dim, dt, pinfo, mat, n, data)
@@ -26,12 +26,32 @@ function hdr = pat_create_vol(fname, dim, dt, pinfo, mat, n, data)
 % Copyright (C) 2011 LIOM Laboratoire d'Imagerie Optique et Moléculaire
 %                    École Polytechnique de Montréal
 %_______________________________________________________________________________
-hdr = struct('fname',fname,...
-    'dim', dim,...
-    'dt',   dt,...
-    'pinfo',pinfo,...
-    'mat',  mat,...
-    'n', n);
+
+% ------------------------------------------------------------------------------
+% Optional inputs handling
+% ------------------------------------------------------------------------------
+% only want true optional input at most
+numvarargs              = length(varargin);
+if numvarargs > 4
+    error('pat_create_vol:TooManyInputs', ...
+        'Requires at most 1 optional inputs');
+end
+% set defaults for optional inputs
+optargs                 = {'Created with pat12'};
+% now put these defaults into the optargs cell array, and overwrite the ones
+% specified in varargin.
+optargs(1:numvarargs)   = varargin;
+% Place optional args in memorable variable names
+[descrip]               = optargs{:};
+% ------------------------------------------------------------------------------
+
+hdr = struct(   'fname',    fname,...
+                'dim',      dim,...
+                'dt',       dt,...
+                'pinfo',    pinfo,...
+                'mat',      mat,...
+                'n',        n, ...
+                'descrip',  descrip);
 hdr = spm_create_vol(hdr);
 spm_write_vol(hdr, data);
 end

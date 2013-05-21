@@ -56,7 +56,7 @@ pat_text_waitbar(0, sprintf('Write %d B-mode frames to NIfTI\n',nFrames));
 % Creates NIfTI volume frame by frame
 for iFrames = 1:nFrames
     hdrBmode = pat_create_vol(fnameBmode, dim, dt, pinfo, mat, iFrames,...
-        squeeze(rawDataBmode(:,:,1,iFrames)));
+        squeeze(rawDataBmode(:,:,1,iFrames)), 'B-mode created with pat12');
     % Update progress bar
     spm_progress_bar('Set', iFrames);
     pat_text_waitbar(iFrames/nFrames, sprintf('Processing frame %d from %d', iFrames, nFrames));
