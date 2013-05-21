@@ -58,9 +58,9 @@ pat_text_waitbar(0, sprintf('Write %d PA frames to NIfTI\n',nFrames))
 % Creates NIfTI volume frame by frame
 for iFrames = 1:nFrames
     hdrSO2 = pat_create_vol(fnameSO2, dim, dt, pinfo, mat, iFrames,...
-        squeeze(rawDataSO2(:,:,1,iFrames)));
+        squeeze(rawDataSO2(:,:,1,iFrames)), 'SO2 created with pat12');
     hdrHbT = pat_create_vol(fnameHbT, dim, dt, pinfo, mat, iFrames,...
-        squeeze(rawDataHbT(:,:,1,iFrames)));
+        squeeze(rawDataHbT(:,:,1,iFrames)), 'HbT created with pat12');
     % Update progress bar
     spm_progress_bar('Set', iFrames);
     pat_text_waitbar(iFrames/nFrames, sprintf('Processing frame %d from %d', iFrames, nFrames));

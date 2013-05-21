@@ -10,7 +10,7 @@ clear all
 close all
 
 % Edit these parameters
-fbase = 'E:\Edgar\Data\PAT_Data\2012-11-09-16-23-51_toe09\2012-11-09-16-23-51_RS_TOE9_12_11_09-2012-11-09-14-11-28_1.raw';
+fbase = 'F:\Edgar\Data\Injection\RatToeD9_2013-05-16-13-05-51.raw';
 fmode = '.bmode';
 StartFrame = 1;
 EndFrame = 1;
