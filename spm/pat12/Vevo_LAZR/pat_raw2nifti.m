@@ -31,8 +31,9 @@ affine_mat_filename{1} = regexprep(fnameHbT,'.nii','.mat');
 affine_mat_filename{2} = regexprep(fnameSO2,'.nii','.mat');
 % Single frame dimensions: [nDepth nWidth 1]
 dim = [param.PaNumSamples param.PaNumLines 1];
-% Data type
-dt = [spm_type('float64') spm_platform('bigend')];
+% Data type. Visualsonics Vevo LAZR exports HbT/SO2 data as ushort (16-bits)
+% dt = [spm_type('float64') spm_platform('bigend')];
+dt = [spm_type('uint16') spm_platform('bigend')];
 % Plane info
 pinfo = ones(3,1);
 % Affine transformation matrix: Scaling

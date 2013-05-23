@@ -6,8 +6,9 @@ bmp_dir = fullfile(output_dir,'Bmode_images');
 if ~exist(bmp_dir,'dir'),mkdir(bmp_dir); end
 
 %% File conversion
-fileNameTXT = pat_raw2bmp_bmode(fileName, input_dir, bmp_dir);
-[nifti_filename affine_mat_filename param] = pat_raw2nifti_bmode(fileName, output_dir);
+fileNameTXT = fullfile(input_dir, 'bModeframeData.txt');
+% [nifti_filename affine_mat_filename param] = pat_raw2nifti_bmode(fileName, output_dir);
+nifti_filename = 'F:\Edgar\Data\Injection\RatToeD9_2013-05-16-13-05-51.raw.bmode.nii';
 
 %% Extract frame rate
 fid = fopen(fileNameTXT);
@@ -17,23 +18,24 @@ fprintf('Frame rate = %0.2f fps\n', 1/TR);
 fclose(fid);
 
 %% read nifti files
+load('F:\Edgar\Data\Injection\PAT.mat')
+param = PAT.bModeParam;
 v = spm_vol(nifti_filename);
-I = spm_read_vols(v{1});
+I = spm_read_vols(v);
 
 %% Display images
 close all
 h = figure;
 set(h,'color','k')
-colormap(gray(256))
+colormap(pat_get_colormap('octgold'))
 % Allow printing of black background
 set(h, 'InvertHardcopy', 'off');
 nFrames = size(I,4);
 timeVector = 0:TR:TR*(nFrames-1);
 % Prepare the new video file.
 fName = fullfile(output_dir,'LPS_injection.avi');
-aviobj = avifile(fName);
+aviobj = avifile(fName, 'compression', 'None');
 aviobj.KeyFramePerSec = round(1/TR);
-aviobj.compression = 'none';
 aviobj.fps = round(1/TR);
 aviobj.videoname = 'LPS injection';
 set(gcf,'Renderer','zbuffer');
@@ -46,6 +48,7 @@ for iFrames = 1:nFrames,
     % Need to flip L-R
     imagesc(param.WidthAxis, param.DepthAxis, fliplr(squeeze(I(:,:,1,iFrames))),...
         dispLimits);
+    colorbar
     axis image
     xlim(xLimits);
     ylim(yLimits);

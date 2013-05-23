@@ -29,8 +29,9 @@ affine_mat_filename{1} = regexprep(fnameBmode,'.nii','.mat');
 
 % Single frame dimensions: [nDepth nWidth 1]
 dim = [param.BmodeNumSamples param.BmodeNumLines 1];
-% Data type
-dt = [spm_type('float64') spm_platform('bigend')];
+% Data type. Visualsonics Vevo LAZR exports B-mode data as uchar (8-bits)
+% dt = [spm_type('float64') spm_platform('bigend')];
+dt = [spm_type('uint8') spm_platform('bigend')];
 % Plane info
 pinfo = ones(3,1);
 % Affine transformation matrix: Scaling
