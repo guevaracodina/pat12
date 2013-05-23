@@ -75,9 +75,15 @@ im_anat = squeeze(im_anat(:,:,1,1));
 % HbT image
 idxPAmode = regexp(PAT.color.eng, PAT.color.HbT);
 volPAmode = spm_vol(PAT.nifti_files{1,idxPAmode});
-im_PA = spm_read_vols(volPAmode);
-% Quick dirty way to have only the 1st image
-im_PA = squeeze(im_PA(:,:,1,1));
+if ~isempty(volPAmode)
+    im_PA = spm_read_vols(volPAmode);
+    % Quick dirty way to have only the 1st image
+    im_PA = squeeze(im_PA(:,:,1,1));
+else
+    % Take B-mode image
+    volPAmode = volBmode;
+    im_PA = im_anat;
+end
 
 if size(im_anat,1)~= size(im_PA,1)|| size(im_anat,2)~= size(im_PA,2)
     im_anat2 = pat_imresize(im_anat, [size(im_PA,1) size(im_PA,2)]);

@@ -279,6 +279,21 @@ for scanIdx=1:length(job.PATmat)
                         % Save nifti files in ROI sub-folder //EGC
                         fname_mask = fullfile(dir_patmat,[fil1 '_ROI_' str '_' name '.nii']);
                         PAT.res.ROI{index}.fname = fname_mask;
+                        
+                        % Correct data type for logical masks
+                        switch (vol_anat(1).dt(1))
+                            case 512
+                                % unsigned integer 16-bit
+                                vol_anat(1).dt = [64 0];
+                            case 2
+                                % unsigned integer 8-bit
+                                vol_anat(1).dt = [64 0];
+                            case 64
+                                % Float 64 poses no problem
+                            otherwise
+                                % Convert to unsigned int 8-bit
+                                vol_anat(1).dt = [64 0];
+                        end
 
                         % Create and write a NIFTI file with ROI mask
                         pat_create_vol(fname_mask, vol_anat(1).dim, vol_anat(1).dt,...
@@ -311,7 +326,22 @@ for scanIdx=1:length(job.PATmat)
                         % Save nifti files in ROI sub-folder //EGC
                         fname_mask = fullfile(dir_patmat,[fil1 '_ROI_' str '_' int2str(i1) 'x' int2str(i2) '.nii']);
                         PAT.res.ROI{index}.fname = fname_mask;
-
+                        
+                        % Correct data type for logical masks
+                        switch (vol_anat(1).dt(1))
+                            case 512
+                                % unsigned integer 16-bit
+                                vol_anat(1).dt = [64 0];
+                            case 2
+                                % unsigned integer 8-bit
+                                vol_anat(1).dt = [64 0];
+                            case 64
+                                % Float 64 poses no problem
+                            otherwise
+                                % Convert to unsigned int 8-bit
+                                vol_anat(1).dt = [64 0];
+                        end
+                        
                         % Create and write a NIFTI file with ROI mask
                         pat_create_vol(fname_mask, vol_anat(1).dim, vol_anat(1).dt,...
                             vol_anat(1).pinfo, vol_anat(1).mat, 1, mask);
