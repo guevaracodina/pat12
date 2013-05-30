@@ -87,7 +87,7 @@ end
 % Check that the size of "errors" corresponsds to the size of the y-values.
 % Arbitrarily using lower errors as indicative.
 if any(size(values) ~= size(lowerErrors))
-    error('The values and errors have to be the same length')
+    error('pat12:pat_barwitherr:The values and errors have to be the same length')
 end
 
 [nRows nCols] = size(values);

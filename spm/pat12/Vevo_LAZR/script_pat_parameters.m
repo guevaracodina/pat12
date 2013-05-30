@@ -2,7 +2,7 @@
 clear; clc;
 fprintf('Acquisition parameters\n')
 job.output_dir{1} = 'F:\Edgar\Data\PAT_Results_20130517\';
-job.CSVfname{1} = 'pat_persistance.csv';
+job.CSVfname{1} = 'pat_acq_params.csv';
 
 % job.PATmat = {  'E:\Edgar\Data\PAT_Results\2012-09-07-14-48-55_ctl02\seedRadius14\BPF\SNR_test\PAT.mat';
 %                 'E:\Edgar\Data\PAT_Results\2012-11-09-16-16-25_toe04\seedRadius10\SNR_test\PAT.mat';
@@ -16,7 +16,47 @@ job.CSVfname{1} = 'pat_persistance.csv';
 %                 'E:\Edgar\Data\PAT_Results\2012-11-09-16-17-27_toe05\seedRadius10\PAT.mat'
 %                 'E:\Edgar\Data\PAT_Results\2012-11-09-16-20-12_toe03\seedRadius10\PAT.mat'};
 
-job.PATmat = {  'F:\Edgar\Data\PAT_Results_20130517\OxySurge\DG_OS\ROI\PAT.mat';
+job.PATmat = {  
+                'E:\Edgar\Data\PAT_Results\2012-09-07-14-48-55_ctl02\seedRadius14\BPF\SNR_test\PAT.mat';
+                'E:\Edgar\Data\PAT_Results\2012-11-09-16-16-25_toe04\seedRadius10\SNR_test\PAT.mat';
+                'E:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03\seedRadius10\SNR_test\PAT.mat';
+                'E:\Edgar\Data\PAT_Results\2012-11-09-16-21-53_ctl01\seedRadius10\SNR_test\PAT.mat';
+                'E:\Edgar\Data\PAT_Results\2012-11-09-16-23-04_toe08\seedRadius10\SNR_test\PAT.mat';
+                'E:\Edgar\Data\PAT_Results\2012-11-09-16-23-51_toe09\seedRadius10\SNR_test\PAT.mat'
+                'E:\Edgar\Data\PAT_Results\2012-09-07-10-40-07_toe10\seedRadius14\BPF\PAT.mat'
+                'E:\Edgar\Data\PAT_Results\2012-09-07-11-04-40_toe04\seedRadius14\BPF\PAT.mat'
+                'E:\Edgar\Data\PAT_Results\2012-09-07-12-10-31_ctl01\seedRadius14\BPF\PAT.mat'
+                'E:\Edgar\Data\PAT_Results\2012-11-09-16-17-27_toe05\seedRadius10\PAT.mat'
+                'E:\Edgar\Data\PAT_Results\2012-11-09-16-20-12_toe03\seedRadius10\PAT.mat'    
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DA_RS1\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DA_RS2\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DB_RS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DC_RS1\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DD_RS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DE_RS1\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DE_RS2\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DF_RS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DG_RS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DH_RS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DI_RS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DJ_RS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DK_RS1\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DK_RS2\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DL_RS1\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DL_RS2\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\DL_RS3\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\OxySurge\DA_OS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\OxySurge\DB_OS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\OxySurge\DC_OS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\OxySurge\DD_OS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\OxySurge\DE_OS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\OxySurge\DF_OS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\OxySurge\DG_OS\ROI\PAT.mat';
+                'F:\Edgar\Data\PAT_Results_20130517\OxySurge\DH_OS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\OxySurge\DI_OS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\OxySurge\DJ_OS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\OxySurge\DK_OS\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\OxySurge\DL_OS\PAT.mat'
                 };
 % PAT copy/overwrite method
 job.PATmatCopyChoice = pat_PATmatCopyChoice_cfg('persistence_test');

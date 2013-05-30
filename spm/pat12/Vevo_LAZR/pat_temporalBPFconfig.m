@@ -25,7 +25,7 @@ try
     % only want 1 optional input at most
     numVarArgs = length(varargin);
     if numVarArgs > 1
-        error('pat_temporalBPFconfig:TooManyInputs', ...
+        error('pat12:pat_temporalBPFconfig:TooManyInputs', ...
             'requires at most 1 optional input: [Rp Rs]');
     end
     

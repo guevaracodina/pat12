@@ -13,7 +13,7 @@ function IC             = pat_include_colors_cfg(HbT, SO2, varargin)
 % only want true optional input at most
 numvarargs              = length(varargin);
 if numvarargs > 1
-    error('pat_include_colors_cfg:TooManyInputs', ...
+    error('pat12:pat_include_colors_cfg:TooManyInputs', ...
         'Requires at most one optional input');
 end
 % set defaults for optional inputs

@@ -199,7 +199,7 @@ if numel([job.PATmatIdxCtrl job.PATmatIdxLPS job.PATmatIdxIL1Ra]) == numel(job.P
     % Update PAT matrix list
     job.PATmat = newPATmat;
 else
-    error('Wrong number of indexed subjects')
+    error('pat12:pat_network_analyses_run:Wrong number of indexed subjects')
 end
 end % sort_PATmat
 

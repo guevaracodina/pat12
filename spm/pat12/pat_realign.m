@@ -452,7 +452,7 @@ str = { 'There is not enough overlap in the images',...
     'within about 4cm and about 15 degrees in order',...
     'for SPM to find the optimal solution.'};
 spm('alert*',str,mfilename,sqrt(-1));
-error('insufficient image overlap')
+error('pat12:pat_realign:insufficient image overlap')
 %_______________________________________________________________________
 
 %_______________________________________________________________________

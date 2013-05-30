@@ -85,18 +85,21 @@ else
     im_PA = im_anat;
 end
 
-if size(im_anat,1)~= size(im_PA,1)|| size(im_anat,2)~= size(im_PA,2)
-    im_anat2 = pat_imresize(im_anat, [size(im_PA,1) size(im_PA,2)]);
-end
+
+% Do not resize, keep original dimensions
+% if size(im_anat,1)~= size(im_PA,1)|| size(im_anat,2)~= size(im_PA,2)
+%     im_anat = pat_imresize(im_anat, [size(im_PA,1) size(im_PA,2)]);
+% end
 
 % Create filename according the existing nomenclature at scan level
 PAT.res.file_anat = fullfile(PAT.output_dir, 'anatomical.nii');
 % Create and write a NIFTI file in the scan folder
-% pat_create_vol(PAT.res.file_anat, volPAmode(1).dim, volPAmode(1).dt,...
-%     volPAmode(1).pinfo, volPAmode(1).mat, 1, im_anat2);
-%Save PA HbT image
+% Save B-mode image
 pat_create_vol(PAT.res.file_anat, volPAmode(1).dim, volPAmode(1).dt,...
-    volPAmode(1).pinfo, volPAmode(1).mat, 1, im_PA);
+    volPAmode(1).pinfo, volPAmode(1).mat, 1, im_anat);
+% Save PA HbT image
+% pat_create_vol(PAT.res.file_anat, volPAmode(1).dim, volPAmode(1).dt,...
+%     volPAmode(1).pinfo, volPAmode(1).mat, 1, im_PA);
 end
 
 % EOF

@@ -20,7 +20,7 @@ function bpf        = pat_bpf_cfg(choose_on, freq, order, type, varargin)
 % only want 1 optional input at most
 numVarArgs = length(varargin);
 if numVarArgs > 1
-    error('pat_bpf_cfg:TooManyInputs', ...
+    error('pat12:pat_bpf_cfg:TooManyInputs', ...
         'requires at most 1 optional input: [Rp Rs]');
 end
 
