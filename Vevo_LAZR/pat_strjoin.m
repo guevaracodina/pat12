@@ -49,7 +49,7 @@ function output = pat_strjoin(input, separator)
                                'UniformOutput', false), ...
                        separator);
     else
-      error('pat_strjoin:invalidInput', 'Unsupported input: %s', class(input));
+      error('pat12:pat_strjoin:invalidInput', 'Unsupported input: %s', class(input));
     end
   end
 end

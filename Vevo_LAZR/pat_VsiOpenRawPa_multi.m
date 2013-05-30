@@ -21,7 +21,7 @@ function [rawDataSO2, rawDataHbT,  param] = pat_VsiOpenRawPa_multi(fileName, var
 % only want 1 optional input at most
 numVarArgs = length(varargin);
 if numVarArgs > 2
-    error('pat_VsiOpenRawPa_multi:TooManyInputs', ...
+    error('pat12:pat_VsiOpenRawPa_multi:TooManyInputs', ...
         'requires at most 2 optional input: framesVector');
 end
 % set defaults for optional inputs ()

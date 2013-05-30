@@ -20,7 +20,7 @@ function [rawDataBmode, param] = pat_VsiOpenRawBmode_multi(fileName, varargin)
 % only want 1 optional input at most
 numVarArgs = length(varargin);
 if numVarArgs > 2
-    error('pat_VsiOpenRawBmode_multi:TooManyInputs', ...
+    error('pat12:pat_VsiOpenRawBmode_multi:TooManyInputs', ...
         'requires at most 2 optional input: framesVector');
 end
 % set defaults for optional inputs ()

@@ -21,7 +21,7 @@ function [ROI mainHeader] = pat_import_csv(fileName, varargin)
 % only want 1 optional input at most
 numVarArgs = length(varargin);
 if numVarArgs > 1
-    error('pat_import_csv:TooManyInputs', ...
+    error('pat12:pat_import_csv:TooManyInputs', ...
         'requires at most 1 optional input: saveMatFile');
 end
 

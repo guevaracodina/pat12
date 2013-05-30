@@ -28,7 +28,7 @@ function [PAT ROI varargout] = pat_extract_core(PAT, job, mask, Amask, varargin)
 % only want 3 optional input at most
 numVarArgs = length(varargin);
 if numVarArgs > 3
-    error('pat_extract_core:TooManyInputs', ...
+    error('pat12:pat_extract_core:TooManyInputs', ...
         'requires at most 2 optional inputs: dataType, ROIstd, ROIsem');
 end
 % set defaults for optional inputs ()

@@ -20,6 +20,7 @@ function hdr = pat_create_vol(fname, dim, dt, pinfo, mat, n, data, varargin)
 %           	voxel coordinates to real world coordinates.
 % n         - Slice position
 % data      - A 4-D matrix with volume time-series data
+% descrip   - Descriptive text
 % OUTPUT
 % hdr       - Header with image volume information.
 %_______________________________________________________________________________
@@ -32,8 +33,8 @@ function hdr = pat_create_vol(fname, dim, dt, pinfo, mat, n, data, varargin)
 % ------------------------------------------------------------------------------
 % only want true optional input at most
 numvarargs              = length(varargin);
-if numvarargs > 4
-    error('pat_create_vol:TooManyInputs', ...
+if numvarargs > 1
+    error('pat12:pat_create_vol:TooManyInputs', ...
         'Requires at most 1 optional inputs');
 end
 % set defaults for optional inputs

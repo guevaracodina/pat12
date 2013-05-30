@@ -329,7 +329,7 @@ function [S0,S1,S2,S3] = shear_decomp(A)
 % Magnetic Resonance in Medicine 42(6):1014-1018
 
 A0 = A(1:3,1:3);
-if any(abs(svd(A0)-1)>1e-7), error('Can''t decompose matrix'); end
+if any(abs(svd(A0)-1)>1e-7), error('pat12:pat_reslice:Can''t decompose matrix'); end
 
 t  = A0(2,3); if t==0, t=eps; end
 a0 = pinv(A0([1 2],[2 3])')*[(A0(3,2)-(A0(2,2)-1)/t) (A0(3,3)-1)]';

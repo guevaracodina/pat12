@@ -18,7 +18,7 @@ elseif (length(nx) == 2)
     ny = nx(2);
     nx = nx(1);
 else
-    error('pat_imresize: second argument mest be a scalar or a 2-vector');
+    error('pat12:pat_imresize: second argument mest be a scalar or a 2-vector');
 end
 % Round dimensions
 nx = round(nx);

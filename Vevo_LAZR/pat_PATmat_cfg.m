@@ -20,7 +20,7 @@ function PATmat = pat_PATmat_cfg(varargin)
 % only want true optional input at most
 numvarargs              = length(varargin);
 if numvarargs > 4
-    error('pat_PATmat_cfg:TooManyInputs', ...
+    error('pat12:pat_PATmat_cfg:TooManyInputs', ...
         'Requires at most 4 optional inputs');
 end
 % set defaults for optional inputs

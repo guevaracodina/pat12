@@ -20,7 +20,7 @@ function pat_save_figs(job, h, varargin)
 % only want 1 optional input at most
 numVarArgs = length(varargin);
 if numVarArgs > 5
-    error('pat_save_figs:TooManyInputs', ...
+    error('pat12:pat_save_figs:TooManyInputs', ...
         'requires at most 5 optional inputs: figSuffix, scanIdx, c1, r1, figsFolder');
 end
 

@@ -11,7 +11,7 @@ function [PAT ROI varargout] = pat_extract_main(PAT,ROI,job,d,d3,d4,c1,s1,colorO
 % only want 2 optional input at most
 numVarArgs = length(varargin);
 if numVarArgs > 2
-    error('pat_extract_main:TooManyInputs', ...
+    error('pat12:pat_extract_main:TooManyInputs', ...
         'requires at most 2 optional inputs: ROIstd, ROIsem');
 end
 % set defaults for optional inputs ()
