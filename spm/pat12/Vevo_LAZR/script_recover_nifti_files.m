@@ -164,7 +164,16 @@ for scanIdx = 1: numel(job.PATmat);
                         im_PA_resized = zeros(size(im_B));
                         
                         if ~(PAT.color.eng(c1)==PAT.color.SO2)
-                            
+                            % Update PAT.PAparam with new dimensions (same as B-mode)
+                            PAT.PAparam.PaNumSamples = size(im_PA_resized,1);
+                            PAT.PAparam.PaNumLines = size(im_PA_resized,2);
+                            PAT.PAparam.PaDepthOffset = PAT.PAparam.BmodeDepthOffset;
+                            PAT.PAparam.PaDepth = PAT.PAparam.BmodeDepth;
+                            PAT.PAparam.PaWidth = PAT.PAparam.BmodeWidth;
+                            PAT.PAparam.pixDepth = PAT.bModeParam.pixDepth;
+                            PAT.PAparam.pixWidth = PAT.bModeParam.pixWidth;
+                            PAT.PAparam.DepthAxis = PAT.bModeParam.DepthAxis;
+                            PAT.PAparam.WidthAxis = PAT.bModeParam.WidthAxis;
                         end
                         
                         % PA-mode data type
@@ -190,17 +199,6 @@ for scanIdx = 1: numel(job.PATmat);
                     end
                 end
             end % End colors loop
-            % Update PAT.PAparam with new dimensions (same as B-mode)
-            PAT.fcPAT.oldPAparam = PAT.PAparam; % backup old parameters
-            PAT.PAparam.PaNumSamples = size(im_PA_resized,1);
-            PAT.PAparam.PaNumLines = size(im_PA_resized,2);
-            PAT.PAparam.PaDepthOffset = PAT.PAparam.BmodeDepthOffset;
-            PAT.PAparam.PaDepth = PAT.PAparam.BmodeDepth;
-            PAT.PAparam.PaWidth = PAT.PAparam.BmodeWidth;
-            PAT.PAparam.pixDepth = PAT.bModeParam.pixDepth;
-            PAT.PAparam.pixWidth = PAT.bModeParam.pixWidth;
-            PAT.PAparam.DepthAxis = PAT.bModeParam.DepthAxis;
-            PAT.PAparam.WidthAxis = PAT.bModeParam.WidthAxis;
             % Coregistration succesful!
             PAT.jobsdone(1).manualCoregOK = true;
             % Save PAT matrix
@@ -227,5 +225,16 @@ copyfile(PAT.nifti_files{1,c1}, backupName);
 [pathName, matName, matExt] = fileparts(PAT.nifti_files_affine_matrix{1,c1});
 backupMat = fullfile(pathName, [matName '.noresize' matExt]);
 copyfile(PAT.nifti_files_affine_matrix{1,c1}, backupMat);
+
+try
+    % Fast alternative (undocumented java feature)
+    java.io.File(currentFile).renameTo(java.io.File(newFile));
+catch exception
+    % Slow alternative...
+    movefile(currentFile, newFile);
+    disp(exception.identifier)
+    disp(exception.stack(1))
+end
+
 end
 % EOF

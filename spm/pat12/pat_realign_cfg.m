@@ -52,12 +52,12 @@ rtm1.help       = {'This option will force recomputation in a second pass to reg
 
 % Executable Branch
 realign1        = cfg_exbranch;       % This is the branch that has information about how to run this module
-realign1.name   = 'Realign images in the stack to remove movement effects';             % The display name
+realign1.name   = 'Image realignement';             % The display name
 realign1.tag    = 'realign1'; %Very important: tag is used when calling for execution
 realign1.val    = {PATmat redo1 PATmatCopyChoice quality1 fwhm1 sep1 rtm1};    % The items that belong to this branch. All items must be filled before this branch can run or produce virtual outputs
 realign1.prog   = @pat_realign_run;  % A function handle that will be called with the harvested job to run the computation
 realign1.vout   = @pat_cfg_vout_realign; % A function handle that will be called with the harvested job to determine virtual outputs
-realign1.help   = {'Image realignement.'};
+realign1.help   = {'Realign images in the stack to remove movement effects.'};
 
 return
 
