@@ -74,9 +74,9 @@ ManualROIradius         = cfg_entry;
 ManualROIradius.name    = 'Radius size of ROIs/seeds';
 ManualROIradius.tag     = 'ManualROIradius';       
 ManualROIradius.strtype = 'r';
-ManualROIradius.val{1}  = 5;                    % Default value
+ManualROIradius.val{1}  = 0.5;                    % Default value
 ManualROIradius.num     = [1 1];     
-ManualROIradius.help    = {'Enter radius of the ROIs/seeds in pixels.'}'; 
+ManualROIradius.help    = {'Enter radius of the ROIs/seeds in mm.'}'; 
 
 pointNclickROI          = cfg_branch;
 pointNclickROI.tag      = 'pointNclickROI';
