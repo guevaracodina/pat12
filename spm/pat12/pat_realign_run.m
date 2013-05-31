@@ -44,8 +44,8 @@ if pat_isVEVOraw(job)
                 P = pat_realign(PAT.nifti_files{idxBmode},flags);
                 % Save parameters Q(1:3) = x,y,z in mm
                 % Q(4:6) = x,y,z in rad (multiply by 180/pi to convert to deg)
-                
                 [Q, fname] = save_parameters(P);
+                % Conversion to degrees
                 Q(:, 4:6) = Q(:, 4:6)*180/pi;
                 save(fullfile(dir_patmat,'motion_parameters_1stPass.mat'), 'Q');
                 PAT(1).motion_parameters(1).fnameTXT1stPass = fname;
@@ -103,11 +103,15 @@ if pat_isVEVOraw(job)
                 % Save parameters Q(1:3) = x,y,z in mm
                 % Q(4:6) = x,y,z in rad (multiply by 180/pi to convert to deg)
                 [Q, fname] = save_parameters(P);
+                % Conversion to degrees
                 Q(:, 4:6) = Q(:, 4:6)*180/pi;
                 save(fullfile(dir_patmat,'motion_parameters.mat'), 'Q');
                 PAT(1).motion_parameters(1).fnameTXT = fname;
                 PAT(1).motion_parameters(1).fnameMAT = fullfile(dir_patmat,'motion_parameters.mat');
                 
+                % Update anatomical file
+                PAT = pat_create_anatomical_file(PAT);
+
                 % Realignment succesful
                 PAT.jobsdone.realign = true;
                 % Save PAT matrix

@@ -35,7 +35,8 @@ switch(fNamesROIchoice{1})
         ManualROIspline = 1;
     case 'pointNclickROI'
         pointNclickROI  = 1;
-        radius          = job.AutoROIchoice.pointNclickROI.ManualROIradius;
+        radiusX         = job.AutoROIchoice.pointNclickROI.ManualROIradius;
+        radiusY         = job.AutoROIchoice.pointNclickROI.ManualROIradius;
     case 'pointNclickSquare'
         pointNclickROIsquare  = 1;
         ManualROIwidth  = job.AutoROIchoice.pointNclickSquare.ManualROIwidth;
@@ -50,7 +51,9 @@ for scanIdx=1:length(job.PATmat)
     try
         %Load PAT.mat information
         [PAT PATmat dir_patmat]= pat_get_PATmat(job,scanIdx);
-        
+        % radius in pixels
+        radiusX = radiusX/PAT.PAparam.pixWidth;
+        radiusY = radiusY/PAT.PAparam.pixDepth;
         if ~isfield(PAT.jobsdone,'ROIOK') || job.force_redo
             if job.RemovePreviousROI
                 try
@@ -156,7 +159,9 @@ for scanIdx=1:length(job.PATmat)
                         tmp_image = spm_read_vols(V);
                         figure(hs);
                         subplot(nRows, nCols, i0);
-                        imagesc(tmp_image); axis image
+                        imagesc(tmp_image); 
+                        % axis image
+                        set(gca,'DataAspectRatio',[1 PAT.PAparam.pixWidth/PAT.PAparam.pixDepth 1])
                         title(['Session ' int2str(i0) ': ratio of 90th to 10th percentile']);
                     end
                 end
@@ -186,7 +191,8 @@ for scanIdx=1:length(job.PATmat)
                         else
                             colormap(gray);
                         end
-                        axis image;
+                        % axis image;
+                        set(gca,'DataAspectRatio',[1 PAT.PAparam.pixWidth/PAT.PAparam.pixDepth 1])
                         if graphicalROI
                             % Specify polygonal region of interest (ROI)
                             title('Make ROI polygon, then double click in it to create ROI.');
@@ -206,16 +212,17 @@ for scanIdx=1:length(job.PATmat)
                                 p = ginput(1);
                                 % Center of the seed coordinates
                                 x0 = p(1); y0 = p(2);
+                                
                                 % Parametric function for a circle
-                                xi = radius * cos(t) + x0;
-                                yi = radius * sin(t) + y0;
+                                xi = radiusX * cos(t) + x0;
+                                yi = radiusY * sin(t) + y0;
                                 LineHandler = line(xi,yi,'LineWidth',3,'Color',[.8 0 0]);
                                 % Create ROI/seed mask
                                 mask = poly2mask(xi, yi, size(im_anat,1), size(im_anat,2));
                                 % Save coordinates of seed for later display.
                                 % NOTE: Row is 1st coordinate, Column is 2nd
                                 PAT.res.ROI{index+1}.center = [y0 x0];
-                                PAT.res.ROI{index+1}.radius = radius;
+                                PAT.res.ROI{index+1}.radius = job.AutoROIchoice.pointNclickROI.ManualROIradius;
                             else
                                 if pointNclickROIsquare
                                     % Specify center of a square ROI/seed with mouse

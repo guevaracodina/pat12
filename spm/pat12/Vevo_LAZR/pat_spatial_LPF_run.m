@@ -26,9 +26,9 @@ for scanIdx=1:length(job.PATmat)
                 % Get colors to include information
                 IC = job.IC;
                 colorNames = fieldnames(PAT.color);
-                % Radius of the gaussian kernel
-                K.radius = round(job.spatial_LPF.spatial_LPF_On.spatial_LPF_radius);
-                % Save LPF settings
+                % Radius of the gaussian kernel in pixels
+                K.radius = round(job.spatial_LPF.spatial_LPF_On.spatial_LPF_radius/PAT.PAparam.pixDepth);
+                % Save LPF settings in pixels
                 PAT.fcPAT.LPF(1).radius = K.radius;
                 PAT.fcPAT.LPF(1).sigma = K.radius/2;
 
