@@ -95,8 +95,8 @@ end
 PAT.res.file_anat = fullfile(PAT.output_dir, 'anatomical.nii');
 % Create and write a NIFTI file in the scan folder
 % Save B-mode image
-pat_create_vol(PAT.res.file_anat, volPAmode(1).dim, volPAmode(1).dt,...
-    volPAmode(1).pinfo, volPAmode(1).mat, 1, im_anat);
+pat_create_vol(PAT.res.file_anat, volBmode(1).dim, volBmode(1).dt,...
+    volBmode(1).pinfo, volBmode(1).mat, 1, im_anat);
 % Save PA HbT image
 % pat_create_vol(PAT.res.file_anat, volPAmode(1).dim, volPAmode(1).dt,...
 %     volPAmode(1).pinfo, volPAmode(1).mat, 1, im_PA);

@@ -33,8 +33,7 @@ optargs(1:numvarargs)   = varargin;
 [copyTarget]            = optargs{:};
 % ------------------------------------------------------------------------------
 
-
-
+% Read images
 volSource= spm_vol(sourceFile);
 imSource = spm_read_vols(volSource);
 volTarget= spm_vol(targetFile);
@@ -68,8 +67,19 @@ else
     error('pat12:pat_apply_affine_mat:dimsError', 'Dimensions mismatch')
 end
 
+if volSource(1).dt(1) ~= volTarget(1).dt(1)
+    % PA-mode data type
+    % targetDt = [spm_type('uint16') spm_platform('bigend')];
+    % Modify data type (B-mode is uint8, while PA is uint16)
+    fprintf('Target data type (%s) is different from source data type (%s).\n', spm_type(volTarget(1).dt(1)), spm_type(volSource(1).dt(1)))
+    for iFrames = 1:size(imTarget,4)
+        volSource(iFrames).dt = volTarget(iFrames).dt;
+    end
+end
+for iFrames = 1:size(imTarget,4)
+    volSource(iFrames).fname = copyTarget;
+end
 % Save new image
 hdr = pat_create_vol_4D(copyTarget, volSource, imTarget);
-
-    
+   
 % EOF

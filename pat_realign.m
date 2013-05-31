@@ -458,6 +458,9 @@ error('pat12:pat_realign:insufficient image overlap')
 %_______________________________________________________________________
 function plot_parameters(P)
 fg=spm_figure('FindWin','Graphics');
+if isempty(fg)
+    fg = figure;
+end
 if ~isempty(fg),
     P = cat(1,P{:});
     if length(P)<2, return; end;
@@ -501,7 +504,13 @@ if ~isempty(fg),
     set(get(ax,'Ylabel'),'String','degrees');
 
     % print realigment parameters
-    spm_print
+    % spm_print
+    % Get filename to save the figure
+    [pathName, fName, ext] = fileparts(P(1,1).fname);
+    % Save as PNG
+    print(fg, '-dpng', fullfile(pathName,['motion_parameters' '.png']), sprintf('-r%d',300));
+    % Save as a figure
+    saveas(fg, fullfile(pathName,['motion_parameters' '.fig']), 'fig');
 end
 return;
 %_______________________________________________________________________
