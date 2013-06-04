@@ -19,7 +19,7 @@ try
     IC = job.IC;
     [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
     scanName = splitStr{end-1};
-    % Cell with names of files to be deleted (up to 10 regressors)
+    % Cell with names of files to be deleted (up to 20 regressors)
     files2Delete = {
         'beta_0001.hdr'
         'beta_0001.img'
@@ -41,6 +41,26 @@ try
         'beta_0009.img'
         'beta_0010.hdr'
         'beta_0010.img'
+        'beta_0011.hdr'
+        'beta_0011.img'
+        'beta_0012.hdr'
+        'beta_0012.img'
+        'beta_0013.hdr'
+        'beta_0013.img'
+        'beta_0014.hdr'
+        'beta_0014.img'
+        'beta_0015.hdr'
+        'beta_0015.img'
+        'beta_0016.hdr'
+        'beta_0016.img'
+        'beta_0017.hdr'
+        'beta_0017.img'
+        'beta_0018.hdr'
+        'beta_0018.img'
+        'beta_0019.hdr'
+        'beta_0019.img'
+        'beta_0020.hdr'
+        'beta_0020.img'
         'mask.hdr'
         'mask.img'
         'ResMS.hdr'

@@ -43,7 +43,7 @@ if pat_isVEVOraw(job)
                 % Only realign B-mode images
                 P = pat_realign(PAT.nifti_files{idxBmode},flags);
                 % Save parameters Q(1:3) = x,y,z in mm
-                % Q(4:6) = x,y,z in rad (multiply by 180/pi to convert to deg)
+                % Q(4:6) = pitch, roll & yaw in rad (multiply by 180/pi to convert to deg)
                 [Q, fname] = save_parameters(P);
                 % Conversion to degrees
                 Q(:, 4:6) = Q(:, 4:6)*180/pi;
@@ -101,7 +101,7 @@ if pat_isVEVOraw(job)
                 % Do a 2nd pass to get the residual movement parameters
                 P = pat_realign(PAT.nifti_files{idxBmode},flags);
                 % Save parameters Q(1:3) = x,y,z in mm
-                % Q(4:6) = x,y,z in rad (multiply by 180/pi to convert to deg)
+                % Q(4:6) = pitch, roll & yaw in rad (multiply by 180/pi to convert to deg)
                 [Q, fname] = save_parameters(P);
                 % Conversion to degrees
                 Q(:, 4:6) = Q(:, 4:6)*180/pi;

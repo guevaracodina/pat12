@@ -28,7 +28,7 @@ regressROI.help         = { 'Include ROIs/seeds as regressors.'
 
 regressROIMotion        = cfg_branch;
 regressROIMotion.tag    = 'regressROIMotion';
-regressROIMotion.name   = 'ROIs/seeds as regressors';
+regressROIMotion.name   = 'ROIs/seeds AND motion parameters';
 regressROIMotion.val    = {ROI_list};
 regressROIMotion.help   = { 'Include ROIs/seeds and motion (realignment) parameters as regressors' 
                             'See PAT.ROI.ROIname for the complete ROIs name list.'
@@ -36,9 +36,15 @@ regressROIMotion.help   = { 'Include ROIs/seeds and motion (realignment) paramet
 
 regressor_choice        = cfg_choice;
 regressor_choice.tag    = 'regressor_choice';
-regressor_choice.name   = 'Regress global brain signal';
+regressor_choice.name   = 'Regress signal(s)';
 regressor_choice.values = {regressBrainSignal regressROI regressROIMotion};
 regressor_choice.val    = {regressBrainSignal};
-regressor_choice.help   = {'Choose whether to include global brain signal as regressor'}';
+regressor_choice.help   = { 'Choose signal(s) to include as nuisance regressors:'
+                            'Include global brain signal as regressor.'
+                            'Include ROIs/seeds as regressors.'
+                            'Include ROIs/seeds and motion (realignment) parameters as regressors'
+                            'See PAT.ROI.ROIname for the complete ROIs name list.'
+                            'There are 6 realignment parameters obtained by rigid body head motion correction'
+                            }';
 
 % EOF
