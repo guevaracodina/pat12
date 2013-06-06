@@ -91,13 +91,15 @@ for scanIdx=1:length(job.PATmat)
                                             % ROI(s) name(s); x,y,z translation;
                                             % pitch, roll & yaw
                                             SPM.xX.name = PAT.ROI.ROIname(job.regressor_choice.regressROIMotion.ROI_list);
-                                            SPM.xX.name = [SPM.xX.name; {'X translation'}; {'Y translation'}; {'Z translation'}; {'pitch'}; {'roll'}; {'yaw'}];
+                                            motionParamName = {'X translation'; 'Y translation'; 'Z translation'; 'pitch'; 'roll'; 'yaw'};
+                                            motionParamName = motionParamName(job.regressor_choice.regressROIMotion.motionParams);
+                                            SPM.xX.name = [SPM.xX.name; motionParamName];
                                             % regression is along first dimension
                                             selectedROIregressors = filtNdownData.filtNdownROI(job.regressor_choice.regressROIMotion.ROI_list);
                                             selectedROIregressorsArray = [];
                                             % Load motion parameters
                                             Q = load(PAT.motion_parameters.fnameMAT);
-                                            Q = Q.Q;
+                                            Q = Q.Q(:,job.regressor_choice.regressROIMotion.motionParams);
                                             % Loop over ROIs
                                             for iROIs = 1:numel(job.regressor_choice.regressROIMotion.ROI_list)
                                                 selectedROIregressorsArray = [selectedROIregressorsArray selectedROIregressors{iROIs}{c1}'];
@@ -261,13 +263,15 @@ for scanIdx=1:length(job.PATmat)
                                                 % ROI(s) name(s); x,y,z translation;
                                                 % pitch, roll & yaw
                                                 SPM.xX.name = PAT.ROI.ROIname(job.regressor_choice.regressROIMotion.ROI_list);
-                                                SPM.xX.name = [SPM.xX.name; {'X translation'}; {'Y translation'}; {'Z translation'}; {'pitch'}; {'roll'}; {'yaw'}];
+                                                motionParamName = {'X translation'; 'Y translation'; 'Z translation'; 'pitch'; 'roll'; 'yaw'};
+                                                motionParamName = motionParamName(job.regressor_choice.regressROIMotion.motionParams);
+                                                SPM.xX.name = [SPM.xX.name; motionParamName];
                                                 % regression is along first dimension
                                                 selectedROIregressors = filtNdownData.filtNdownROI(job.regressor_choice.regressROIMotion.ROI_list);
                                                 selectedROIregressorsArray = [];
                                                 % Load motion parameters
                                                 Q = load(PAT.motion_parameters.fnameMAT);
-                                                Q = Q.Q;
+                                                Q = Q.Q(:,job.regressor_choice.regressROIMotion.motionParams);
                                                 % Loop over ROIs
                                                 for iROIs = 1:numel(job.regressor_choice.regressROIMotion.ROI_list)
                                                     selectedROIregressorsArray = [selectedROIregressorsArray selectedROIregressors{iROIs}{c1}'];
