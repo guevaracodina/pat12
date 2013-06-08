@@ -17,6 +17,22 @@ PATmatCopyChoice        = pat_PATmatCopyChoice_cfg('scrub');
 % Colors to include (HbT, SO2, Bmode)
 IC                      = pat_include_colors_cfg(true, true);
 
+% Select directory to save global results
+parent_results_dir      = cfg_files;
+parent_results_dir.tag  = 'parent_results_dir';
+parent_results_dir.name = 'Top directory to save group results';
+parent_results_dir.filter= 'dir';
+parent_results_dir.num  = [1 1];
+parent_results_dir.help = {'Select the directory where consolidated results will be saved.'}';
+
+CSVfname                = cfg_entry;
+CSVfname.name           = 'CSV filename';
+CSVfname.tag            = 'CSVfname';
+CSVfname.strtype        = 's';
+CSVfname.num            = [1 Inf];
+CSVfname.val            = {'scrubbing.csv'};
+CSVfname.help           = {'.CSV file name'}';
+
 % Frames augmented backwards in mask
 frameAugmBack           = cfg_entry;
 frameAugmBack.name      = 'BW frames';
@@ -122,14 +138,14 @@ figCmap.strtype         = 'e';
 figCmap.num             = [Inf 3];
 figCmap.val{1}          = flipud(gray(2));
 figCmap.help            = {'Enter colormap to use. e.g. type jet(256), Input is evaluated'};
-
 % ------------------------------------------------------------------------------
 
 % Executable Branch
 scrubbing1              = cfg_exbranch; % This is the branch that has information about how to run this module
 scrubbing1.name         = 'Scrubbing'; % The display name
 scrubbing1.tag          = 'scrubbing1'; %Very important: tag is used when calling for execution
-scrubbing1.val          = { PATmat redo1 PATmatCopyChoice  IC  scrub_options...
+scrubbing1.val          = { PATmat redo1 PATmatCopyChoice  IC  parent_results_dir ...
+                            CSVfname scrub_options...
                             generate_figures save_figures figSize figRes figCmap ...
                             };    % The items that belong to this branch. All items must be filled before this branch can run or produce virtual outputs
 scrubbing1.prog         = @pat_scrubbing_run; % A function handle that will be called with the harvested job to run the computation
