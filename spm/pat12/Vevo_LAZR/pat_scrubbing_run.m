@@ -14,6 +14,7 @@ function out = pat_scrubbing_run(job)
 % return
 % ------------------------------------------------------------------------------
 
+firstPass = true;
 %Big loop over scans
 for scanIdx = 1:length(job.PATmat)
     try
@@ -35,6 +36,13 @@ for scanIdx = 1:length(job.PATmat)
                     if doColor
                         % skip B-mode only extract PA
                         if ~(PAT.color.eng(c1)==PAT.color.Bmode)
+                            % First row CSV file
+                            if firstPass,
+                                save_data = fullfile(job.parent_results_dir{1},job.CSVfname);
+                                fid = fopen(save_data, 'w');
+                                fprintf(fid, 'Scan ID,Contrast,Scrub Flag,FD threshold(mm^-3),DVARS Threshold,Min. %%,Frames Kept,Total Frames,Scrub %%\n');
+                                firstPass = false;
+                            end
                             % Load motion parameters Q
                             Q = load (PAT.motion_parameters.fnameMAT);
                             Q = Q.Q;
@@ -122,10 +130,13 @@ for scanIdx = 1:length(job.PATmat)
                             % later stages of the fcPAT pipeline, i.e. we'll
                             % keep those frames marked as true.
                             scrubMask{c1} = ~scrubMask{c1};
+                            % CSV file
+                            fprintf(fid,'%s,%s,%i,%.4f,%.2f,%.2f,%d,%d,%.2f\n',scanName,colorNames{c1+1},int8(scrubFlag(c1)),1e3*job.scrub_options.FDthreshold,job.scrub_options.DVARSthreshold(c1),job.scrub_options.percentKeep,frames2keep(c1),totalFrames(c1),scrubPercent(c1));
                         end % Except B-mode
                     end % do color
                 end % colors loop
                 PAT.motion_parameters.scrub(1).fname = fullfile(dir_patmat,'scrubbing.mat');
+                PAT.motion_parameters.scrub(1).CSVfname = save_data;
                 save(fullfile(dir_patmat,'scrubbing.mat'), 'scrubFlag', 'scrubPercent',...
                     'frames2keep', 'totalFrames', 'scrubMask', 'DVARSmask', 'FDmask');
                 % correlation succesful!
@@ -139,10 +150,13 @@ for scanIdx = 1:length(job.PATmat)
         out.PATmat{scanIdx} = PATmat;
     catch exception
         out.PATmat{scanIdx} = PATmat;
+        fclose all;
         disp(exception.identifier)
         disp(exception.stack(1))
     end
 end % loop over scans
+% close .CSV file
+fclose(fid);
 end % pat_scrubbing_run
 
 function newIdx = local_augment_mask(idx, frames2augment, LR)
