@@ -1,36 +1,42 @@
-%%
-% PA color
-c1 = 2;
-load('F:\Edgar\Data\PAT_Results_20130517\RS\DG_RS\PAT.mat')
+%% script_scrubbing
+clc; close all
+
+% Frames augmented in mask
+job.framesAugmentedBackward = 1;
+job.framesAugmentedForward = 2;
 % FD threshold
 job.FDthreshold = 0.0008;
+% DVARS threshold
 job.DVARSthreshold = 3000;
+% Intersection of both masks is a more conservative approach
+job.intersection = true;
 % Get radius from the batch interface
 skulltop2base = 6.425; % mm
 biparietalDiameter = 9.785; % mm
-radius = mean([skulltop2base biparietalDiameter])/2; % mm
-% Compute Framewise displacement (FD)
+job.radius = mean([skulltop2base biparietalDiameter])/2; % mm
+
+% Load PAT structure
+load('F:\Edgar\Data\PAT_Results_20130517\RS\DG_RS\BrainMask\ROI\LPF\ROItimeCourse\BPF\GLMfcPAT\PAT.mat')
+% PA color
+c1 = 2;
+
+% Load motion parameters Q
 Q = load (PAT.motion_parameters.fnameMAT);
 Q = Q.Q;
-FD = pat_compute_FD(Q, radius);
-% Temporary selection
-FD = FD(1:217);
-
+% Compute Framewise displacement (FD)
+FD = pat_compute_FD(Q, job.radius);
 % Compute DVARS measure
-load('E:\Edgar\Data\PAT_Results\2012-11-09-16-21-53_ctl01\seedRadius10\GLMfcPAT_LVregressor\PAT.mat')
-% Manually found indices 194:199, 213
 DVARS = pat_compute_DVARS(PAT, c1);
 
-%%
+%% Create figure
 h = figure; 
-subplot(311)
+subplot(421)
 plot(FD)
 hold on
 plot([1 numel(FD)], [job.FDthreshold job.FDthreshold], 'r:')
 axis tight
 
-h2 = figure; 
-subplot(311)
+figure(h); subplot(422)
 plot(DVARS)
 hold on
 plot([1 numel(DVARS)], [job.DVARSthreshold job.DVARSthreshold], 'r:')
@@ -40,40 +46,42 @@ axis tight
 FDmask = FD >= job.FDthreshold;
 DVARSmask = DVARS >= job.DVARSthreshold;
 
-figure(h); subplot(312)
+figure(h); subplot(423)
 imagesc(FDmask'); colormap(gray); axis tight
-figure(h2); subplot(312)
+figure(h); subplot(424)
 imagesc(DVARSmask'); colormap(gray); axis tight
 
 % Augmented temporal mask by also marking the frames 1 back and 2 forward from
 % any marked frames
-
 % Find indices
 idxL = find(FDmask(2:end));
 idxR = find(FDmask(1:end-1));
-FDmask(idxL-1) = true;
-FDmask(idxR+1) = true;
+% Augment mask
+FDmask(idxL - job.framesAugmentedBackward:idxL) = true;
+FDmask(idxR:idxR + job.framesAugmentedForward) = true;
 
-figure(h); subplot(313)
+figure(h); subplot(425)
 imagesc(FDmask'); colormap(gray); axis tight
 
 % Find indices
 idxL = find(DVARSmask(2:end));
 idxR = find(DVARSmask(1:end-1));
-DVARSmask(idxL-1) = true;
-DVARSmask(idxR+1) = true;
+% Augment mask
+DVARSmask(idxL - job.framesAugmentedBackward:idxL) = true;
+DVARSmask(idxR:idxR + job.framesAugmentedForward) = true;
 
-figure(h2); subplot(313)
+figure(h); subplot(426)
 imagesc(DVARSmask'); colormap(gray); axis tight
 
 % Create temporal masking, conservatively choosing the intersection (AND) of the
 % two temporal masks to generate a final temporal mask
-temporalMask = FDmask & DVARSmask;
+if job.intersection
+    temporalMask = FDmask & DVARSmask;
+else
+    temporalMask = FDmask | DVARSmask;
+end
 
-figure; 
-subplot(311); imagesc(FDmask'); colormap(gray); axis tight
-subplot(312); imagesc(DVARSmask'); colormap(gray); axis tight
-subplot(313); imagesc(temporalMask'); colormap(gray); axis tight
+figure(h); subplot(414); imagesc(temporalMask'); colormap(gray); axis tight
 
 %% save figures
 
