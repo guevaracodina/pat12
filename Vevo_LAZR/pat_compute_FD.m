@@ -1,8 +1,13 @@
 function FD = pat_compute_FD(Q, radius)
 % Computes framewise displacement (FD) calculation from motion parameters Q
 % SYNTAX
+% FD = pat_compute_FD(Q, radius)
 % INPUT
-% OUTPUT
+% Q         6 Motion parameters (XYZ translation, pitch, roll, yaw)
+% radius    Approximate mean distance from the cerebral cortex to the center of
+%           the head in P3 rat pups
+% OUTPUT 
+% FD        Framewise displacement
 % Reference
 % [1] J. D. Power, K. A. Barnes, A. Z. Snyder, B. L. Schlaggar, and S. E.
 % Petersen, “Spurious but systematic correlations in functional connectivity MRI

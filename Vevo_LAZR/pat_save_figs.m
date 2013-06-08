@@ -5,11 +5,11 @@ function pat_save_figs(job, h, varargin)
 % INPUTS
 % job           Matlab batch job structure
 % h             Figure handle
-% figSuffix     String with the suffix to append to each file
-% scanIdx       Integer with scan index
-% c1            Integer with color index
-% r1            Integer with ROI/seed index
-% figsFolder    String with folder name where the figures will be saved
+% [figSuffix]   String with the suffix to append to each file
+% [scanIdx]     Integer with scan index
+% [c1]          Integer with color index
+% [r1]          Integer with ROI/seed index
+% [figsFolder]  String with folder name where the figures will be saved
 % OUTPUT
 % none
 %_______________________________________________________________________________
