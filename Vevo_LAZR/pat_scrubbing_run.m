@@ -80,16 +80,16 @@ for scanIdx = 1:length(job.PATmat)
                             idxL = find(FDmask{c1}(2:end));
                             idxR = find(FDmask{c1}(1:end-1));
                             % Augment FD mask
-                            newIdxL = local_augment_mask(idxL, job.scrub_options.frameAugmBack, 'l');
-                            newIdxR = local_augment_mask(idxR, job.scrub_options.frameAugmFwd, 'r');
+                            newIdxL = internal_augment_mask(idxL, job.scrub_options.frameAugmBack, 'l');
+                            newIdxR = internal_augment_mask(idxR, job.scrub_options.frameAugmFwd, 'r');
                             FDmask{c1}([newIdxL; newIdxR]) = true;
                             
                             % Find indices
                             idxL = find(DVARSmask{c1}(2:end));
                             idxR = find(DVARSmask{c1}(1:end-1));
                             % Augment DVARS mask
-                            newIdxL = local_augment_mask(idxL, job.scrub_options.frameAugmBack, 'l');
-                            newIdxR = local_augment_mask(idxR, job.scrub_options.frameAugmFwd, 'r');
+                            newIdxL = internal_augment_mask(idxL, job.scrub_options.frameAugmBack, 'l');
+                            newIdxR = internal_augment_mask(idxR, job.scrub_options.frameAugmFwd, 'r');
                             DVARSmask{c1}([newIdxL; newIdxR]) = true;
                             % Create temporal masking, conservatively choosing the intersection (AND) of the
                             % two temporal masks to generate a final temporal mask
@@ -156,10 +156,10 @@ for scanIdx = 1:length(job.PATmat)
     end
 end % loop over scans
 % close .CSV file
-fclose(fid);
+fclose all;
 end % pat_scrubbing_run
 
-function newIdx = local_augment_mask(idx, frames2augment, LR)
+function newIdx = internal_augment_mask(idx, frames2augment, LR)
 newIdx = [];
 switch lower(LR)
     case 'l'
@@ -175,4 +175,7 @@ switch lower(LR)
     otherwise
         newIdx = [];
 end
-end
+end % internal_augment_mask
+
+% EOF
+

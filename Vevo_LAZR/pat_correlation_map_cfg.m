@@ -27,6 +27,15 @@ ROI_choice              = pat_roi_choice_cfg;
 % Colors to include (HbT, SO2, Bmode)
 IC                      = pat_include_colors_cfg(true, true);
 
+% Use scrubbing
+scrubbing              = cfg_menu;
+scrubbing.tag          = 'scrubbing';
+scrubbing.name         = 'Scrubbing';
+scrubbing.labels       = {'No','Yes'};
+scrubbing.values       = {false, true};
+scrubbing.val          = {true};
+scrubbing.help         = {'Use scrubbing to remove artifacts before correlation computation'}';
+
 % p-Values
 pValue                  = cfg_entry;
 pValue.tag              = 'pValue';                 % file names
@@ -36,14 +45,6 @@ pValue.num              = [1 1];                    % Number of inputs required
 pValue.val              = {0.05};                   % Default value
 pValue.help             = {'p-value for testing the hypothesis of no correlation against the alternative that there is a nonzero correlation. If p-value is small, say less than 0.05, then the correlation r is significantly different from zero.'};
 
-% % Multiple comparisons correction (Bonferroni)
-% bonferroni              = cfg_menu;
-% bonferroni.tag          = 'bonferroni';
-% bonferroni.name         = 'Bonferroni correction';
-% bonferroni.labels       = {'No','Yes'};
-% bonferroni.values       = {false, true};
-% bonferroni.val          = {true};
-% bonferroni.help         = {'Perform Bonferroni correction for multiple comparisons.'}';
 
 % Multiple comparisons correction
 multComp                = cfg_menu;
@@ -241,11 +242,11 @@ transM.help             = {
 correlation_map1        = cfg_exbranch; % This is the branch that has information about how to run this module
 correlation_map1.name   = 'Functional connectivity (fcPAT) map'; % The display name
 correlation_map1.tag    = 'correlation_map1'; %Very important: tag is used when calling for execution
-correlation_map1.val	= { PATmat redo1 PATmatCopyChoice ROI_choice IC pValue...
-                        multComp fisherZ seed2seedCorrMat derivative rawData...
-                        generate_figures save_figures figSize figRes ...
-                        figRange showColorbar figAlpha figIntensity figCmap drawCircle ...
-                        transM};    % The items that belong to this branch. All items must be filled before this branch can run or produce virtual outputs
+correlation_map1.val	= { PATmat redo1 PATmatCopyChoice ROI_choice IC scrubbing...
+                            pValue multComp fisherZ seed2seedCorrMat derivative ...
+                            rawData generate_figures save_figures figSize figRes ...
+                            figRange showColorbar figAlpha figIntensity figCmap ...
+                            drawCircle transM};    % The items that belong to this branch. All items must be filled before this branch can run or produce virtual outputs
 correlation_map1.prog	= @pat_correlation_map_run; % A function handle that will be called with the harvested job to run the computation
 correlation_map1.vout	= @pat_cfg_vout_correlation_map; % A function handle that will be called with the harvested job to determine virtual outputs
 correlation_map1.help	= {'A functional connectivity (fcIOS) map is made by correlating the seed/ROI with all other brain (non-masked) pixels'}';

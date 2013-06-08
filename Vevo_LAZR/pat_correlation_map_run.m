@@ -54,9 +54,20 @@ for scanIdx = 1:length(job.PATmat)
                                         % Load brain pixels time-course already filtered/downsampled & regressed
                                         vol = spm_vol(PAT.fcPAT.SPM.fname{s1, c1});
                                         y = spm_read_vols(vol);
+                                        if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
+                                            fprintf('Correlation analysis performed after scrubbing\n');
+                                            % load scrubbing parameters
+                                            load(PAT.motion_parameters.scrub.fname)
+                                            % Get only valid frames after scrubbing
+                                            y = y(:,:,1,scrubMask{c1});
+                                        end
                                         % Load ROI time-course already filtered/downsampled & regressed (column vector)
                                         % From PAT.fcPAT.SPM.fnameROIregress
                                         ROI = ROIregress{r1}{s1, c1}';
+                                        if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
+                                            % Get only valid frames after scrubbing
+                                            ROI = ROI(scrubMask{c1});
+                                        end
                                         % Load brain mask
                                         brainMaskVol = spm_vol(PAT.fcPAT.mask.fname);
                                         brainMask = logical(spm_read_vols(brainMaskVol));
@@ -154,6 +165,10 @@ for scanIdx = 1:length(job.PATmat)
                     save(PAT.fcPAT.corr(1).corrMatrixFname,'seed2seedCorrMat')
                     % Save seed-to-seed derivatives correlation data
                     save(PAT.fcPAT.corr(1).corrMatrixDiffFname,'seed2seedCorrMatDiff')
+                    if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
+                        % Save scrubbing status
+                        PAT.fcPAT.corr(1).scrubbing = true;
+                    end
                 end
                 % Compute correlation data from raw time courses
                 if job.rawData
@@ -161,6 +176,10 @@ for scanIdx = 1:length(job.PATmat)
                     [seed2seedCorrMatRaw PAT.fcPAT.corr(1).corrMatrixRawFname] = pat_roi_corr_raw(job, scanIdx);
                     % Save seed-to-seed correlation data
                     save(PAT.fcPAT.corr(1).corrMatrixRawFname, 'seed2seedCorrMatRaw')
+                    if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
+                        % Save scrubbing status
+                        PAT.fcPAT.corr(1).scrubbing = true;
+                    end
                 end
                 % correlation succesful!
                 PAT.jobsdone.corrOK = true;
