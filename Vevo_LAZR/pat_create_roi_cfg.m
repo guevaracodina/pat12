@@ -138,7 +138,7 @@ useGrayContrast.tag     = 'useGrayContrast';
 useGrayContrast.name    = 'Use gray contrast';
 useGrayContrast.labels  = {'No','Yes'};
 useGrayContrast.values  = {0,1};
-useGrayContrast.val     = {1};
+useGrayContrast.val     = {0};
 useGrayContrast.help    = {'Use gray contrast.'}';
 
 % Choose whether interface should ask whether to use a previously saved list of ROI

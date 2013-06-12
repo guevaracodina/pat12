@@ -52,8 +52,8 @@ for scanIdx=1:length(job.PATmat)
         %Load PAT.mat information
         [PAT PATmat dir_patmat]= pat_get_PATmat(job,scanIdx);
         % radius in pixels
-        radiusX = radiusX/PAT.PAparam.pixWidth;
-        radiusY = radiusY/PAT.PAparam.pixDepth;
+        radiusX = job.AutoROIchoice.pointNclickROI.ManualROIradius/PAT.PAparam.pixWidth;
+        radiusY = job.AutoROIchoice.pointNclickROI.ManualROIradius/PAT.PAparam.pixDepth;
         if ~isfield(PAT.jobsdone,'ROIOK') || job.force_redo
             if job.RemovePreviousROI
                 try

@@ -31,6 +31,7 @@ for scanIdx=1:length(job.PATmat)
                 % Save LPF settings in pixels
                 PAT.fcPAT.LPF(1).radius = K.radius;
                 PAT.fcPAT.LPF(1).sigma = K.radius/2;
+                PAT.fcPAT.LPF(1).radius_mm = job.spatial_LPF.spatial_LPF_On.spatial_LPF_radius;
 
                 % Loop over available colors
                 for c1=1:length(PAT.nifti_files)

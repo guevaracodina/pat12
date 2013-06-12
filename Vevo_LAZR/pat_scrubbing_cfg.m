@@ -90,15 +90,16 @@ radius.tag              = 'radius';
 radius.strtype          = 'r';
 radius.num              = [1 1];
 radius.val              = {mean([skulltop2base biparietalDiameter])/2};
-radius.help             = {'Average P3 rat pup head radius (mm)'}';
+radius.help             = { 'Average P3 rat pup head radius (mm)'
+                            'Rotational displacements are converted from degrees to millimeters by calculating displacement on the surface of a sphere of radius 4 mm, which is approximately the mean distance from the cerebral cortex to the center of the head in P3 rat pups'}';
 
 percentKeep            	= cfg_entry;
-percentKeep.name        = 'Min. per centage';
+percentKeep.name        = 'Min. percentage';
 percentKeep.tag         = 'percentKeep';
 percentKeep.strtype     = 'r';
 percentKeep.num         = [1 1];
 percentKeep.val         = {80};
-percentKeep.help        = {'Minimum percentage (%) of data that must remain after scrubbing'}';
+percentKeep.help        = {'Minimum percentage (1%-100%) of data that must remain after scrubbing'}';
 
 scrub_options           = cfg_branch;
 scrub_options.tag       = 'scrub_options';
