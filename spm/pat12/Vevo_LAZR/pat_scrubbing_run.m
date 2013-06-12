@@ -40,7 +40,7 @@ for scanIdx = 1:length(job.PATmat)
                             if firstPass,
                                 save_data = fullfile(job.parent_results_dir{1},job.CSVfname);
                                 fid = fopen(save_data, 'w');
-                                fprintf(fid, 'Scan ID,Contrast,Scrub Flag,FD threshold(mm^-3),DVARS Threshold,Min. %%,Frames Kept,Total Frames,Scrub %%\n');
+                                fprintf(fid, 'Scan ID,Contrast,Scrub Flag,FD threshold(mm^-3),DVARS Threshold,Min.%% of Remaining Data,Frames Kept,Total Frames,Scrubbing %%\n');
                                 firstPass = false;
                             end
                             % Load motion parameters Q
@@ -60,12 +60,12 @@ for scanIdx = 1:length(job.PATmat)
                                 h = figure; set(h,'color','w'); colormap(job.figCmap); 
                                 subplot(421)
                                 plot(FD,'k-'); hold on
-                                plot([1 numel(FD)], [job.scrub_options.FDthreshold job.scrub_options.FDthreshold], 'r:')
+                                plot([1 numel(FD)], [job.scrub_options.FDthreshold job.scrub_options.FDthreshold], 'r:', 'LineWidth', 2)
                                 axis tight;  ylabel(sprintf('FD (%s)',colorNames{c1+1}))
                                 figure(h); subplot(422)
                                 plot(DVARS,'k-')
                                 hold on
-                                plot([1 numel(DVARS)], [job.scrub_options.DVARSthreshold(c1) job.scrub_options.DVARSthreshold(c1)], 'r:')
+                                plot([1 numel(DVARS)], [job.scrub_options.DVARSthreshold(c1) job.scrub_options.DVARSthreshold(c1)], 'r:', 'LineWidth', 2)
                                 axis tight; ylabel(sprintf('DVARS (%s)',colorNames{c1+1}))
                                 figure(h); subplot(423)
                                 imagesc(FDmask{c1}',[0 1]); axis tight
@@ -106,8 +106,10 @@ for scanIdx = 1:length(job.PATmat)
                             
                             scrubPercent(c1) = 100 *  frames2keep(c1) ./ totalFrames(c1);
                             if scrubPercent(c1) >= job.scrub_options.percentKeep
+                                % True if scan is kept
                                 scrubFlag(c1) = true;
                             else
+                                % False if scan is rejected
                                 scrubFlag(c1) = false;
                             end
                             
@@ -135,8 +137,8 @@ for scanIdx = 1:length(job.PATmat)
                         end % Except B-mode
                     end % do color
                 end % colors loop
-                PAT.motion_parameters.scrub(1).fname = fullfile(dir_patmat,'scrubbing.mat');
-                PAT.motion_parameters.scrub(1).CSVfname = save_data;
+                PAT.motion_parameters(1).scrub(1).fname = fullfile(dir_patmat,'scrubbing.mat');
+                PAT.motion_parameters(1).scrub(1).CSVfname = save_data;
                 save(fullfile(dir_patmat,'scrubbing.mat'), 'scrubFlag', 'scrubPercent',...
                     'frames2keep', 'totalFrames', 'scrubMask', 'DVARSmask', 'FDmask');
                 % correlation succesful!
@@ -167,13 +169,20 @@ switch lower(LR)
         for iFrames = 1:numel(idx),
             newIdx = [newIdx; (augmIdx(iFrames):idx(iFrames))'];
         end
+        % Keep only positive indices
+        newIdx = newIdx(newIdx>=1);
     case 'r'
         augmIdx = idx + frames2augment;
         for iFrames = 1:numel(idx),
             newIdx = [newIdx; (idx(iFrames):augmIdx(iFrames))'];
         end
+        % Keep only positive indices
+        newIdx = newIdx(newIdx>=1);
     otherwise
         newIdx = [];
+end
+if numel(newIdx) ~= numel(idx)
+    newIdx = newIdx(1:numel(idx));
 end
 end % internal_augment_mask
 

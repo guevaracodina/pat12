@@ -49,12 +49,14 @@ for scanIdx = 1:length(job.PATmat)
             % ------------------------------------------------------------------
             BW_mask = pat_roi_spline(im_anat);
             % ------------------------------------------------------------------
-            
+            % axis image
+            set(gca,'DataAspectRatio',[1 PAT.PAparam.pixWidth/PAT.PAparam.pixDepth 1])
             % Display masked image on SPM graphics window
             minVal = min(im_anat(:));
             maxVal = max(im_anat(:));
             imagesc(PAT.PAparam.DepthAxis, PAT.PAparam.WidthAxis, im_anat .* BW_mask, [minVal maxVal]);
-            axis image
+            % axis image
+            set(gca,'DataAspectRatio',[1 PAT.PAparam.pixWidth/PAT.PAparam.pixDepth 1])
             set(gca,'FontSize',12);
             xlabel('Width [mm]','FontSize',14);
             ylabel('Depth [mm]','FontSize',14);

@@ -75,6 +75,7 @@ for c1 = 1:length(PAT.nifti_files)
             else
                 nROI = 1:length(PAT.res.ROI); % All the ROIs
             end
+       
             % initialize ROI cell
             for r1 = nROI
                 if all_ROIs || sum(r1==selected_ROIs)
@@ -86,7 +87,18 @@ for c1 = 1:length(PAT.nifti_files)
                         ROIsem{r1}{s1,c1} = [];
                     end
                 end
+                % In case we are extracting brain mask
+                if job.extractBrainMask && job.extractingBrainMask
+                    ROI{r1}{s1,c1} = [];
+                    if nargout >= 1
+                        ROIstd{r1}{s1,c1} = [];
+                    end
+                    if nargout >= 2
+                        ROIsem{r1}{s1,c1} = [];
+                    end
+                end
             end
+
             % loop over files
             for f1 = 1:length(fname_list)
                 try

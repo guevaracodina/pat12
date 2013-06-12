@@ -31,21 +31,32 @@ else
     for c1=1:length(PAT.nifti_files)
         doColor = pat_doColor(PAT,c1,IC);
         if doColor
-            % Loop over ROI/seeds
+            % Loop over ROI/seeds, just to preallocate the time vector
             for r1 = nROI,
-                if PAT.fcPAT.SPM.ROIregressOK{r1}{s1,c1}
-                    % Preallocate map for the seed-to-seed correlation matrix
-                    tVector = numel(ROIregress{r1}{s1,c1});
-                    if isfield (job,'derivative')
-                        tVectorDiff = numel(ROIregress{r1}{s1,c1})-1;
+                if ~isempty(PAT.fcPAT.SPM.ROIregressOK{r1})
+                    if PAT.fcPAT.SPM.ROIregressOK{r1}{s1,c1}
+                        if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
+                            % load scrubbing parameters
+                            load(PAT.motion_parameters.scrub.fname)
+                            % Get only valid frames after scrubbing
+                            ROIregress{r1}{s1,c1} = ROIregress{r1}{s1,c1}(scrubMask{c1});
+                        end
+                        % Preallocate map for the seed-to-seed correlation matrix
+                        tVector = numel(ROIregress{r1}{s1,c1});
+                        if isfield (job,'derivative')
+                            tVectorDiff = numel(ROIregress{r1}{s1,c1})-1;
+                        end
+                        % fprintf('time vector size found for seed
+                        % %d\n',r1);
+                        roiOK = true;
+                        break; % end loop for as soon as a good ROI is found
+                    else
+                        roiOK = false;
+                        fprintf('time vector size NOT found for seed %d, session %d, (%s)!\n',r1,s1,colorNames{1+c1});
                     end
-                    % fprintf('time vector size found for seed
-                    % %d\n',r1);
-                    roiOK = true;
-                    break; % end loop for as soon as a good ROI is found
                 else
                     roiOK = false;
-                    fprintf('time vector size NOT found for seed %d, session %d, (%s)!\n',r1,s1,colorNames{1+c1});
+                    fprintf('Empty seed %d, session %d, (%s)!\n',r1,s1,colorNames{1+c1});
                 end
             end
             if roiOK
@@ -54,10 +65,20 @@ else
                 if isfield (job,'derivative')
                     roiMatrixDiff = zeros([tVectorDiff numel(nROI)]);
                 end
+                
+                % Load again the original regressed ROI data in cell ROIregress
+                load(PAT.fcPAT.SPM.fnameROIregress)
+    
                 % Loop over ROI/seeds
                 for r1 = nROI,
                     if all_ROIs || sum(r1==selected_ROIs)
                         if PAT.fcPAT.SPM.ROIregressOK{r1}{s1,c1}
+                            if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
+                                % load scrubbing parameters
+                                load(PAT.motion_parameters.scrub.fname)
+                                % Get only valid frames after scrubbing
+                                ROIregress{r1}{s1,c1} = ROIregress{r1}{s1,c1}(scrubMask{c1});
+                            end
                             roiMatrix(:, r1) = ROIregress{r1}{s1,c1};
                             if isfield (job,'derivative')
                                 roiMatrixDiff(:, r1) = diff(ROIregress{r1}{s1,c1});
@@ -75,6 +96,7 @@ else
                     corrMatrixDiff{1}{s1,c1} = corrcoef(roiMatrixDiff);
                 end
                 if PAT.fcPAT.SPM.ROIregressOK{r1}{s1,c1}
+                    % Show correlation matrix
                     if job.generate_figures
                         h = figure; set(h,'color','w')
                         imagesc(corrMatrix{1}{s1,c1},[-1 1]); axis image; colorbar

@@ -35,158 +35,167 @@ for scanIdx = 1:length(job.PATmat)
                 PAT.fcPAT.corr(1).fname = fullfile(dir_patmat,'seed_based_fcPAT_map.mat');
                 % Loop over sessions
                 s1 = 1;
-                % Loop over available colors
-                for c1 = 1:length(PAT.nifti_files)
-                    doColor = pat_doColor(PAT,c1,IC);
-                    if doColor
-                        % skip B-mode only extract PA
-                        if ~(PAT.color.eng(c1)==PAT.color.Bmode)
-                            %% Main processing loop
-                            nROI = 1:length(PAT.res.ROI); % All the ROIs
-                            % Load regressed ROI data in cell ROIregress
-                            load(PAT.fcPAT.SPM.fnameROIregress)
-                            % Loop over ROI/seeds
-                            for r1 = nROI,
-                                if all_ROIs || sum(r1==selected_ROIs)
-                                    % Checking if regression was succesful for both the seeds and the brain pixels time-courses
-                                    if PAT.fcPAT.SPM.wholeImageRegressOK{s1, c1} && PAT.fcPAT.SPM.ROIregressOK{r1}{s1, c1}
-                                        fprintf('Loading data, seed %d (%s) C%d (%s)...\n',r1,PAT.ROI.ROIname{r1},c1,colorNames{1+c1});
-                                        % Load brain pixels time-course already filtered/downsampled & regressed
-                                        vol = spm_vol(PAT.fcPAT.SPM.fname{s1, c1});
-                                        y = spm_read_vols(vol);
-                                        if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
-                                            fprintf('Correlation analysis performed after scrubbing\n');
-                                            % load scrubbing parameters
-                                            load(PAT.motion_parameters.scrub.fname)
-                                            % Get only valid frames after scrubbing
-                                            y = y(:,:,1,scrubMask{c1});
-                                        end
-                                        % Load ROI time-course already filtered/downsampled & regressed (column vector)
-                                        % From PAT.fcPAT.SPM.fnameROIregress
-                                        ROI = ROIregress{r1}{s1, c1}';
-                                        if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
-                                            % Get only valid frames after scrubbing
-                                            ROI = ROI(scrubMask{c1});
-                                        end
-                                        % Load brain mask
-                                        brainMaskVol = spm_vol(PAT.fcPAT.mask.fname);
-                                        brainMask = logical(spm_read_vols(brainMaskVol));
-                                        if size(brainMask,1)~= size(y,1)|| size(brainMask,2)~= size(y,2)
-                                            brainMask = pat_imresize(brainMask, [size(y,1) size(y,2)]);
-                                        end
-                                        % Preallocate
-                                        tempCorrMap = zeros([size(y,1) size(y,2)]);
-                                        pValuesMap =  zeros([size(y,1) size(y,2)]);
-                                        if job.derivative
-                                            tempCorrMapDiff = zeros([size(y,1) size(y,2)]);
-                                            pValuesMapDiff =  zeros([size(y,1) size(y,2)]);
-                                        end
-                                        % Find Pearson's correlation coefficient
-                                        fprintf('Computing Pearson''s correlation map...\n');
-                                        % Initialize progress bar
-                                        spm_progress_bar('Init', size(y,1), sprintf('Computing Pearson''s correlation map Seed %d (%s) C%d (%s)\n',r1,PAT.ROI.ROIname{r1},c1,colorNames{1+c1}), 'Samples');
-                                        pat_text_waitbar(0, sprintf('Computing Pearson''s correlation map Seed %d (%s) C%d (%s)\n',r1,PAT.ROI.ROIname{r1},c1,colorNames{1+c1}));
-                                        % Loop over samples
-                                        for iX = 1:size(y,1),
-                                            % Loop over A-lines
-                                            for iY = 1:size(y,2),
-                                                if brainMask(iX, iY)
-                                                    [tempCorrMap(iX, iY) pValuesMap(iX, iY)]= corr(squeeze(ROI), squeeze(y(iX, iY, 1, :)));
-                                                    if job.derivative
-                                                        [tempCorrMapDiff(iX, iY) pValuesMapDiff(iX, iY)]= corr(diff(squeeze(ROI)), diff(squeeze(y(iX, iY, 1, :))));
+                scrubFlag = true;
+                if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
+                    % load scrubbing parameters (it will overwrite scrubFlag)
+                    load(PAT.motion_parameters.scrub.fname)
+                end
+                % Go into loop only if all scans are kept after scrubbing
+                if all(scrubFlag)
+                    % Loop over available colors
+                    for c1 = 1:length(PAT.nifti_files)
+                        doColor = pat_doColor(PAT,c1,IC);
+                        if doColor
+                            % skip B-mode only extract PA
+                            if ~(PAT.color.eng(c1)==PAT.color.Bmode)
+                                %% Main processing loop
+                                nROI = 1:length(PAT.res.ROI); % All the ROIs
+                                % Load regressed ROI data in cell ROIregress
+                                load(PAT.fcPAT.SPM.fnameROIregress)
+                                % Loop over ROI/seeds
+                                for r1 = nROI,
+                                    if all_ROIs || sum(r1==selected_ROIs)
+                                        % Checking if regression was succesful for both the seeds and the brain pixels time-courses
+                                        if PAT.fcPAT.SPM.wholeImageRegressOK{s1, c1} && PAT.fcPAT.SPM.ROIregressOK{r1}{s1, c1}
+                                            fprintf('Loading data, seed %d (%s) C%d (%s)...\n',r1,PAT.ROI.ROIname{r1},c1,colorNames{1+c1});
+                                            % Load brain pixels time-course already filtered/downsampled & regressed
+                                            vol = spm_vol(PAT.fcPAT.SPM.fname{s1, c1});
+                                            y = spm_read_vols(vol);
+                                            if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
+                                                fprintf('Correlation analysis performed after scrubbing\n');
+                                                % load scrubbing parameters
+                                                load(PAT.motion_parameters.scrub.fname)
+                                                % Get only valid frames after scrubbing
+                                                y = y(:,:,1,scrubMask{c1});
+                                            end
+                                            % Load ROI time-course already filtered/downsampled & regressed (column vector)
+                                            % From PAT.fcPAT.SPM.fnameROIregress
+                                            ROI = ROIregress{r1}{s1, c1}';
+                                            if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
+                                                % Get only valid frames after scrubbing
+                                                ROI = ROI(scrubMask{c1});
+                                            end
+                                            % Load brain mask
+                                            brainMaskVol = spm_vol(PAT.fcPAT.mask.fname);
+                                            brainMask = logical(spm_read_vols(brainMaskVol));
+                                            if size(brainMask,1)~= size(y,1)|| size(brainMask,2)~= size(y,2)
+                                                brainMask = pat_imresize(brainMask, [size(y,1) size(y,2)]);
+                                            end
+                                            % Preallocate
+                                            tempCorrMap = zeros([size(y,1) size(y,2)]);
+                                            pValuesMap =  zeros([size(y,1) size(y,2)]);
+                                            if job.derivative
+                                                tempCorrMapDiff = zeros([size(y,1) size(y,2)]);
+                                                pValuesMapDiff =  zeros([size(y,1) size(y,2)]);
+                                            end
+                                            % Find Pearson's correlation coefficient
+                                            fprintf('Computing Pearson''s correlation map...\n');
+                                            % Initialize progress bar
+                                            spm_progress_bar('Init', size(y,1), sprintf('Computing Pearson''s correlation map Seed %d (%s) C%d (%s)\n',r1,PAT.ROI.ROIname{r1},c1,colorNames{1+c1}), 'Samples');
+                                            pat_text_waitbar(0, sprintf('Computing Pearson''s correlation map Seed %d (%s) C%d (%s)\n',r1,PAT.ROI.ROIname{r1},c1,colorNames{1+c1}));
+                                            % Loop over samples
+                                            for iX = 1:size(y,1),
+                                                % Loop over A-lines
+                                                for iY = 1:size(y,2),
+                                                    if brainMask(iX, iY)
+                                                        [tempCorrMap(iX, iY) pValuesMap(iX, iY)]= corr(squeeze(ROI), squeeze(y(iX, iY, 1, :)));
+                                                        if job.derivative
+                                                            [tempCorrMapDiff(iX, iY) pValuesMapDiff(iX, iY)]= corr(diff(squeeze(ROI)), diff(squeeze(y(iX, iY, 1, :))));
+                                                        end
                                                     end
                                                 end
+                                                % Update progress bar
+                                                spm_progress_bar('Set', iX);
+                                                pat_text_waitbar(iX/size(y,1), sprintf('Processing sample %d from %d', iX, size(y,1)));
                                             end
-                                            % Update progress bar
-                                            spm_progress_bar('Set', iX);
-                                            pat_text_waitbar(iX/size(y,1), sprintf('Processing sample %d from %d', iX, size(y,1)));
-                                        end
-                                        % Clear progress bar
-                                        spm_progress_bar('Clear');
-                                        pat_text_waitbar('Clear');
-                                        % Assign data to be saved to  .mat file
-                                        seed_based_fcPAT_map{r1}{s1,c1}.pearson = tempCorrMap;
-                                        seed_based_fcPAT_map{r1}{s1,c1}.pValue = pValuesMap;
-
-                                        % Quick dirty way to get old name
-                                        try
-                                            [~, oldName, oldExt] = fileparts(PAT.fcPAT.SPM.fnameROInifti{r1}{s1, c1});
-                                        catch
-                                            oldName = sprintf('ROI%02d_C%d', r1, c1);
-                                            oldExt = '.nii';
-                                        end
-                                        
-                                        newName = [oldName '_fcPAT_map'];
-                                        if isfield(job.PATmatCopyChoice,'PATmatCopy')
-                                            dir_corrfig = fullfile(dir_patmat,strcat('fig_',job.PATmatCopyChoice.PATmatCopy.NewPATdir));
+                                            % Clear progress bar
+                                            spm_progress_bar('Clear');
+                                            pat_text_waitbar('Clear');
+                                            % Assign data to be saved to  .mat file
+                                            seed_based_fcPAT_map{r1}{s1,c1}.pearson = tempCorrMap;
+                                            seed_based_fcPAT_map{r1}{s1,c1}.pValue = pValuesMap;
+                                            
+                                            % Quick dirty way to get old name
+                                            try
+                                                [~, oldName, oldExt] = fileparts(PAT.fcPAT.SPM.fnameROInifti{r1}{s1, c1});
+                                            catch
+                                                oldName = sprintf('ROI%02d_C%d', r1, c1);
+                                                oldExt = '.nii';
+                                            end
+                                            
+                                            newName = [oldName '_fcPAT_map'];
+                                            if isfield(job.PATmatCopyChoice,'PATmatCopy')
+                                                dir_corrfig = fullfile(dir_patmat,strcat('fig_',job.PATmatCopyChoice.PATmatCopy.NewPATdir));
+                                            else
+                                                dir_corrfig = fullfile(dir_patmat,'fig_corrMap');
+                                            end
+                                            if ~exist(dir_corrfig,'dir'), mkdir(dir_corrfig); end
+                                            % Create and write a 1-slice NIFTI file
+                                            pat_create_vol(fullfile(dir_corrfig,[newName oldExt]), brainMaskVol(1).dim, brainMaskVol(1).dt,...
+                                                brainMaskVol(1).pinfo, brainMaskVol(1).mat, 1, tempCorrMap);
+                                            PAT.fcPAT.corr(1).corrMapName{r1}{s1, c1} = fullfile(dir_corrfig,[newName oldExt]);
+                                            
+                                            if job.derivative
+                                                % TO DO... //EGC
+                                                internal_derivative_corrMap;
+                                            end
+                                            
+                                            if job.generate_figures
+                                                fcPAT_display_corrMap(PAT, job, scanIdx, r1, s1, c1, dir_corrfig, newName, brainMask, pValuesMap);
+                                            end
+                                            
+                                            if job.fisherZ
+                                                % Convert Pearson's correlation coeff. r to Fisher's z value.
+                                                % TO DO... //EGC
+                                                internal_Fisher;
+                                            end
+                                            
+                                            % correlation map succesful!
+                                            fprintf('Pearson''s correlation coefficient computed. Seed %d (%s) C%d (%s)\n',r1,PAT.ROI.ROIname{r1},c1,colorNames{1+c1});
+                                            PAT.fcPAT.corr(1).corrMapOK{r1}{s1, c1} = true;
                                         else
-                                            dir_corrfig = fullfile(dir_patmat,'fig_corrMap');
+                                            % correlation map failed!
+                                            PAT.fcPAT.corr(1).corrMapOK{r1}{s1, c1} = false;
+                                            fprintf('Pearson''s correlation coefficient failed! Seed %d (%s) C%d (%s)\n',r1,PAT.ROI.ROIname{r1},c1,colorNames{1+c1});
                                         end
-                                        if ~exist(dir_corrfig,'dir'), mkdir(dir_corrfig); end
-                                        % Create and write a 1-slice NIFTI file
-                                        pat_create_vol(fullfile(dir_corrfig,[newName oldExt]), brainMaskVol(1).dim, brainMaskVol(1).dt,...
-                                            brainMaskVol(1).pinfo, brainMaskVol(1).mat, 1, tempCorrMap);
-                                        PAT.fcPAT.corr(1).corrMapName{r1}{s1, c1} = fullfile(dir_corrfig,[newName oldExt]);
-                                        
-                                        if job.derivative
-                                            % TO DO... //EGC
-                                            internal_derivative_corrMap;
-                                        end
-                                        
-                                        if job.generate_figures
-                                            fcPAT_display_corrMap(PAT, job, scanIdx, r1, s1, c1, dir_corrfig, newName, brainMask, pValuesMap);
-                                        end
-                                                                                
-                                        if job.fisherZ
-                                            % Convert Pearson's correlation coeff. r to Fisher's z value.
-                                            % TO DO... //EGC
-                                            internal_Fisher;
-                                        end
-                                        
-                                        % correlation map succesful!
-                                        fprintf('Pearson''s correlation coefficient computed. Seed %d (%s) C%d (%s)\n',r1,PAT.ROI.ROIname{r1},c1,colorNames{1+c1});
-                                        PAT.fcPAT.corr(1).corrMapOK{r1}{s1, c1} = true;
-                                    else
-                                        % correlation map failed!
-                                        PAT.fcPAT.corr(1).corrMapOK{r1}{s1, c1} = false;
-                                        fprintf('Pearson''s correlation coefficient failed! Seed %d (%s) C%d (%s)\n',r1,PAT.ROI.ROIname{r1},c1,colorNames{1+c1});
-                                    end
-                                end % if all ROIs
-                            end % ROI/seeds loop
+                                    end % if all ROIs
+                                end % ROI/seeds loop
+                            end
+                        end
+                    end % colors loop
+                    % Compute seed to seed correlation matrix
+                    if job.seed2seedCorrMat
+                        [seed2seedCorrMat seed2seedCorrMatDiff PAT.fcPAT.corr(1).corrMatrixFname PAT.fcPAT.corr(1).corrMatrixDiffFname] = pat_roi_corr(job, scanIdx);
+                        % seed-to-seed correlation succesful!
+                        PAT.fcPAT.corr(1).corrMatrixOK = true;
+                        % Save seed-to-seed correlation data
+                        save(PAT.fcPAT.corr(1).corrMatrixFname,'seed2seedCorrMat')
+                        % Save seed-to-seed derivatives correlation data
+                        save(PAT.fcPAT.corr(1).corrMatrixDiffFname,'seed2seedCorrMatDiff')
+                        if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
+                            % Save scrubbing status
+                            PAT.fcPAT.corr(1).scrubbing = true;
                         end
                     end
-                end % colors loop
-                % Compute seed to seed correlation matrix
-                if job.seed2seedCorrMat
-                    [seed2seedCorrMat seed2seedCorrMatDiff PAT.fcPAT.corr(1).corrMatrixFname PAT.fcPAT.corr(1).corrMatrixDiffFname] = pat_roi_corr(job, scanIdx);
-                    % seed-to-seed correlation succesful!
-                    PAT.fcPAT.corr(1).corrMatrixOK = true;
-                    % Save seed-to-seed correlation data
-                    save(PAT.fcPAT.corr(1).corrMatrixFname,'seed2seedCorrMat')
-                    % Save seed-to-seed derivatives correlation data
-                    save(PAT.fcPAT.corr(1).corrMatrixDiffFname,'seed2seedCorrMatDiff')
-                    if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
-                        % Save scrubbing status
-                        PAT.fcPAT.corr(1).scrubbing = true;
+                    % Compute correlation data from raw time courses
+                    if job.rawData
+                        % TO DO... //EGC
+                        % Compute the seed-to-seed correlation of raw data
+                        [seed2seedCorrMatRaw PAT.fcPAT.corr(1).corrMatrixRawFname] = pat_roi_corr_raw(job, scanIdx);
+                        % Save seed-to-seed correlation data
+                        save(PAT.fcPAT.corr(1).corrMatrixRawFname, 'seed2seedCorrMatRaw')
+                        if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
+                            % Save scrubbing status
+                            PAT.fcPAT.corr(1).scrubbing = true;
+                        end
                     end
-                end
-                % Compute correlation data from raw time courses
-                if job.rawData
-                    % Compute the seed-to-seed correlation of raw data
-                    [seed2seedCorrMatRaw PAT.fcPAT.corr(1).corrMatrixRawFname] = pat_roi_corr_raw(job, scanIdx);
-                    % Save seed-to-seed correlation data
-                    save(PAT.fcPAT.corr(1).corrMatrixRawFname, 'seed2seedCorrMatRaw')
-                    if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
-                        % Save scrubbing status
-                        PAT.fcPAT.corr(1).scrubbing = true;
-                    end
-                end
-                % correlation succesful!
-                PAT.jobsdone.corrOK = true;
-                % Save fcPAT data
-                save(PAT.fcPAT.corr(1).fname,'seed_based_fcPAT_map')
-                % Save PAT matrix
-                save(PATmat,'PAT');
+                    % correlation succesful!
+                    PAT.jobsdone.corrOK = true;
+                    % Save fcPAT data
+                    save(PAT.fcPAT.corr(1).fname,'seed_based_fcPAT_map')
+                    % Save PAT matrix
+                    save(PATmat,'PAT');
+                end % scrubFlag
             end % correlation OK or redo job
         end % GLM OK
         disp(['Elapsed time: ' datestr(datenum(0,0,0,0,0,toc(eTime)),'HH:MM:SS')]);

@@ -89,15 +89,6 @@ alpha.help                  = {'Performs the test at the significance level (100
     'alpha must be a scalar'};
 
 % Multiple comparisons correction None / Bonferroni / FDR
-% bonferroni              	= cfg_menu;
-% bonferroni.tag              = 'bonferroni';
-% bonferroni.name             = 'Bonferroni correction';
-% bonferroni.labels           = {'No','Yes'};
-% bonferroni.values           = {false, true};
-% bonferroni.val              = {true};
-% bonferroni.help             = {'Perform Bonferroni correction for multiple comparisons.'}';
-
-% Multiple comparisons correction
 multComp                    = cfg_menu;
 multComp.tag                = 'multComp';
 multComp.name               = 'Multiple comparisons';

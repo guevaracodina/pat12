@@ -41,7 +41,7 @@ else
     cmap = gray(256);
 end
 imagesc(I); colormap(cmap);
-axis image
+axis square
 title(titleText,'FontSize',13)
 hold on;
 
