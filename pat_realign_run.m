@@ -19,8 +19,7 @@ function out = pat_realign_run(job)
 
 if pat_isVEVOraw(job)
     % Processing for .raw.pamode files (HbT/SO2)
-    % Create SPM figure window
-    spm_figure('Create','Interactive');
+    
     % Get realignment parameters
     flags = get_flags(job);
     for scanIdx = 1:length(job.PATmat)
@@ -42,7 +41,8 @@ if pat_isVEVOraw(job)
                     idxBmode = regexp(PAT.color.eng, PAT.color.Bmode);
                     idxHbT = regexp(PAT.color.eng, PAT.color.HbT);
                     idxSO2 = regexp(PAT.color.eng, PAT.color.SO2);
-                    
+                    % Create SPM figure window
+                    h = spm_figure('Create','Graphics');
                     % Only realign B-mode images
                     P = pat_realign(PAT.nifti_files{idxBmode},flags);
                     % Save parameters Q(1:3) = x,y,z in mm
@@ -119,6 +119,7 @@ if pat_isVEVOraw(job)
                     PAT.jobsdone.realign = true;
                     % Save PAT matrix
                     save(PATmat,'PAT');
+                    close(h);
                 end % correlation OK or redo job
             end % coregistration OK
             disp(['Elapsed time: ' datestr(datenum(0,0,0,0,0,toc(eTime)),'HH:MM:SS')]);
@@ -153,7 +154,7 @@ else
             out.PATmat{scanIdx} = PATmat{scanIdx};
         end
     end
-end % isVEVO
+end % isVEVOraw
 end % pat_realign_run
 
 function flags = get_flags(job)

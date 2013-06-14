@@ -51,6 +51,8 @@ for scanIdx=1:length(job.PATmat)
     try
         %Load PAT.mat information
         [PAT PATmat dir_patmat]= pat_get_PATmat(job,scanIdx);
+        [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
+        scanName = splitStr{end-1};
         % radius in pixels
         radiusX = job.AutoROIchoice.pointNclickROI.ManualROIradius/PAT.PAparam.pixWidth;
         radiusY = job.AutoROIchoice.pointNclickROI.ManualROIradius/PAT.PAparam.pixDepth;
@@ -111,9 +113,8 @@ for scanIdx=1:length(job.PATmat)
             if SelectPreviousROI
                 % Goto interactive window
                 h2 = spm_figure('GetWin', 'Interactive');
-                [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
                 % Ypos = 1, always first line
-                spm_input(['Subject ' int2str(scanIdx) ' ' splitStr{end-1}], 1, 'd');
+                spm_input(['Subject ' int2str(scanIdx) ' ' scanName], 1, 'd');
                 SelPrevROI = spm_input('Select a previous list of ROIs?','+1','y/n');
                 if SelPrevROI == 'y'
                     [tPrevROI stsPrevROI] = spm_select(1,'mat','Select PAT.mat structure containing information on desired ROIs','',dir_patmat,'PAT.mat',1);
@@ -168,9 +169,9 @@ for scanIdx=1:length(job.PATmat)
                 oneMoreROI = 1;
                 % Goto interactive window
                 h2 = spm_figure('GetWin', 'Interactive');
-                [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
+                
                 % Ypos = 1, always first line
-                spm_input(['Subject ' int2str(scanIdx) ' ' splitStr{end-1}], 1, 'd');
+                spm_input(['Subject ' int2str(scanIdx) ' ' scanName], 1, 'd');
                 linecount = 0;
                 while oneMoreROI
                     figure(h2);
@@ -195,17 +196,17 @@ for scanIdx=1:length(job.PATmat)
                         set(gca,'DataAspectRatio',[1 PAT.PAparam.pixWidth/PAT.PAparam.pixDepth 1])
                         if graphicalROI
                             % Specify polygonal region of interest (ROI)
-                            title('Make ROI polygon, then double click in it to create ROI.');
+                            title(sprintf('Make ROI polygon, then double click in it to create ROI (scan %d of %d).', scanIdx, length(job.PATmat)));
                             mask = roipoly;
                         elseif ManualROIspline
                             % Start interactive ROI tool to choose spline
                             % ROI/seed
-                            mask = pat_roi_spline(im_anat,[],[],'Mark spline points, then right-click in it to create ROI/seed');
+                            mask = pat_roi_spline(im_anat,[],[],sprintf('Mark spline points, then right-click in it to create ROI/seed (scan %d of %d)',scanIdx, length(job.PATmat)));
                         else
                             if pointNclickROI
                                 % Specify center of circular ROI/seed with mouse
                                 % point & click on the anatomical image
-                                title('Click the center of circular ROI/seed')
+                                title(sprintf('Click the center of circular ROI/seed (scan %d of %d)', scanIdx, length(job.PATmat)))
                                 % Circular seed setup
                                 t = 0:pi/100:2*pi;
                                 % Prompt user to point & click
@@ -227,7 +228,7 @@ for scanIdx=1:length(job.PATmat)
                                 if pointNclickROIsquare
                                     % Specify center of a square ROI/seed with mouse
                                     % point & click on the anatomical image
-                                    title('Click the center of rectangular ROI/seed')
+                                    title(sprintf('Click the center of rectangular ROI/seed (scan %d of %d)', scanIdx, length(job.PATmat)))
                                     % Square setup
                                     hR = imrect(gca,[0 0 ManualROIwidth ManualROIheight]);
                                     pR = wait(hR);
@@ -367,9 +368,7 @@ for scanIdx=1:length(job.PATmat)
             PAT.jobsdone.ROIOK = true;
             save(PATmat,'PAT');
         end
-        [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
-        % disp(['Subject ' int2str(scanIdx) ' ' splitStr{end-1} ' complete']);
-        fprintf('Scan %s, %d of %d complete\n', splitStr{end-1}, scanIdx, length(job.PATmat));
+        fprintf('Scan %s, %d of %d complete\n', scanName, scanIdx, length(job.PATmat));
         out.PATmat{scanIdx} = PATmat;
     catch exception
         disp(exception.identifier)

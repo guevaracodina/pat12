@@ -124,8 +124,13 @@ for scanIdx = 1:length(job.PATmat)
                                 imagesc(scrubMask{c1}',[0 1]); axis tight
                                 set(gca,'YTick',[]); xlabel('Frames');
                                 ylabel('Temporal mask')
+                                % Specify window units
+                                set(h, 'units', 'inches')
+                                % Change figure and paper size
+                                set(h, 'Position', [0.1 0.1 job.figSize(1) job.figSize(2)])
+                                set(h, 'PaperPosition', [0.1 0.1 job.figSize(1) job.figSize(2)])
                                 % Save figures
-                                pat_save_figs(job, h, 'scrub', scanIdx, c1, 0, 'Scrub');
+                                pat_save_figs(job, h, 'scrub', scanIdx, c1, 0, 'fig_scrub');
                             end
                             
                             % Negation just to make indexing more natural in

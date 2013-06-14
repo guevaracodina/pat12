@@ -21,7 +21,7 @@ quality1.name   = 'Quality'; % The displayed name
 quality1.tag    = 'quality';       % The name appearing in the harvested job structure. This name must be unique among all items in the val field of the superior node
 quality1.strtype= 'e';       % No restriction on what type of data is entered. This could be used to restrict input to real numbers, integers ...
 quality1.num    = [1 1];     % Number of inputs required (2D-array with exactly one row and two column)
-quality1.val    = {1};
+quality1.val    = {0.5};
 quality1.help   = {'Quality versus speed trade-off.  Highest quality (1) gives most precise results, whereas lower qualities gives faster realignment. The idea is that some voxels contribute little to the estimation of the realignment parameters. This parameter is involved in selecting the number of voxels that are used.'}; % help text displayed
 
 %% Input Items for display mask
