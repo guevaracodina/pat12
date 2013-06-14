@@ -29,6 +29,8 @@ for scanIdx = 1:length(job.PATmat)
         tic
         % Load PAT.mat information
         [PAT PATmat dir_patmat] = pat_get_PATmat(job,scanIdx);
+        [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
+        scanName = splitStr{end-1};
         if ~isfield(PAT, 'jobsdone')
             PAT.jobsdone = struct([]);
         end
@@ -47,7 +49,7 @@ for scanIdx = 1:length(job.PATmat)
             
             % Start interactive ROI tool to choose spline brain mask
             % ------------------------------------------------------------------
-            BW_mask = pat_roi_spline(im_anat);
+            BW_mask = pat_roi_spline(im_anat, [], [], sprintf('(%s) Choose a mask containing only brain pixels (%d of %d)',scanName,scanIdx,length(job.PATmat)));
             % ------------------------------------------------------------------
             % axis image
             set(gca,'DataAspectRatio',[1 PAT.PAparam.pixWidth/PAT.PAparam.pixDepth 1])
@@ -55,7 +57,7 @@ for scanIdx = 1:length(job.PATmat)
             minVal = min(im_anat(:));
             maxVal = max(im_anat(:));
             imagesc(PAT.PAparam.DepthAxis, PAT.PAparam.WidthAxis, im_anat .* BW_mask, [minVal maxVal]);
-            % axis image
+            axis image
             set(gca,'DataAspectRatio',[1 PAT.PAparam.pixWidth/PAT.PAparam.pixDepth 1])
             set(gca,'FontSize',12);
             xlabel('Width [mm]','FontSize',14);
@@ -98,7 +100,7 @@ for scanIdx = 1:length(job.PATmat)
         end
         out.PATmat{scanIdx} = PATmat;
         disp(['Elapsed time: ' datestr(datenum(0,0,0,0,0,toc),'HH:MM:SS')]);
-        fprintf('Subject %d of %d complete\n', scanIdx, length(job.PATmat));
+        fprintf('Scan %s, %d of %d complete\n', scanName, scanIdx, length(job.PATmat));
     catch exception
         disp(exception.identifier)
         disp(exception.stack(1))

@@ -136,7 +136,7 @@ for scanIdx = 1:numel(job.PATmat)
                 end % paired seeds loop
                 
                 % Loop over available colors
-                for c1 = 1:size(PAT.fcPAT.corr.corrMapName{1}, 2)
+                for c1 = 1:size(PAT.nifti_files,2)
                     doColor = pat_doColor(PAT,c1,IC);
                     if doColor
                         % Loop over sessions
@@ -307,7 +307,7 @@ if ~exist(fullfile(job.parent_results_dir{1},'groupOK.mat'),'file') || job.force
     
     % dbstop if error
     
-    for c1 = 1:size(PAT.fcPAT.corr.corrMapName{1}, 2)
+    for c1 = 1:size(PAT.nifti_files,2)
         doColor = pat_doColor(PAT,c1,IC);
         if doColor
             % Perform test on ROIs time course
@@ -527,8 +527,13 @@ end
 
 % Show standard error bars instead of standard deviation
 if job.optFig.stderror
+    sampleSize = ones(size(e));
+    % First column: Control group
+    sampleSize(:,1) = sampleSize(:,1) .* numel(ctrlGroup);
+    % Second column: Treatment group
+    sampleSize(:,2) = sampleSize(:,2) .* numel(treatmentGroup);
     % std error bars: sigma/sqrt(N)
-    e = e / sqrt(numel(~isnan(groupCorrData{iSeeds,c1})==1));
+    e = e ./ sqrt(sampleSize);
 end
 
 % Save total data for plotting later
@@ -661,8 +666,13 @@ if isfield (job.optStat,'derivative')
         
         % Show standard error bars instead of standard deviation
         if job.optFig.stderror
+            sampleSizeDiff = ones(size(eDiff));
+            % First column: Control group
+            sampleSizeDiff(:,1) = sampleSizeDiff(:,1) .* numel(ctrlGroupDiff);
+            % Second column: Treatment group
+            sampleSizeDiff(:,2) = sampleSizeDiff(:,2) .* numel(treatmentGroupDiff);
             % std error bars: sigma/sqrt(N)
-            eDiff = eDiff / sqrt(numel(~isnan(groupCorrDataDiff{iSeeds,c1})==1));
+            eDiff = eDiff ./ sqrt(sampleSizeDiff);
         end
         
         % Save total data for plotting later
@@ -780,8 +790,13 @@ if isfield (job,'rawData')
         
         % Show standard error bars instead of standard deviation
         if job.optFig.stderror
+            sampleSizeRaw = ones(size(eRaw));
+            % First column: Control group
+            sampleSizeRaw(:,1) = sampleSizeRaw(:,1) .* numel(ctrlGroupRaw);
+            % Second column: Treatment group
+            sampleSizeRaw(:,2) = sampleSizeRaw(:,2) .* numel(treatmentGroupRaw);
             % std error bars: sigma/sqrt(N)
-            eRaw = eRaw / sqrt(numel(~isnan(groupCorrDataRaw{iSeeds,c1})==1));
+            eRaw = eRaw ./ sqrt(sampleSizeRaw);
         end
         
         % Save total data for plotting later
