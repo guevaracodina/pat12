@@ -49,6 +49,9 @@ if isfield (job.optStat,'rawData')
     groupCorrDataRaw = cell([size(job.paired_seeds, 1) numel(PAT.color.eng)]);
 end
 
+% Create parent results directory if it does not exist
+if ~exist(job.parent_results_dir{1},'dir'), mkdir(job.parent_results_dir{1}); end
+
 %% Multiple comparisons adjustment
 switch job.optStat.multComp
     case 0
