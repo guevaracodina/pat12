@@ -857,8 +857,18 @@ if job.optStat.ttest1
             otherwise
                 colormap(gray)
         end
-        title(sprintf('C%d(%s). T-test (*p<%.2g)',...
-            c1,colorNames{1+c1},job.optStat.alpha),'interpreter','none','FontSize',job.optFig.titleFontSize)
+        switch job.optStat.multComp
+            case 0 % None
+                corrName = '';
+            case 1 % Bonferroni
+                corrName = 'Bonferroni';
+            case 2 % FDR
+                corrName = 'FDR';
+            otherwise
+                % Do nothing
+        end
+        title(sprintf('C%d(%s). T-test (*p<%.2g) %s',...
+            c1,colorNames{1+c1},job.optStat.alpha,corrName),'interpreter','none','FontSize',job.optFig.titleFontSize)
         set(gca,'FontSize',axisFontSize)
         ylabel('Functional correlation z(r)','FontSize',job.optFig.yLabelFontSize)
         set(gca,'XTickLabel',job.optFig.xAxisLabels,'FontWeight', 'b','FontSize',job.optFig.xLabelFontSize)
@@ -946,8 +956,18 @@ if job.optStat.wilcoxon1
             otherwise
                 colormap(gray)
         end
-        title(sprintf('C%d(%s). Wilcoxon *(p<%.2g)',...
-            c1,colorNames{1+c1},job.optStat.alpha),'interpreter','none','FontSize',job.optFig.titleFontSize)
+        switch job.optStat.multComp
+            case 0 % None
+                corrName = '';
+            case 1 % Bonferroni
+                corrName = 'Bonferroni';
+            case 2 % FDR
+                corrName = 'FDR';
+            otherwise
+                % Do nothing
+        end
+        title(sprintf('C%d(%s). Wilcoxon *(p<%.2g) %s',...
+            c1,colorNames{1+c1},job.optStat.alpha,corrName),'interpreter','none','FontSize',job.optFig.titleFontSize)
         set(gca,'FontSize',axisFontSize)
         ylabel('Functional correlation z(r)','FontSize',job.optFig.yLabelFontSize)
         set(gca,'XTickLabel',job.optFig.xAxisLabels,'FontWeight', 'b','FontSize',job.optFig.xLabelFontSize)
@@ -1047,8 +1067,18 @@ if isfield (job.optStat,'derivative')
                     otherwise
                         colormap(gray)
                 end
-                title(sprintf('C%d(%s) Diff. T-test (*p<%.2g)',...
-                    c1,colorNames{1+c1},job.optStat.alpha),'interpreter','none','FontSize',job.optFig.titleFontSize)
+                switch job.optStat.multComp
+                    case 0 % None
+                        corrName = '';
+                    case 1 % Bonferroni
+                        corrName = 'Bonferroni';
+                    case 2 % FDR
+                        corrName = 'FDR';
+                    otherwise
+                        % Do nothing
+                end
+                title(sprintf('C%d(%s) Diff. T-test (*p<%.2g) %s',...
+                    c1,colorNames{1+c1},job.optStat.alpha,corrName),'interpreter','none','FontSize',job.optFig.titleFontSize)
                 set(gca,'FontSize',axisFontSize)
                 ylabel('Functional correlation z(r)','FontSize',job.optFig.yLabelFontSize)
                 set(gca,'XTickLabel',job.optFig.xAxisLabels,'FontWeight', 'b','FontSize',job.optFig.xLabelFontSize)
@@ -1132,8 +1162,18 @@ if isfield (job.optStat,'derivative')
                     otherwise
                         colormap(gray)
                 end
-                title(sprintf('C%d(%s) Diff. Wilcoxon (*p<%.2g)',...
-                    c1,colorNames{1+c1},job.optStat.alpha),'interpreter','none','FontSize',job.optFig.titleFontSize)
+                 switch job.optStat.multComp
+                    case 0 % None
+                        corrName = '';
+                    case 1 % Bonferroni
+                        corrName = 'Bonferroni';
+                    case 2 % FDR
+                        corrName = 'FDR';
+                    otherwise
+                        % Do nothing
+                end
+                title(sprintf('C%d(%s) Diff. Wilcoxon (*p<%.2g) %s',...
+                    c1,colorNames{1+c1},job.optStat.alpha,corrName),'interpreter','none','FontSize',job.optFig.titleFontSize)
                 set(gca,'FontSize',axisFontSize)
                 ylabel('Functional correlation z(r)','FontSize',job.optFig.yLabelFontSize)
                 set(gca,'XTickLabel',job.optFig.xAxisLabels,'FontWeight', 'b','FontSize',job.optFig.xLabelFontSize)
@@ -1232,8 +1272,18 @@ if isfield (job,'rawData')
                     otherwise
                         colormap(gray)
                 end
-                title(sprintf('C%d(%s) Raw T-test (*p<%.2g)',...
-                    c1,colorNames{1+c1},job.optStat.alpha),'interpreter','none','FontSize',job.optFig.titleFontSize)
+                switch job.optStat.multComp
+                    case 0 % None
+                        corrName = '';
+                    case 1 % Bonferroni
+                        corrName = 'Bonferroni';
+                    case 2 % FDR
+                        corrName = 'FDR';
+                    otherwise
+                        % Do nothing
+                end
+                title(sprintf('C%d(%s) Raw T-test (*p<%.2g) %s',...
+                    c1,colorNames{1+c1},job.optStat.alpha,corrName),'interpreter','none','FontSize',job.optFig.titleFontSize)
                 set(gca,'FontSize',axisFontSize)
                 ylabel('Functional correlation z(r)','FontSize',job.optFig.yLabelFontSize)
                 set(gca,'XTickLabel',job.optFig.xAxisLabels,'FontWeight', 'b','FontSize',job.optFig.xLabelFontSize)
@@ -1317,8 +1367,18 @@ if isfield (job,'rawData')
                     otherwise
                         colormap(gray)
                 end
-                title(sprintf('C%d(%s) Raw Wilcoxon (*p<%.2g)',...
-                    c1,colorNames{1+c1},job.optStat.alpha),'interpreter','none','FontSize',job.optFig.titleFontSize)
+                switch job.optStat.multComp
+                    case 0 % None
+                        corrName = '';
+                    case 1 % Bonferroni
+                        corrName = 'Bonferroni';
+                    case 2 % FDR
+                        corrName = 'FDR';
+                    otherwise
+                        % Do nothing
+                end
+                title(sprintf('C%d(%s) Raw Wilcoxon (*p<%.2g) %s',...
+                    c1,colorNames{1+c1},job.optStat.alpha,corrName),'interpreter','none','FontSize',job.optFig.titleFontSize)
                 set(gca,'FontSize',axisFontSize)
                 ylabel('Functional correlation z(r)','FontSize',job.optFig.yLabelFontSize)
                 set(gca,'XTickLabel',job.optFig.xAxisLabels,'FontWeight', 'b','FontSize',job.optFig.xLabelFontSize)
