@@ -53,9 +53,11 @@ for scanIdx=1:length(job.PATmat)
         [PAT PATmat dir_patmat]= pat_get_PATmat(job,scanIdx);
         [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
         scanName = splitStr{end-1};
-        % radius in pixels
-        radiusX = job.AutoROIchoice.pointNclickROI.ManualROIradius/PAT.PAparam.pixWidth;
-        radiusY = job.AutoROIchoice.pointNclickROI.ManualROIradius/PAT.PAparam.pixDepth;
+        if pointNclickROI
+            % radius in pixels
+            radiusX = job.AutoROIchoice.pointNclickROI.ManualROIradius/PAT.PAparam.pixWidth;
+            radiusY = job.AutoROIchoice.pointNclickROI.ManualROIradius/PAT.PAparam.pixDepth;
+        end
         if ~isfield(PAT.jobsdone,'ROIOK') || job.force_redo
             if job.RemovePreviousROI
                 try
