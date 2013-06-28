@@ -854,6 +854,12 @@ if job.optStat.ttest1
             case 3
                 % B-mode contrast
                 colormap([0 0 0; 1 1 1]);
+            case 4
+                % HbO contrast
+                colormap([1 0 0; 1 1 1]);
+            case 5
+                % HbR contrast
+                colormap([0 0 1; 1 1 1]);
             otherwise
                 colormap(gray)
         end
@@ -953,6 +959,12 @@ if job.optStat.wilcoxon1
             case 3
                 % B-mode contrast
                 colormap([0 0 0; 1 1 1]);
+            case 4
+                % HbO contrast
+                colormap([1 0 0; 1 1 1]);
+            case 5
+                % HbR contrast
+                colormap([0 0 1; 1 1 1]);
             otherwise
                 colormap(gray)
         end
@@ -1064,6 +1076,12 @@ if isfield (job.optStat,'derivative')
                     case 3
                         % B-mode contrast
                         colormap([0 0 0; 1 1 1]);
+                    case 4
+                        % HbO contrast
+                        colormap([1 0 0; 1 1 1]);
+                    case 5
+                        % HbR contrast
+                        colormap([0 0 1; 1 1 1]);
                     otherwise
                         colormap(gray)
                 end
@@ -1159,6 +1177,12 @@ if isfield (job.optStat,'derivative')
                     case 3
                         % B-mode contrast
                         colormap([0 0 0; 1 1 1]);
+                    case 4
+                        % HbO contrast
+                        colormap([1 0 0; 1 1 1]);
+                    case 5
+                        % HbR contrast
+                        colormap([0 0 1; 1 1 1]);
                     otherwise
                         colormap(gray)
                 end
@@ -1269,6 +1293,12 @@ if isfield (job,'rawData')
                     case 3
                         % B-mode contrast
                         colormap([0 0 0; 1 1 1]);
+                    case 4
+                        % HbO contrast
+                        colormap([1 0 0; 1 1 1]);
+                    case 5
+                        % HbR contrast
+                        colormap([0 0 1; 1 1 1]);
                     otherwise
                         colormap(gray)
                 end
@@ -1364,6 +1394,12 @@ if isfield (job,'rawData')
                     case 3
                         % B-mode contrast
                         colormap([0 0 0; 1 1 1]);
+                    case 4
+                        % HbO contrast
+                        colormap([1 0 0; 1 1 1]);
+                    case 5
+                        % HbR contrast
+                        colormap([0 0 1; 1 1 1]);
                     otherwise
                         colormap(gray)
                 end
