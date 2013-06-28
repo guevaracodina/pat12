@@ -72,20 +72,22 @@ else
                 % Loop over ROI/seeds
                 for r1 = nROI,
                     if all_ROIs || sum(r1==selected_ROIs)
-                        if PAT.fcPAT.SPM.ROIregressOK{r1}{s1,c1}
-                            if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
-                                % load scrubbing parameters
-                                load(PAT.motion_parameters.scrub.fname)
-                                % Get only valid frames after scrubbing
-                                ROIregress{r1}{s1,c1} = ROIregress{r1}{s1,c1}(scrubMask{c1});
+                        if ~isempty(PAT.fcPAT.SPM.ROIregressOK{r1})
+                            if PAT.fcPAT.SPM.ROIregressOK{r1}{s1,c1}
+                                if job.scrubbing && isfield(PAT.jobsdone, 'scrubOK')
+                                    % load scrubbing parameters
+                                    load(PAT.motion_parameters.scrub.fname)
+                                    % Get only valid frames after scrubbing
+                                    ROIregress{r1}{s1,c1} = ROIregress{r1}{s1,c1}(scrubMask{c1});
+                                end
+                                roiMatrix(:, r1) = ROIregress{r1}{s1,c1};
+                                if isfield (job,'derivative')
+                                    roiMatrixDiff(:, r1) = diff(ROIregress{r1}{s1,c1});
+                                end
+                            else
+                                roiMatrix = [];
+                                roiMatrixDiff = [];
                             end
-                            roiMatrix(:, r1) = ROIregress{r1}{s1,c1};
-                            if isfield (job,'derivative')
-                                roiMatrixDiff(:, r1) = diff(ROIregress{r1}{s1,c1});
-                            end
-                        else
-                            roiMatrix = [];
-                            roiMatrixDiff = [];
                         end
                     end
                 end % loop over sessions
@@ -94,6 +96,8 @@ else
                 if isfield (job,'derivative')
                     % Compute seed-to-seed correlation matrix of the derivative
                     corrMatrixDiff{1}{s1,c1} = corrcoef(roiMatrixDiff);
+                else
+                    corrMatrixDiff = [];
                 end
                 if PAT.fcPAT.SPM.ROIregressOK{r1}{s1,c1}
                     % Show correlation matrix
