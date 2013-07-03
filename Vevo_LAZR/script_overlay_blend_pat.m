@@ -3,12 +3,15 @@ clc
 load('F:\Edgar\Data\PAT_Results_20130517\RS\DG_RS\GLMfcPAT\corrMap\PAT.mat')
 nColorLevels = 256;
 fName = fullfile('F:\Edgar\Data\PAT_Results_20130517\alignment\SO2\Ctrl','ROI05_Mean.img');
+% ROI
 r1 = 5;
+% Contrast
 c1 = 2;
+DRAWCIRCLE = false;
 % Range of values to map to the full range of colormap: [minVal maxVal]
-fcMapRange = [-1 1];
+fcMapRange = [0.3 1];
 % Range of values to map to display non-transparent pixels: [minVal maxVal]
-alphaRange = [-1 1];
+alphaRange = fcMapRange;
 figFolder = 'F:\Edgar\Data\PAT_Results_20130517\alignment\SO2\Ctrl';
 % ------------------------------------------------------------------------------
 % Define anonymous functions for affine transformations
@@ -22,15 +25,18 @@ translate = @(a,b) [1 0 a 0; 0 1 b 0; 0 0 1 0; 0 0 0 1];
 % ------------------------------------------------------------------------------
 % Define matlab batch job with the required fields
 % ------------------------------------------------------------------------------
-job(1).figCmap                                  = jet(256);     % colormap
+job(1).figCmap                                  = hot(256);     % colormap
 job(1).figIntensity                             = 0.7;            % [0 - 1]
 job(1).transM                                   = rotz(pi);     % affine transform
 job(1).figSize                                  = [1.5 1.5];    % inches
 job(1).figRes                                   = 300;          % in dpi.
-job.drawCircle                                  = [];
-% job(1).drawCircle(1).drawCircle_On(1).circleLW  = 0.8;          % line width
-% job(1).drawCircle(1).drawCircle_On(1).circleLS  = '-';          % line style
-% job(1).drawCircle(1).drawCircle_On(1).circleEC  = 'w';          % line color
+if DRAWCIRCLE
+    job(1).drawCircle(1).drawCircle_On(1).circleLW  = 0.8;          % line width
+    job(1).drawCircle(1).drawCircle_On(1).circleLS  = '-';          % line style
+    job(1).drawCircle(1).drawCircle_On(1).circleEC  = 'w';          % line color
+else
+    job.drawCircle                              = [];
+end
 job.parent_results_dir{1}                       = fullfile(figFolder,'overlay');
 job.generate_figures                            = true;         % display figure
 job.save_figures                                = true;        % save figure
@@ -49,15 +55,15 @@ end
 figName = fullfile(job.parent_results_dir{1} ,[currentName{1} '_avg_overlay']);
 
 %% Seed positions
-% % Seed annotation dimensions the lower left corner of the bounding rectangle
-% % at the point seedX, seedY (the + sign here is due to image rotation)
+% Seed annotation dimensions the lower left corner of the bounding rectangle
+% at the point seedX, seedY (the + sign here is due to image rotation)
 
-% seedX = IOI.res.ROI{r1}.center(2) - IOI.res.ROI{r1}.radius;
-% seedY = IOI.res.ROI{r1}.center(1) + IOI.res.ROI{r1}.radius;
-% % Seed width
-% seedW = 2*IOI.res.ROI{r1}.radius;
-% % Seed height
-% seedH = 2*IOI.res.ROI{r1}.radius;
+seedX = PAT.res.ROI{r1}.center(2) + PAT.res.ROI{r1}.radius./PAT.PAparam.pixWidth;
+seedY = PAT.res.ROI{r1}.center(1) - PAT.res.ROI{r1}.radius./PAT.PAparam.pixDepth;
+% Seed width
+seedW = 2*PAT.res.ROI{r1}.radius./PAT.PAparam.pixWidth;
+% Seed height
+seedH = 2*PAT.res.ROI{r1}.radius./PAT.PAparam.pixDepth;
 
 %% Read files
 % Get anatomical image
@@ -78,6 +84,7 @@ fcMap               = 1 + spm_read_vols(fcMapVol);
 % fcMap               = fliplr(fcMap');
 % brainMask           = fliplr(brainMask');
 % seedDims = [size(fcMap,2) - seedY seedX seedW seedH];
+seedDims = [seedX seedY  seedW seedH];
 
 %% If values are empty display min/max
 if isempty(fcMapRange)

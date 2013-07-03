@@ -250,7 +250,7 @@ for iStats = 1:numel(statsNames)
                 text(xPos, yPos, '*', 'FontSize', starFontSize, 'FontWeight', 'b');
             end
             if job.save_figures
-                newName = sprintf('groupCorr_%c_C%d_(%s)_diff',statsNames{iStats},c1,colorNames{1+c1});
+                newName = sprintf('groupCorr_%c_C%d_(%s)',statsNames{iStats},c1,colorNames{1+c1});
                 % Save as PNG
                 print(h, '-dpng', fullfile(job.parent_results_dir{1},newName), sprintf('-r%d',job.optFig.figRes));
                 % Save as a figure
