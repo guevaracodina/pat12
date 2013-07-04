@@ -1,8 +1,14 @@
-%%
+%% Overlay average functional map over a template
 clc
+% PAT structure belonging to the image in which the template was based
 load('F:\Edgar\Data\PAT_Results_20130517\RS\DG_RS\GLMfcPAT\corrMap\PAT.mat')
 nColorLevels = 256;
-fName = fullfile('F:\Edgar\Data\PAT_Results_20130517\alignment\SO2\Ctrl','ROI05_Mean.img');
+% Figures folder
+% figFolder = 'F:\Edgar\Data\PAT_Results_20130517\alignment\SO2\Ctrl';
+figFolder = 'F:\Edgar\Data\PAT_Results_20130517\alignment\SO2\LPS';
+% Average image
+% fName = fullfile(figFolder,'ROI05_Mean.img');
+fName = fullfile(figFolder,'ROI05_Mean.img');
 % ROI
 r1 = 5;
 % Contrast
@@ -12,7 +18,6 @@ DRAWCIRCLE = false;
 fcMapRange = [0.3 1];
 % Range of values to map to display non-transparent pixels: [minVal maxVal]
 alphaRange = fcMapRange;
-figFolder = 'F:\Edgar\Data\PAT_Results_20130517\alignment\SO2\Ctrl';
 % ------------------------------------------------------------------------------
 % Define anonymous functions for affine transformations
 % ------------------------------------------------------------------------------
@@ -26,7 +31,7 @@ translate = @(a,b) [1 0 a 0; 0 1 b 0; 0 0 1 0; 0 0 0 1];
 % Define matlab batch job with the required fields
 % ------------------------------------------------------------------------------
 job(1).figCmap                                  = hot(256);     % colormap
-job(1).figIntensity                             = 0.7;            % [0 - 1]
+job(1).figIntensity                             = 0.7;          % [0 - 1]
 job(1).transM                                   = rotz(pi);     % affine transform
 job(1).figSize                                  = [1.5 1.5];    % inches
 job(1).figRes                                   = 300;          % in dpi.
