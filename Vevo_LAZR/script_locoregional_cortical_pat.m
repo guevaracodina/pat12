@@ -1,6 +1,7 @@
 %% script_locoregional_cortical_pat
-clc; clear
-
+close all; clear; clc;
+% scrubbing
+DO_SCRUBBING = false;
 % Control group
 job.PATmatCtrl = {  
                 'F:\Edgar\Data\PAT_Results_20130517\RS\2012-09-07-12-10-31_ctl01\newROIs\PAT.mat'
@@ -30,14 +31,26 @@ job.PATmatLPS = {
 job.IC                      = pat_include_colors_cfg(1,1);
           
 % Choose ROI selection method (all/selected)
-job.ROI_choice              = [12];
+%     'CPu_L'
+%     'CPu_R'
+%     'LV_L'
+%     'LV_R'
+%     'M_L'
+%     'M_R'
+%     'S1_L'
+%     'S1_R'
+%     'S1BF_L'
+%     'S1BF_R'
+%     'Cortex_L'
+%     'Cortex_R'
+job.ROI_choice              = [11];
 
 % Significance level
 job.optStat.alpha           = 0.05;
 
 % Generate / save figures
 job.generate_figures        = true;
-job.save_figures            = true;
+job.save_figures            = false;
 
 job.parent_results_dir{1}   = 'F:\Edgar\Data\PAT_Results_20130517\RS\locoregional';
 % ------------------------------------------------------------------------------
@@ -104,7 +117,20 @@ job.optFig.legends          = legends;
 AvgCtrl = nan([numel(job.PATmatCtrl) 2]);
 StdCtrl = nan([numel(job.PATmatCtrl) 2]);
 tmpROI = [];
-
+motion_parameters.scrub.fname = {
+    'F:\Edgar\Data\PAT_Results_20130517\RS\2012-09-07-12-10-31_ctl01\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\2012-09-07-14-48-55_ctl02\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-18-31_ctl03\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\DA_RS2\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\DB_RS\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\DF_RS\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\DG_RS\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\DI_RS\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\DJ_RS\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\DK_RS2\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\DL_RS3\GLMfcPAT\scrubbing.mat'
+    };
+ 
 % Load PAT data
 for scanIdx = 1:numel(job.PATmatCtrl)
     %Load PAT.mat information
@@ -113,9 +139,16 @@ for scanIdx = 1:numel(job.PATmatCtrl)
     load(PAT.ROI.ROIfname);
     % Colors loop
     for c1 = 1:2,
+%         scrubMask{c1} = 5:20;
         for r1 = job.ROI_choice
             % Load data from selected ROIs
-            tmpROI = [tmpROI ROI{r1}{c1}];
+            if DO_SCRUBBING
+                % load scrubbing parameters
+                load(motion_parameters.scrub.fname{scanIdx})
+                tmpROI = [tmpROI ROI{r1}{c1}(scrubMask{c1})];
+            else
+                tmpROI = [tmpROI ROI{r1}{c1}];
+            end
             % Compute average and standard deviation from all ROIs
             % if SO2, convert to [%]
         end
@@ -136,7 +169,15 @@ end
 AvgLPS = nan([numel(job.PATmatLPS) 2]);
 StdLPS = nan([numel(job.PATmatLPS) 2]);
 tmpROI = [];
-
+motion_parameters.scrub.fname = {
+    'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-16-25_toe04\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-17-27_toe05\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-23-04_toe08\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-23-51_toe09\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\DC_RS1\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\DE_RS2\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\DH_RS\GLMfcPAT\scrubbing.mat'
+    };
 % Load PAT data
 for scanIdx = 1:numel(job.PATmatLPS)
     %Load PAT.mat information
@@ -145,11 +186,19 @@ for scanIdx = 1:numel(job.PATmatLPS)
     load(PAT.ROI.ROIfname);
     % Colors loop
     for c1 = 1:2,
+%         scrubMask{c1} = 5:20;
         for r1 = job.ROI_choice
             % Load data from selected ROIs
-            tmpROI = [tmpROI ROI{r1}{c1}];
+            if DO_SCRUBBING
+                % load scrubbing parameters
+                load(motion_parameters.scrub.fname{scanIdx})
+                tmpROI = [tmpROI ROI{r1}{c1}(scrubMask{c1})];
+            else
+            % Load data from selected ROIs
+                tmpROI = [tmpROI ROI{r1}{c1}];
             % Compute average and standard deviation from all ROIs
             % if SO2, convert to [%]
+            end
         end
         AvgLPS(scanIdx, c1) = nanmean(tmpROI);
         StdLPS(scanIdx, c1) = nanstd(tmpROI);
@@ -163,21 +212,23 @@ end
 
 
 %% statistical test comparison
+colorNames      = fieldnames(PAT.color);
 for c1 = 1:2
     [statTest(1).t(1).H{c1}, statTest(1).t(1).P{c1}, statTest(1).t(1).CI{c1}, ...
         statTest(1).t(1).STATS{c1}] = ...
         ttest2(AvgCtrl(:,c1), AvgLPS(:,c1), job.optStat.alpha,'both');
     statTest(1).t(1).id = 'Unpaired-sample t-test';
+    fprintf('%s: Contrast (%s) p=%0.4f\n',statTest(1).t(1).id, colorNames{1+c1},statTest(1).t(1).P{c1});
     [statTest(1).w(1).P{c1}, statTest(1).w(1).H{c1}, statTest(1).w(1).STATS{c1}] =...
         ranksum (AvgCtrl(:,c1), AvgLPS(:,c1), job.optStat.alpha);
     statTest(1).w(1).id = 'Wilcoxon rank sum test';
+    fprintf('%s: Contrast (%s) p=%0.4f\n', statTest(1).w(1).id, colorNames{1+c1},statTest(1).w(1).P{c1});
 end
 
 %% Plot results
 % Create parent results directory if it does not exist
 if ~exist(job.parent_results_dir{1},'dir'), mkdir(job.parent_results_dir{1}); end
 % Plots statistical analysis group results
-colorNames      = fieldnames(PAT.color);
 % Positioning factor for the * mark, depends on max data value at the given seed
 starPosFactor   = 1.05;
 % Font Sizes
