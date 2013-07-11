@@ -12,6 +12,7 @@ clc;
 colorNames = TablResultat(1,:);
 statTest(1).w(1).id = 'Wilcoxon rank sum test';
 fprintf('%s\n',statTest(1).w(1).id);
+% c1 is measurements index
 for c1 = 1:4
     [statTest(1).w(1).P{c1}, statTest(1).w(1).H{c1}, statTest(1).w(1).STATS{c1}] =...
         ranksum (Ctrl(:,c1), LPS(:,c1), job.optStat.alpha);
