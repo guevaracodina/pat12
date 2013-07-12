@@ -19,6 +19,7 @@ filtNdownROI    = [];
 ROIsem          = [];
 ROIstd          = [];
 filtNdownBrain  = [];
+brainMaskSeries = [];
 brainMaskSem    = [];
 brainMaskStd    = [];
 ROIregress      = [];
@@ -101,6 +102,10 @@ if job.generate_figures
                         else
                             e = ROIstd{r1}{1,c1};
                         end
+                        if c1==2
+                            ROI{r1}{1,c1} = pat_raw2so2(ROI{r1}{1,c1});
+                            e = pat_raw2so2(e);
+                        end
                         h1 = errorbar(tVec, ROI{r1}{1,c1}, e, strcat(job.figColors{r1}, job.figLS{r1}));
                         % Change linwidth for signal only, not error
                         hChild = get(h1, 'Children');
@@ -132,7 +137,12 @@ if job.generate_figures
             end
             title(sprintf('%s', colorNames{c1+1}), 'interpreter', 'none', 'FontSize', job.titleFontSize);
             xlabel('t [s]', 'FontSize', job.axisLabelFontSize)
-            ylabel(sprintf('%s [a.u.]', colorNames{c1+1}), 'FontSize', job.axisLabelFontSize)
+            if c1==2
+                ylabel(sprintf('%s [%%]', colorNames{c1+1}), 'FontSize', job.axisLabelFontSize)
+            else
+                ylabel(sprintf('%s [a.u.]', colorNames{c1+1}), 'FontSize', job.axisLabelFontSize)
+            end
+            
             % Save figures
             pat_save_figs(job, h, 'plotROI', scanIdx, c1);
         end
