@@ -117,6 +117,7 @@ job.optFig.legends          = legends;
 AvgCtrl = nan([numel(job.PATmatCtrl) 2]);
 StdCtrl = nan([numel(job.PATmatCtrl) 2]);
 tmpROI = [];
+% Scrubbing filenames for controls
 motion_parameters.scrub.fname = {
     'F:\Edgar\Data\PAT_Results_20130517\RS\2012-09-07-12-10-31_ctl01\GLMfcPAT\scrubbing.mat'
     'F:\Edgar\Data\PAT_Results_20130517\RS\2012-09-07-14-48-55_ctl02\GLMfcPAT\scrubbing.mat'
@@ -169,6 +170,7 @@ end
 AvgLPS = nan([numel(job.PATmatLPS) 2]);
 StdLPS = nan([numel(job.PATmatLPS) 2]);
 tmpROI = [];
+% Scrubbing filenames for LPS
 motion_parameters.scrub.fname = {
     'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-16-25_toe04\GLMfcPAT\scrubbing.mat'
     'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-17-27_toe05\GLMfcPAT\scrubbing.mat'
@@ -210,6 +212,8 @@ for scanIdx = 1:numel(job.PATmatLPS)
     end
 end
 
+%% TODO...
+% Save AvgCtrl, AvgLPS, then perform 1-Way ANOVA
 
 %% statistical test comparison
 colorNames      = fieldnames(PAT.color);
