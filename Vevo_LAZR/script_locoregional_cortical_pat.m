@@ -1,7 +1,7 @@
 %% script_locoregional_cortical_pat
 close all; clear; clc;
 % scrubbing
-DO_SCRUBBING = false;
+DO_SCRUBBING = true;
 % Control group
 job.PATmatCtrl = {  
                 'F:\Edgar\Data\PAT_Results_20130517\RS\2012-09-07-12-10-31_ctl01\newROIs\PAT.mat'
@@ -15,6 +15,13 @@ job.PATmatCtrl = {
                 'F:\Edgar\Data\PAT_Results_20130517\RS\DJ_RS\newROIs\PAT.mat'
                 'F:\Edgar\Data\PAT_Results_20130517\RS\DK_RS2\newROIs\PAT.mat'
                 'F:\Edgar\Data\PAT_Results_20130517\RS\DL_RS3\newROIs\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\E01_RS\newROIs\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\E02_RS\newROIs\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\E03_RS\newROIs\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\E10_RS\newROIs\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\E11_RS\newROIs\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\E12_RS\newROIs\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\E13_RS\newROIs\PAT.mat'
                 };
 
 % LPS group
@@ -26,6 +33,10 @@ job.PATmatLPS = {
                 'F:\Edgar\Data\PAT_Results_20130517\RS\DC_RS1\newROIs\PAT.mat'
                 'F:\Edgar\Data\PAT_Results_20130517\RS\DE_RS2\newROIs\PAT.mat'
                 'F:\Edgar\Data\PAT_Results_20130517\RS\DH_RS\newROIs\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\E05_RS\newROIs\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\E06_RS\newROIs\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\E07_RS\newROIs\PAT.mat'
+                'F:\Edgar\Data\PAT_Results_20130517\RS\E08_RS\newROIs\PAT.mat'
                 };
 % Colors to include (OD,HbO,HbR,HbT,Flow)
 job.IC                      = pat_include_colors_cfg(1,1);
@@ -43,7 +54,7 @@ job.IC                      = pat_include_colors_cfg(1,1);
 %     'S1BF_R'
 %     'Cortex_L'
 %     'Cortex_R'
-job.ROI_choice              = [11];
+job.ROI_choice              = [12];     % Analyze only Left Cortex (injection side)
 
 % Significance level
 job.optStat.alpha           = 0.05;
@@ -52,7 +63,13 @@ job.optStat.alpha           = 0.05;
 job.generate_figures        = true;
 job.save_figures            = false;
 
-job.parent_results_dir{1}   = 'F:\Edgar\Data\PAT_Results_20130517\RS\locoregional';
+if job.ROI_choice == 11
+    job.parent_results_dir{1}   = 'F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\LeftCortex';
+elseif job.ROI_choice == 12
+    job.parent_results_dir{1}   = 'F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\RightCortex';
+else 
+    job.parent_results_dir{1}   = 'F:\Edgar\Data\PAT_Results_20130517\RS\locoregional';
+end
 % ------------------------------------------------------------------------------
 % ------------------------------------------------------------------------------
 % Print figure options
@@ -130,7 +147,18 @@ motion_parameters.scrub.fname = {
     'F:\Edgar\Data\PAT_Results_20130517\RS\DJ_RS\GLMfcPAT\scrubbing.mat'
     'F:\Edgar\Data\PAT_Results_20130517\RS\DK_RS2\GLMfcPAT\scrubbing.mat'
     'F:\Edgar\Data\PAT_Results_20130517\RS\DL_RS3\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\E01_RS\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\E02_RS\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\E03_RS\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\E10_RS\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\E11_RS\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\E12_RS\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\E13_RS\GLMfcPAT\scrubbing.mat'
     };
+
+% Indices for sham and untreated controls
+CtrlInjectedIdx = [4:7 10 12:14]';
+CtrlIdx         = [1:3 8 9 11 15:18]';
  
 % Load PAT data
 for scanIdx = 1:numel(job.PATmatCtrl)
@@ -155,6 +183,7 @@ for scanIdx = 1:numel(job.PATmatCtrl)
         end
         AvgCtrl(scanIdx, c1) = nanmean(tmpROI);
         StdCtrl(scanIdx, c1) = nanstd(tmpROI);
+        % Convert raw SO2 values to %
         if c1 == 2
             % SO2 index = 2
             AvgCtrl(scanIdx, c1) = pat_raw2so2(AvgCtrl(scanIdx, c1));
@@ -163,7 +192,9 @@ for scanIdx = 1:numel(job.PATmatCtrl)
     end
 end
 
-
+% Data for ANOVA
+CtrlInjected = AvgCtrl(CtrlInjectedIdx,2);
+Ctrl = AvgCtrl(CtrlIdx,2);
 
 %% LPS
 % Preallocate arrays
@@ -179,6 +210,10 @@ motion_parameters.scrub.fname = {
     'F:\Edgar\Data\PAT_Results_20130517\RS\DC_RS1\GLMfcPAT\scrubbing.mat'
     'F:\Edgar\Data\PAT_Results_20130517\RS\DE_RS2\GLMfcPAT\scrubbing.mat'
     'F:\Edgar\Data\PAT_Results_20130517\RS\DH_RS\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\E05_RS\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\E06_RS\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\E07_RS\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\E08_RS\GLMfcPAT\scrubbing.mat'
     };
 % Load PAT data
 for scanIdx = 1:numel(job.PATmatLPS)
@@ -204,6 +239,7 @@ for scanIdx = 1:numel(job.PATmatLPS)
         end
         AvgLPS(scanIdx, c1) = nanmean(tmpROI);
         StdLPS(scanIdx, c1) = nanstd(tmpROI);
+        % Convert raw SO2 values to %
         if c1 == 2
             % SO2 index = 2
             AvgLPS(scanIdx, c1) = pat_raw2so2(AvgLPS(scanIdx, c1));
@@ -212,11 +248,57 @@ for scanIdx = 1:numel(job.PATmatLPS)
     end
 end
 
-%% TODO...
-% Save AvgCtrl, AvgLPS, then perform 1-Way ANOVA
+% Data for ANOVA
+LPS = AvgLPS(:,2);
+
+%% perform 1-Way ANOVA
+% Create parent results directory if it does not exist
+if ~exist(job.parent_results_dir{1},'dir'), mkdir(job.parent_results_dir{1}); end
+% Save AvgCtrl, AvgLPS
+dataFileName = 'locoregional_SO2_data';
+save(fullfile(job.parent_results_dir{1},dataFileName),'AvgCtrl','AvgLPS',...
+    'CtrlInjected','Ctrl','LPS')
+colorNames      = fieldnames(PAT.color);
+% ANOVA
+close all
+alphaVal = 0.05;
+% c1 is measurements index
+c1 = 1;
+criterionType = 'tukey-kramer';
+group = {'Control'; 'LPS'; 'NaCl (sham)'};
+% z_seed12_tmp = squeeze(Z(1,2,:));
+nRows = max([size(LPS,1); size(Ctrl,1); size(CtrlInjected,1)]);
+groupedData = nan([nRows, numel(group)]);
+groupedData(1:numel(Ctrl(:,c1)), 1)         = Ctrl(:,c1);
+groupedData(1:numel(LPS(:,c1)), 2)          = LPS(:,c1);
+groupedData(1:numel(CtrlInjected(:,c1)), 3) = CtrlInjected(:,c1);
+[p1, table1, stats1] = anova1(groupedData, group);
+h = figure;
+[comparison, means, h, groupNames] = multcompare(stats1, 'alpha', alphaVal, 'ctype', criterionType);
+set(h,'Name','Multiple comparison of average SO_2 values');
+title('Locoregional cortical SO_2')
+disp([groupNames num2cell(comparison)]);
+
+%% Print multiple comparisons ANOVA
+if job.save_figures
+    % Specify window units
+    set(h, 'units', 'inches')
+    % Change figure and paper size
+    set(h, 'Position', [0.1 0.1 job.optFig.figSize(1) job.optFig.figSize(2)])
+    set(h, 'PaperPosition', [0.1 0.1 job.optFig.figSize(1) job.optFig.figSize(2)])
+    c1 = 2; % only SO2 here
+    newName = sprintf('ANOVA_multiple_comparisons_%s_C%d_(%s)',criterionType,c1,colorNames{1+c1});
+    % Save as PNG
+    print(h, '-dpng', fullfile(job.parent_results_dir{1},newName), sprintf('-r%d',job.optFig.figRes));
+    % Save as a figure
+    saveas(h, fullfile(job.parent_results_dir{1},newName), 'fig');
+    % Return the property to its default
+    set(h, 'units', 'pixels')
+    close(h)
+end
 
 %% statistical test comparison
-colorNames      = fieldnames(PAT.color);
+
 for c1 = 1:2
     [statTest(1).t(1).H{c1}, statTest(1).t(1).P{c1}, statTest(1).t(1).CI{c1}, ...
         statTest(1).t(1).STATS{c1}] = ...
@@ -230,8 +312,6 @@ for c1 = 1:2
 end
 
 %% Plot results
-% Create parent results directory if it does not exist
-if ~exist(job.parent_results_dir{1},'dir'), mkdir(job.parent_results_dir{1}); end
 % Plots statistical analysis group results
 % Positioning factor for the * mark, depends on max data value at the given seed
 starPosFactor   = 1.05;

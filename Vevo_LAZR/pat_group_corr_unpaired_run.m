@@ -879,7 +879,7 @@ if job.optStat.ttest1
         ylabel('Functional correlation z(r)','FontSize',job.optFig.yLabelFontSize)
         set(gca,'XTickLabel',job.optFig.xAxisLabels,'FontWeight', 'b','FontSize',job.optFig.xLabelFontSize)
         if isfield(job.optFig.legends, 'legendShow')
-            legend(job.optFig.legends.legendShow.legendStr,'FontSize',job.optFig.legends.legendShow.legendFontSize,'location',job.optFig.legends.legendShow.legendLocation)
+            legend(job.ID,'FontSize',job.optFig.legends.legendShow.legendFontSize,'location',job.optFig.legends.legendShow.legendLocation)
         end
         set(gca, 'xLim', [axMargin size(y,1) + axMargin]);
         if isfield(job.optFig.yLimits, 'yLimManual')
@@ -984,7 +984,7 @@ if job.optStat.wilcoxon1
         ylabel('Functional correlation z(r)','FontSize',job.optFig.yLabelFontSize)
         set(gca,'XTickLabel',job.optFig.xAxisLabels,'FontWeight', 'b','FontSize',job.optFig.xLabelFontSize)
         if isfield(job.optFig.legends, 'legendShow')
-            legend(job.optFig.legends.legendShow.legendStr,'FontSize',job.optFig.legends.legendShow.legendFontSize,'location',job.optFig.legends.legendShow.legendLocation)
+            legend(job.ID,'FontSize',job.optFig.legends.legendShow.legendFontSize,'location',job.optFig.legends.legendShow.legendLocation)
         end
         set(gca, 'xLim', [axMargin size(y,1) + axMargin]);
         if isfield(job.optFig.yLimits, 'yLimManual')
@@ -1101,7 +1101,7 @@ if isfield (job.optStat,'derivative')
                 ylabel('Functional correlation z(r)','FontSize',job.optFig.yLabelFontSize)
                 set(gca,'XTickLabel',job.optFig.xAxisLabels,'FontWeight', 'b','FontSize',job.optFig.xLabelFontSize)
                 if isfield(job.optFig.legends, 'legendShow')
-                    legend(job.optFig.legends.legendShow.legendStr,'FontSize',job.optFig.legends.legendShow.legendFontSize,'location',job.optFig.legends.legendShow.legendLocation)
+                    legend(job.ID,'FontSize',job.optFig.legends.legendShow.legendFontSize,'location',job.optFig.legends.legendShow.legendLocation)
                 end
                 set(gca, 'xLim', [axMargin size(yDiff,1) + axMargin]);
                 if isfield(job.optFig.yLimits, 'yLimManual')
@@ -1202,7 +1202,7 @@ if isfield (job.optStat,'derivative')
                 ylabel('Functional correlation z(r)','FontSize',job.optFig.yLabelFontSize)
                 set(gca,'XTickLabel',job.optFig.xAxisLabels,'FontWeight', 'b','FontSize',job.optFig.xLabelFontSize)
                 if isfield(job.optFig.legends, 'legendShow')
-                    legend(job.optFig.legends.legendShow.legendStr,'FontSize',job.optFig.legends.legendShow.legendFontSize,'location',job.optFig.legends.legendShow.legendLocation)
+                    legend(job.ID,'FontSize',job.optFig.legends.legendShow.legendFontSize,'location',job.optFig.legends.legendShow.legendLocation)
                 end
                 set(gca, 'xLim', [axMargin size(yDiff,1) + axMargin]);
                 if isfield(job.optFig.yLimits, 'yLimManual')
@@ -1318,7 +1318,7 @@ if isfield (job,'rawData')
                 ylabel('Functional correlation z(r)','FontSize',job.optFig.yLabelFontSize)
                 set(gca,'XTickLabel',job.optFig.xAxisLabels,'FontWeight', 'b','FontSize',job.optFig.xLabelFontSize)
                 if isfield(job.optFig.legends, 'legendShow')
-                    legend(job.optFig.legends.legendShow.legendStr,'FontSize',job.optFig.legends.legendShow.legendFontSize,'location',job.optFig.legends.legendShow.legendLocation)
+                    legend(job.ID,'FontSize',job.optFig.legends.legendShow.legendFontSize,'location',job.optFig.legends.legendShow.legendLocation)
                 end
                 set(gca, 'xLim', [axMargin size(yRaw,1) + axMargin]);
                 if isfield(job.optFig.yLimits, 'yLimManual')
@@ -1419,7 +1419,7 @@ if isfield (job,'rawData')
                 ylabel('Functional correlation z(r)','FontSize',job.optFig.yLabelFontSize)
                 set(gca,'XTickLabel',job.optFig.xAxisLabels,'FontWeight', 'b','FontSize',job.optFig.xLabelFontSize)
                 if isfield(job.optFig.legends, 'legendShow')
-                    legend(job.optFig.legends.legendShow.legendStr,'FontSize',job.optFig.legends.legendShow.legendFontSize,'location',job.optFig.legends.legendShow.legendLocation)
+                    legend(job.ID,'FontSize',job.optFig.legends.legendShow.legendFontSize,'location',job.optFig.legends.legendShow.legendLocation)
                 end
                 set(gca, 'xLim', [axMargin size(yRaw,1) + axMargin]);
                 if isfield(job.optFig.yLimits, 'yLimManual')

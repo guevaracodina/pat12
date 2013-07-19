@@ -270,13 +270,13 @@ titleFontSize.help         = {'Enter title font size'};
 % ------------------------------------------------------------------------------
 % Legends options
 % ------------------------------------------------------------------------------
-legendStr                   = cfg_entry;
-legendStr.tag               = 'legendStr';
-legendStr.name              = 'Legend string';
-legendStr.strtype           = 'e';
-legendStr.num               = [1 2];
-legendStr.val               = {{'Ctrl' 'LPS'}};
-legendStr.help              = {'Enter legends. Default: {''Ctrl'' ''LPS''}'};
+% legendStr                   = cfg_entry;
+% legendStr.tag               = 'legendStr';
+% legendStr.name              = 'Legend string';
+% legendStr.strtype           = 'e';
+% legendStr.num               = [1 2];
+% legendStr.val               = {{'Ctrl' 'LPS'}};
+% legendStr.help              = {'Enter legends. Default: {''Ctrl'' ''LPS''}'};
 
 legendLocation              = cfg_entry;
 legendLocation.tag          = 'legendLocation';
@@ -297,7 +297,7 @@ legendFontSize.help         = {'Enter legend font size'};
 legendShow                  = cfg_branch;
 legendShow.tag              = 'legendShow';
 legendShow.name             = 'Show legend';
-legendShow.val              = {legendStr legendLocation legendFontSize};
+legendShow.val              = {legendLocation legendFontSize};
 legendShow.help             = {'Show legends.'};
 
 legendHide                  = cfg_branch;

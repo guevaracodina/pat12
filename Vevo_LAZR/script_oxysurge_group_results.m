@@ -3,11 +3,11 @@ load('D:\Edgar\Documents\Dropbox\Docs\PAT\OS\TablResultat.mat')
 Data = cell2mat(TablResultat(2:end,2:end));
 % CtrlIdx = [4 7 8 10 12 13 15 16];
 CtrlIdx = [10 13 15 16];
-CtrlInjectSIdx = [7 8 12];
+CtrlInjectedIdx = [7 8 12];
 LPSIdx = [1 2 3 5 6 9 11 14];
 Ctrl = Data(CtrlIdx,:);
 LPS = Data(LPSIdx,:);
-CtrlInjected = Data(CtrlInjectSIdx,:);
+CtrlInjected = Data(CtrlInjectedIdx,:);
 job.optStat.alpha = 0.05;
 
 %% Statistical test
@@ -42,12 +42,13 @@ end
 %% ANOVA
 close all
 alphaVal = 0.05;
-% Indicates measurement type
+% c1 is measurements index
 c1 = 1;
 criterionType = 'tukey-kramer';
 group = {'Control'; 'LPS'; 'Control Injected'};
 % z_seed12_tmp = squeeze(Z(1,2,:));
-groupedData = nan([8, 3]);
+nRows = max([size(LPS,1); size(Ctrl,1); size(CtrlInjected,1)]);
+groupedData = nan([nRows, numel(group)]);
 groupedData(1:numel(Ctrl(:,c1)), 1) = Ctrl(:,c1);
 groupedData(1:numel(LPS(:,c1)), 2) = LPS(:,c1);
 groupedData(1:numel(CtrlInjected(:,c1)), 3) = CtrlInjected(:,c1);
