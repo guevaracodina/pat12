@@ -11,14 +11,19 @@ ID = [TablResultat(2:end,1); TablResultatSerieE(2:end,1)];
 Data = cell2mat([TablResultat(2:end,2:end); TablResultatSerieE(2:end,2:end)]);
 
 % First series only
-CtrlIdx = [10 13 15 16];
-CtrlInjectedIdx = [7 8 12 ];
-LPSIdx = [1 2 3 5 6 9 11 14 ];
+% CtrlIdx = [10 13 15 16];
+% CtrlInjectedIdx = [7 8 12 ];
+% LPSIdx = [1 2 3 5 6 9 11 14 ];
 
 % Whole series
 % CtrlIdx = [10 13 15 16 26 27];
 % CtrlInjectedIdx = [7 8 12 17 18 19];
 % LPSIdx = [1 2 3 5 6 9 11 14 20 21 22 23 24];
+
+% E only
+CtrlIdx = [26 27];
+CtrlInjectedIdx = [18 19];
+LPSIdx = [21 20 22 23 24];
 
 % Gathering data in the corresponding vectors
 Ctrl = Data(CtrlIdx,:);

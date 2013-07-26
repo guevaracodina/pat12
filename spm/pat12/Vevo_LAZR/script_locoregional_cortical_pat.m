@@ -262,16 +262,16 @@ save(fullfile(job.parent_results_dir{1},dataFileName),'AvgCtrl','AvgLPS',...
 % load ('F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\LeftCortex\locoregional_SO2_data')
 % load ('F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\RightCortex\locoregional_SO2_data')
 close all
-% c1 is measurements index
-c1 = 1;
+
 criterionType = 'tukey-kramer';
 group = {'LPS'; 'Control'; 'NaCl (sham)'};
 nRows = max([size(LPS,1); size(Ctrl,1); size(CtrlInjected,1)]);
 groupedData = nan([nRows, numel(group)]);
-groupedData(1:numel(LPS(:,c1)), 1)          = LPS(:,c1);
-groupedData(1:numel(Ctrl(:,c1)), 2)         = Ctrl(:,c1);
-groupedData(1:numel(CtrlInjected(:,c1)), 3) = CtrlInjected(:,c1);
+groupedData(1:numel(LPS(:,1)), 1)          = LPS(:,1);
+groupedData(1:numel(Ctrl(:,1)), 2)         = Ctrl(:,1);
+groupedData(1:numel(CtrlInjected(:,1)), 3) = CtrlInjected(:,1);
 [p1, table1, stats1] = anova1(groupedData, group, 'off');
+% [p1, table1, stats1] = kruskalwallis(groupedData, group, 'off');
 h = figure;
 [comparison, means, h, groupNames] = multcompare(stats1, 'alpha', job.optStat.alpha, 'ctype', criterionType);
 set(h,'Name','Multiple comparison of average SO_2 values');
