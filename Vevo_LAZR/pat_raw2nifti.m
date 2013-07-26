@@ -15,8 +15,16 @@ function [nifti_filename affine_mat_filename param] = pat_raw2nifti(fileName, ou
 %                    École Polytechnique de Montréal
 %_______________________________________________________________________________
 
-% read RAW PA-mode images, Dimensions: [nDepth nWidth 1 nFrames]
-[rawDataSO2, rawDataHbT, param] = pat_VsiOpenRawPa_multi(fileName);
+% Acquisition done at a single wavelength.
+SINGLEWAVELENGTH = true;
+
+if ~SINGLEWAVELENGTH
+    % read RAW PA-mode images, Dimensions: [nDepth nWidth 1 nFrames]
+    [rawDataSO2, rawDataHbT, param] = pat_VsiOpenRawPa_multi(fileName);
+else
+    [rawDataHbT, param] = pat_VsiOpenRawPa_singleWL_multi(fileName);
+    rawDataSO2 = rawDataHbT;
+end
 % Number of frames
 nFrames = size(rawDataHbT,4);
 % Creating nifti file names
