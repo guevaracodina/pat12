@@ -1,5 +1,5 @@
 %% script_locoregional_cortical_pat
-close all; clear; clc;
+close all; clc;
 % scrubbing
 DO_SCRUBBING = true;
 % Choose ROI selection method (all/selected)
@@ -15,7 +15,12 @@ DO_SCRUBBING = true;
 %     'S1BF_R'
 %     'Cortex_L'
 %     'Cortex_R'
-job.ROI_choice              = [11];     % Analyze only Left Cortex (injection side)
+job.ROI_choice              = [12];     % Analyze only Left Cortex (11) (injection side)
+
+% Include only certain frames if scrubbing is not performed
+if ~DO_SCRUBBING
+    frames2includeIdx = 30:90;
+end
 
 % Control group
 job.PATmatCtrl = {  
@@ -94,18 +99,18 @@ yLimits.yLimAuto            = yLimAuto;
 % X-axis labels
 xAxisLabels                 = {'Ctrl' 'LPS'};
 % X-axis font size
-xLabelFontSize              = 10;
+xLabelFontSize              = 16;
 % Y-axis font size
-yLabelFontSize              = 10;
+yLabelFontSize              = 16;
 % Title font size
-titleFontSize               = 10;
+titleFontSize               = 16;
 
 % ------------------------------------------------------------------------------
 % Legends options
 % ------------------------------------------------------------------------------
 legendStr                   = {'Ctrl' 'LPS'};
 legendLocation              = 'NorthEast';
-legendFontSize              = 10;
+legendFontSize              = 16;
 legendShow.legendStr        = legendStr;
 legendShow.legendLocation   = legendLocation;
 legendShow.legendFontSize   = legendFontSize;
@@ -159,7 +164,9 @@ motion_parameters.scrub.fname = {
 % Indices for sham and untreated controls
 CtrlInjectedIdx = [4:7 10 12:14]';
 CtrlIdx         = [1:3 8 9 11 15:18]';
- 
+
+hROIs = figure; hold on
+
 % Load PAT data
 for scanIdx = 1:numel(job.PATmatCtrl)
     %Load PAT.mat information
@@ -174,13 +181,23 @@ for scanIdx = 1:numel(job.PATmatCtrl)
             if DO_SCRUBBING
                 % load scrubbing parameters
                 load(motion_parameters.scrub.fname{scanIdx})
-                tmpROI = [tmpROI ROI{r1}{c1}(scrubMask{c1})];
+                currentROI = ROI{r1}{c1}(scrubMask{c1});
             else
-                tmpROI = [tmpROI ROI{r1}{c1}];
+                currentROI = ROI{r1}{c1}(frames2includeIdx);
             end
-            % Compute average and standard deviation from all ROIs
-            % if SO2, convert to [%]
+            tmpROI = [tmpROI currentROI];
+            if c1 == 2
+                figure(hROIs)
+                if any(scanIdx == CtrlInjectedIdx)
+                    % NaCl (sham)
+                    plot(pat_raw2so2(currentROI), 'b-')
+                else
+                    % Control
+                    plot(pat_raw2so2(currentROI), 'k-')
+                end
+            end
         end
+        % Compute average and standard deviation from all ROIs
         AvgCtrl(scanIdx, c1) = nanmean(tmpROI);
         StdCtrl(scanIdx, c1) = nanstd(tmpROI);
         % Convert raw SO2 values to %
@@ -207,7 +224,7 @@ motion_parameters.scrub.fname = {
     'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-17-27_toe05\GLMfcPAT\scrubbing.mat'
     'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-23-04_toe08\GLMfcPAT\scrubbing.mat'
     'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-23-51_toe09\GLMfcPAT\scrubbing.mat'
-    'F:\Edgar\Data\PAT_Results_20130517\RS\DC_RS1\GLMfcPAT\scrubbing.mat'
+    'F:\Edgar\Data\PAT_Results_20130517\RS\DC_RS1\GLMfcPAT\scrubbing.mat'   % Outlier?
     'F:\Edgar\Data\PAT_Results_20130517\RS\DE_RS2\GLMfcPAT\scrubbing.mat'
     'F:\Edgar\Data\PAT_Results_20130517\RS\DH_RS\GLMfcPAT\scrubbing.mat'
     'F:\Edgar\Data\PAT_Results_20130517\RS\E05_RS\GLMfcPAT\scrubbing.mat'
@@ -215,39 +232,55 @@ motion_parameters.scrub.fname = {
     'F:\Edgar\Data\PAT_Results_20130517\RS\E07_RS\GLMfcPAT\scrubbing.mat'
     'F:\Edgar\Data\PAT_Results_20130517\RS\E08_RS\GLMfcPAT\scrubbing.mat'
     };
+
+% Index of scans to exclude
+idx2exclude = 0;
+
 % Load PAT data
 for scanIdx = 1:numel(job.PATmatLPS)
-    %Load PAT.mat information
-    load(job.PATmatLPS{scanIdx})
-    % Load ROIs raw data
-    load(PAT.ROI.ROIfname);
-    % Colors loop
-    for c1 = 1:2,
-%         scrubMask{c1} = 5:20;
-        for r1 = job.ROI_choice
-            % Load data from selected ROIs
-            if DO_SCRUBBING
-                % load scrubbing parameters
-                load(motion_parameters.scrub.fname{scanIdx})
-                tmpROI = [tmpROI ROI{r1}{c1}(scrubMask{c1})];
-            else
-            % Load data from selected ROIs
-                tmpROI = [tmpROI ROI{r1}{c1}];
+    if scanIdx ~= idx2exclude
+        %Load PAT.mat information
+        load(job.PATmatLPS{scanIdx})
+        % Load ROIs raw data
+        load(PAT.ROI.ROIfname);
+        % Colors loop
+        for c1 = 1:2,
+            %         scrubMask{c1} = 5:20;
+            for r1 = job.ROI_choice
+                % Load data from selected ROIs
+                if DO_SCRUBBING
+                    % load scrubbing parameters
+                    load(motion_parameters.scrub.fname{scanIdx})
+                    currentROI = ROI{r1}{c1}(scrubMask{c1});
+                else
+                    currentROI = ROI{r1}{c1}(frames2includeIdx);
+                end
+                tmpROI = [tmpROI currentROI];
+                if c1 == 2
+                    figure(hROIs)
+                    plot(pat_raw2so2(currentROI), 'r-')
+                end
+            end
             % Compute average and standard deviation from all ROIs
-            % if SO2, convert to [%]
+            AvgLPS(scanIdx, c1) = nanmean(tmpROI);
+            StdLPS(scanIdx, c1) = nanstd(tmpROI);
+            % Convert raw SO2 values to %
+            if c1 == 2
+                % SO2 index = 2
+                AvgLPS(scanIdx, c1) = pat_raw2so2(AvgLPS(scanIdx, c1));
+                StdLPS(scanIdx, c1) = pat_raw2so2(StdLPS(scanIdx, c1));
             end
         end
-        AvgLPS(scanIdx, c1) = nanmean(tmpROI);
-        StdLPS(scanIdx, c1) = nanstd(tmpROI);
-        % Convert raw SO2 values to %
-        if c1 == 2
-            % SO2 index = 2
-            AvgLPS(scanIdx, c1) = pat_raw2so2(AvgLPS(scanIdx, c1));
-            StdLPS(scanIdx, c1) = pat_raw2so2(StdLPS(scanIdx, c1));
-        end
+    else
+        fprintf('Excluded: %s',motion_parameters.scrub.fname{scanIdx});
     end
 end
-
+figure(hROIs); set(hROIs, 'color', 'w')
+xlim([0 350]);
+xlabel('Frames','FontSize',xLabelFontSize)
+ylabel('SO_2 (%)','FontSize',yLabelFontSize)
+legend({'Ctrl' '' '' 'NaCl (sham)' '' '' '' '' '' '' '' '' '' '' '' '' ''  '' 'LPS'},'FontSize',legendShow.legendFontSize)
+set(gca,'FontSize',legendFontSize)
 % Data for ANOVA
 LPS = AvgLPS(:,2);
 
@@ -272,7 +305,7 @@ groupedData(1:numel(Ctrl(:,1)), 2)         = Ctrl(:,1);
 groupedData(1:numel(CtrlInjected(:,1)), 3) = CtrlInjected(:,1);
 [p1, table1, stats1] = anova1(groupedData, group, 'off');
 % [p1, table1, stats1] = kruskalwallis(groupedData, group, 'off');
-h = figure;
+figure;
 [comparison, means, h, groupNames] = multcompare(stats1, 'alpha', job.optStat.alpha, 'ctype', criterionType);
 set(h,'Name','Multiple comparison of average SO_2 values');
 title('Locoregional cortical SO_2')
@@ -287,7 +320,11 @@ if job.save_figures
     set(h, 'Position', [0.1 0.1 job.optFig.figSize(1) job.optFig.figSize(2)])
     set(h, 'PaperPosition', [0.1 0.1 job.optFig.figSize(1) job.optFig.figSize(2)])
     c1 = 2; % only SO2 here
-    newName = sprintf('ANOVA_multiple_comparisons_%s_C%d_(%s)',criterionType,c1,colorNames{1+c1});
+    if DO_SCRUBBING
+        newName = sprintf('ANOVA_multiple_comparisons_%s_C%d_(%s)',criterionType,c1,colorNames{1+c1});
+    else
+        newName = sprintf('ANOVA_multiple_comparisons_%s_C%d_(%s)_%02dto%02d',criterionType,c1,colorNames{1+c1},frames2includeIdx(1),frames2includeIdx(end));
+    end
     % Save as PNG
     print(h, '-dpng', fullfile(job.parent_results_dir{1},newName), sprintf('-r%d',job.optFig.figRes));
     % Save as a figure
@@ -398,5 +435,15 @@ end
 %         end % end generate figures
 %     end % colors loop
 % end % stats loop
-        
+
+%% Stat test for left and right
+load('F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\locoregional_SO2_data_LR.mat')
+[H P CI STATS] = ttest2(LPS_left, LPS_right, 0.05, 'both');
+fprintf('LPS L vs. R %0.4f\n',P);
+[H P CI STATS] = ttest2(CtrlInjected_left, CtrlInjected_right, 0.05, 'both');
+fprintf('NaCl(sham) L vs. R %0.4f\n',P);
+[H P CI STATS] = ttest2(Ctrl_left, Ctrl_right, 0.05, 'both');
+fprintf('Ctrl L vs. R %0.4f\n',P);
+
+
 % EOF
