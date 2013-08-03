@@ -448,5 +448,5 @@ fprintf('NaCl(sham) L vs. R P=%0.4f\n',P);
 [P H STATS] = ranksum(Ctrl_left, Ctrl_right, 0.05);
 fprintf('Ctrl L vs. R P=%0.4f\n',P);
 
-
+USE ANOVAN!
 % EOF
