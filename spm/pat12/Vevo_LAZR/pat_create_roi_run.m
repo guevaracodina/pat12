@@ -38,9 +38,11 @@ switch(fNamesROIchoice{1})
         radiusX         = job.AutoROIchoice.pointNclickROI.ManualROIradius;
         radiusY         = job.AutoROIchoice.pointNclickROI.ManualROIradius;
     case 'pointNclickSquare'
-        pointNclickROIsquare  = 1;
-        ManualROIwidth  = job.AutoROIchoice.pointNclickSquare.ManualROIwidth;
-        ManualROIheight = job.AutoROIchoice.pointNclickSquare.ManualROIheight;
+        pointNclickSquare  = 1;
+%         ManualROIwidth  = job.AutoROIchoice.pointNclickSquare.ManualROIwidth;
+%         ManualROIheight = job.AutoROIchoice.pointNclickSquare.ManualROIheight;
+        radiusX         = job.AutoROIchoice.pointNclickSquare.ManualROIwidth;
+        radiusY         = job.AutoROIchoice.pointNclickSquare.ManualROIheight;
     case 'ManualEnterROI'
         % Do nothing
     otherwise
@@ -57,6 +59,11 @@ for scanIdx=1:length(job.PATmat)
             % radius in pixels
             radiusX = job.AutoROIchoice.pointNclickROI.ManualROIradius/PAT.PAparam.pixWidth;
             radiusY = job.AutoROIchoice.pointNclickROI.ManualROIradius/PAT.PAparam.pixDepth;
+        end
+        if pointNclickSquare
+            % radius in pixels
+            radiusX = job.AutoROIchoice.pointNclickSquare.ManualROIwidth/PAT.PAparam.pixWidth;
+            radiusY = job.AutoROIchoice.pointNclickSquare.ManualROIheight/PAT.PAparam.pixDepth;
         end
         if ~isfield(PAT.jobsdone,'ROIOK') || job.force_redo
             if job.RemovePreviousROI
@@ -227,12 +234,13 @@ for scanIdx=1:length(job.PATmat)
                                 PAT.res.ROI{index+1}.center = [y0 x0];
                                 PAT.res.ROI{index+1}.radius = job.AutoROIchoice.pointNclickROI.ManualROIradius;
                             else
-                                if pointNclickROIsquare
+                                if pointNclickSquare
                                     % Specify center of a square ROI/seed with mouse
                                     % point & click on the anatomical image
                                     title(sprintf('Click the center of rectangular ROI/seed (scan %d of %d)', scanIdx, length(job.PATmat)))
                                     % Square setup
-                                    hR = imrect(gca,[0 0 ManualROIwidth ManualROIheight]);
+%                                     hR = imrect(gca,[0 0 ManualROIwidth ManualROIheight]);
+                                    hR = imrect(gca,[0 0 radiusX radiusY]);
                                     pR = wait(hR);
                                     xi = [pR(1) pR(1)+pR(3) pR(1)+pR(3) pR(1)];
                                     yi = [pR(2) pR(2)       pR(2)+pR(4) pR(2)+pR(4)];
@@ -244,9 +252,10 @@ for scanIdx=1:length(job.PATmat)
                                     mask = poly2mask(xi, yi, size(im_anat,1), size(im_anat,2));
                                   
                                     % Save coordinates of seed for later display.
-                                    % NOTE: Row is 1st coordinate, Column is 2nd
-                                    %PAT.res.ROI{index+1}.center = [y0 x0];
-                                    %PAT.res.ROI{index+1}.radius = radius;
+                                    % NOTE:  [xmin ymin width height]
+                                    PAT.res.ROI{index+1}.center = [round(pRr(1)+pRr(3)/2) round(pRr(2)+pRr(4)/2)];
+                                    PAT.res.ROI{index+1}.width_height = [pRr(3) pRr(4)];
+                                    PAT.res.ROI{index+1}.width_height_mm = [job.AutoROIchoice.pointNclickSquare.ManualROIwidth job.AutoROIchoice.pointNclickSquare.ManualROIheight];
                                 else
                                     % Manual ROI coordinate entry
                                     linecount = linecount + 1;

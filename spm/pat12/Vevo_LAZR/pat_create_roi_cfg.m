@@ -94,17 +94,17 @@ ManualROIwidth          = cfg_entry;
 ManualROIwidth.name     = 'Width of rectangle';
 ManualROIwidth.tag      = 'ManualROIwidth';       
 ManualROIwidth.strtype  = 'r';
-ManualROIwidth.val{1}   = 50;                   
+ManualROIwidth.val{1}   = 1;                   
 ManualROIwidth.num      = [1 1];     
-ManualROIwidth.help     = {'Enter width of rectangle in pixels.'}'; 
+ManualROIwidth.help     = {'Enter width of rectangle in mm.'}'; 
 
 ManualROIheight         = cfg_entry;
 ManualROIheight.name    = 'Height of rectangle';
 ManualROIheight.tag     = 'ManualROIheight';       
 ManualROIheight.strtype = 'r';
-ManualROIheight.val{1}  = 50;                   
+ManualROIheight.val{1}  = 0.5;                   
 ManualROIheight.num     = [1 1];     
-ManualROIheight.help    = {'Enter height of rectangle in pixels.'}'; 
+ManualROIheight.help    = {'Enter height of rectangle in mm.'}'; 
 
 pointNclickSquare       = cfg_branch;
 pointNclickSquare.tag   = 'pointNclickSquare';
