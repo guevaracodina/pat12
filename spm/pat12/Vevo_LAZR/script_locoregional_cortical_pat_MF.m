@@ -136,6 +136,7 @@ job.optFig.legends          = legends;
 
 %% Stat test for left and right, male, female
 load('F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\locoregional_SO2_data_LR.mat')
+load('F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\locoregional_SO2_data_LR_ID.mat')
 % Only for SO2
 c1= 2;
 criterionType = 'tukey-kramer';
@@ -146,9 +147,9 @@ CtrlIdx = [12:21, 41:50];
 CtrlInjectedIdx = [22:29, 51:58];
 LPSIdx = [1:11, 30:40];
 % Sex indices TODO CORRECT INDICES!!!!!!!!
-unknownIdx = [1:3,11,30:32,40];      % 4 unknown rat pups [1:3,11]
-femaleIdx = [7,9,19,26:29,36,38,48,55:58];
-maleIdx = [4:6,8,10,12:18,20:25,33:35,37,39,41:47,49:54];
+unknownIdx = [12:14,17, 41:43,46];      % 4 unknown rat pups [12:14,17]
+femaleIdx = [1,8:11,16,25, 30,37:40,45,54];
+maleIdx = [2:7,15,18:24,26:29, 31:36,44,47:53,55:58];
 % Hemisphere indices
 leftIdx = 1:29;
 rightIdx = 30:58;
