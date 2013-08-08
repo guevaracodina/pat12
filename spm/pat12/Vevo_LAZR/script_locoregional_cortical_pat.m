@@ -15,7 +15,7 @@ DO_SCRUBBING = true;
 %     'S1BF_R'
 %     'Cortex_L'
 %     'Cortex_R'
-job.ROI_choice              = [12];     % Analyze only Left Cortex (11) (injection side)
+job.ROI_choice              = [11];     % Analyze only Left Cortex (11) (injection side)
 
 % Include only certain frames if scrubbing is not performed
 if ~DO_SCRUBBING
@@ -301,7 +301,8 @@ group = {'LPS'; 'Control'; 'NaCl (sham)'};
 nRows = max([size(LPS,1); size(Ctrl,1); size(CtrlInjected,1)]);
 groupedData = nan([nRows, numel(group)]);
 groupedData(1:numel(LPS(:,1)), 1)          = LPS(:,1);
-groupedData(1:numel(Ctrl(:,1)), 2)         = Ctrl(:,1);
+% Missing Values
+% groupedData(1:numel(Ctrl(:,1)), 2)         = Ctrl(:,1);
 groupedData(1:numel(CtrlInjected(:,1)), 3) = CtrlInjected(:,1);
 [p1, table1, stats1] = anova1(groupedData, group, 'off');
 % [p1, table1, stats1] = kruskalwallis(groupedData, group, 'off');
@@ -309,7 +310,8 @@ figure;
 [comparison, means, h, groupNames] = multcompare(stats1, 'alpha', job.optStat.alpha, 'ctype', criterionType);
 set(h,'Name','Multiple comparison of average SO_2 values');
 title('Locoregional cortical SO_2')
-disp([groupNames num2cell(comparison)]);
+% Missing Values
+% disp([groupNames num2cell(comparison)]);
 
 %% Print multiple comparisons ANOVA
 if job.save_figures
@@ -436,7 +438,7 @@ end
 %     end % colors loop
 % end % stats loop
 
-%% Stat test for left and right
+%% Stat test for left and right (incorrect test, just to have an idea)
 load('F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\locoregional_SO2_data_LR.mat')
 % [H P CI STATS] = ttest2(LPS_left, LPS_right, 0.05, 'both');
 [P H STATS] = ranksum(LPS_left, LPS_right, 0.05);

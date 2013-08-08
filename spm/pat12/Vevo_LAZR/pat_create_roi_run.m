@@ -24,7 +24,7 @@ autoROI                 = 0;
 graphicalROI            = 0;
 ManualROIspline         = 0;
 pointNclickROI          = 0;
-pointNclickROIsquare    = 0;
+pointNclickSquare       = 0;
 switch(fNamesROIchoice{1})
     case 'AutoROI'
         autoROI         = 1;

@@ -157,13 +157,17 @@ rightIdx = 30:58;
 % 1st grouping variable: group
 
 group = cell(size(SO2values));
-group(CtrlIdx,:) = {'Ctrl'};
+% group(CtrlIdx,:) = {'Ctrl'};
+% Missing values
+group(CtrlIdx,:) = {''};
 group(CtrlInjectedIdx) = {'NaCl'};
 group(LPSIdx) = {'LPS'};
 
 % 2nd grouping variable: sex
 sex = cell(size(SO2values));
-sex(unknownIdx) = {'X'};
+% sex(unknownIdx) = {'X'};
+% Missing values
+sex(unknownIdx) = {''};
 sex(femaleIdx) = {'F'};
 sex(maleIdx) = {'M'};
 

@@ -15,6 +15,11 @@ function out = pat_change_seeds_size_run(job)
 
 % Get radius
 radius = job.ManualROIradius;
+
+% job.ManualROIradius is in mm
+radiusX         = job.ManualROIradius;
+radiusY         = job.ManualROIradius;
+        
 % Get ROI info
 [all_ROIs selected_ROIs] = pat_get_rois(job);
 for scanIdx=1:length(job.PATmat)
@@ -23,7 +28,8 @@ for scanIdx=1:length(job.PATmat)
         [PAT PATmat dir_patmat] = pat_get_PATmat(job,scanIdx);
         % Read anatomical image
         try
-            vol_anat = spm_vol(PAT.res.file_anat);
+            % vol_anat = spm_vol(PAT.res.file_anat);
+            vol_anat = spm_vol(PAT.fcPAT.mask.fname);
         catch
             disp('Could not find anatomical image');
             [t sts] = spm_select(1,'image','Select anatomical image','',dir_patmat,'.*',1);
@@ -37,15 +43,18 @@ for scanIdx=1:length(job.PATmat)
                     % Save new ROI radius
                     PAT.res.ROI{iSeeds}.radius = radius;
                     % Save new ROI name
-                    PAT.res.ROI{iSeeds}.name = sprintf('%s_r_%02d_pix',PAT.res.ROI{iSeeds}.name, radius);
+                    PAT.res.ROI{iSeeds}.name = sprintf('%s_r_%02d_pix',PAT.res.ROI{iSeeds}.name, round(job.ManualROIradius/PAT.PAparam.pixWidth));
                     % Circular seed setup
                     t = 0:pi/100:2*pi;
                     % Center of the seed coordinates (NOTE: X and Y are inverted)
                     x0 = PAT.res.ROI{iSeeds}.center(2);
                     y0 = PAT.res.ROI{iSeeds}.center(1);
+                    % Get radius in pixels (job.ManualROIradius is in mm)
+                    radiusX = job.ManualROIradius/PAT.PAparam.pixWidth;
+                    radiusY = job.ManualROIradius/PAT.PAparam.pixDepth;
                     % Parametric function for a circle
-                    xi = radius * cos(t) + x0;
-                    yi = radius * sin(t) + y0;
+                    xi = radiusX * cos(t) + x0;
+                    yi = radiusY * sin(t) + y0;
                     % Create ROI/seed mask
                     mask = poly2mask(xi, yi, size(im_anat,1), size(im_anat,2));
                     mask = single(mask);
@@ -54,7 +63,7 @@ for scanIdx=1:length(job.PATmat)
                     % New ROI filename
                     [dir1, fil1, ext1] = fileparts(PAT.res.ROI{iSeeds}.fname);
                     % newROIfileName = sprintf('%s_r_%02d_pix',PAT.res.ROI{iSeeds}.fname, radius);
-                    newROIfileName = fullfile(dir1, [fil1 '_r_' sprintf('%02d',radius) '_pix' ext1]);
+                    newROIfileName = fullfile(dir1, [fil1 '_r_' sprintf('%02dx%02d',round(radiusX),round(radiusY)) '_pix' ext1]);
                     % Save nifti files in ROI sub-folder //EGC
                     [~, fil1] = fileparts(newROIfileName);
                     fname_mask = fullfile(dir_patmat,[fil1 ext1]);
