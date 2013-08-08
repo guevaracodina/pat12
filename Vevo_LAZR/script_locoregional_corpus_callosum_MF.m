@@ -345,14 +345,18 @@ maleIdx = [4:6,8,10,12:18,20:25];
 
 % 1st grouping variable(factor): group
 group = cell(size(SO2values));
-group(CtrlIdx) = {'Ctrl'};
+% group(CtrlIdx) = {'Ctrl'};
+% Missing Values
+group(CtrlIdx) = {''};
 group(CtrlInjectedIdx) = {'NaCl'};
 group(19:end) = {'LPS'};
 
 % 2nd Grouping variable(factor): sex
 sex = cell(size(SO2values));
 
-sex(unknownIdx) = {'X'};
+% sex(unknownIdx) = {'X'};
+% Missing values ''
+sex(unknownIdx) = {''};
 sex(femaleIdx) = {'F'};
 sex(maleIdx) = {'M'};
 

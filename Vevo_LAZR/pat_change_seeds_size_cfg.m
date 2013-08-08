@@ -19,7 +19,7 @@ ManualROIradius.tag     = 'ManualROIradius';
 ManualROIradius.strtype = 'r';
 ManualROIradius.val{1}  = 5;                    % Default value
 ManualROIradius.num     = [1 1];     
-ManualROIradius.help    = {'Enter radius of the ROIs/seeds in pixels.'}'; 
+ManualROIradius.help    = {'Enter radius of the ROIs/seeds in mm.'}'; 
 % Generate / save figures
 [generate_figures ...
     save_figures]       = pat_generate_figures_cfg;
