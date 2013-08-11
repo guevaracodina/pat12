@@ -1,10 +1,14 @@
 %% script_oxysurge_group_results
 clear; close all; clc;
-load('F:\Edgar\Data\PAT_Results_20130517\OxySurge\TablResultatSerieE.mat')
+% load('F:\Edgar\Data\PAT_Results_20130517\OxySurge\TablResultatSerieE.mat')
+% New normalization (SO2-baseline)/baseline
+load('F:\Edgar\Data\PAT_Results_20130517\OxySurge\NewNorm\TablResultatSerieE.mat')
 % Rename serie E variable
 TablResultatSerieE = TablResultat; clear TablResultat;
 % Load data from first 2 series
-load('F:\Edgar\Data\PAT_Results_20130517\OxySurge\TablResultat.mat')
+% load('F:\Edgar\Data\PAT_Results_20130517\OxySurge\TablResultat.mat')
+% New normalization (SO2-baseline)/baseline
+load('F:\Edgar\Data\PAT_Results_20130517\OxySurge\NewNorm\TablResultatDetBefore.mat')
 % Animals ID
 ID = [TablResultat(2:end,1); TablResultatSerieE(2:end,1)];
 % Grouped data
@@ -16,14 +20,14 @@ Data = cell2mat([TablResultat(2:end,2:end); TablResultatSerieE(2:end,2:end)]);
 % LPSIdx = [1 2 3 5 6 9 11 14 ];
 
 % Whole series
-% CtrlIdx = [10 13 15 16 26 27];
-% CtrlInjectedIdx = [7 8 12 17 18 19];
-% LPSIdx = [1 2 3 5 6 9 11 14 20 21 22 23 24];
+CtrlIdx = [10 13 15 16 26 27];
+CtrlInjectedIdx = [7 8 12 17 18 19];
+LPSIdx = [1 2 3 5 6 9 11 14 20 21 22 23 24];
 
 % E only
-CtrlIdx = [26 27];
-CtrlInjectedIdx = [18 19];
-LPSIdx = [21 20 22 23 24];
+% CtrlIdx = [26 27];
+% CtrlInjectedIdx = [18 19];
+% LPSIdx = [21 20 22 23 24];
 
 % Gathering data in the corresponding vectors
 Ctrl = Data(CtrlIdx,:);
