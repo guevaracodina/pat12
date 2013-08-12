@@ -1,51 +1,101 @@
 %% script_pat_SNR_test
 clear; clc;
+useCortexROIs = true;
 fprintf('SNR comparison among ROIs\n')
 job.output_dir{1} = 'F:\Edgar\Data\PAT_Results_20130517\RS\SNR\';
-job.CSVfname{1} = 'SNR_ROIs_HbT.csv';
-job.CSVfname{2} = 'SNR_ROIs_SO2.csv';
+if ~useCortexROIs
+    job.CSVfname{1} = 'SNR_ROIs_HbT.csv';
+    job.CSVfname{2} = 'SNR_ROIs_SO2.csv';
+else
+    job.CSVfname{1} = 'SNR_ROIs_HbT_cortexLR.csv';
+    job.CSVfname{2} = 'SNR_ROIs_SO2_cortexLR.csv';
+end
 % List of PAT structures
-job.PATmatLPS = {
-                 'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-16-25_toe04\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                 'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-17-27_toe05\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                 'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-23-04_toe08\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                 'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-23-51_toe09\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                 'F:\Edgar\Data\PAT_Results_20130517\RS\DC_RS1\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                 'F:\Edgar\Data\PAT_Results_20130517\RS\DE_RS2\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                 'F:\Edgar\Data\PAT_Results_20130517\RS\DH_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                 'F:\Edgar\Data\PAT_Results_20130517\RS\E05_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                 'F:\Edgar\Data\PAT_Results_20130517\RS\E06_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                 'F:\Edgar\Data\PAT_Results_20130517\RS\E07_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                 'F:\Edgar\Data\PAT_Results_20130517\RS\E08_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                 };
-job.PATmatCtrl = {
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\2012-09-07-12-10-31_ctl01\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\2012-09-07-14-48-55_ctl02\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-18-31_ctl03\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\DI_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\DJ_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\DL_RS3\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\E10_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\E11_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\E12_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\E13_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  };
-job.PATmatNaCl = {
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\DA_RS2\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\DB_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\DF_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\DG_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\DK_RS2\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\E01_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\E02_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  'F:\Edgar\Data\PAT_Results_20130517\RS\E03_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
-                  };
+
+if ~useCortexROIs
+    job.PATmatLPS = {
+        'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-16-25_toe04\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-17-27_toe05\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-23-04_toe08\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-23-51_toe09\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DC_RS1\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DE_RS2\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DH_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E05_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E06_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E07_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E08_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        };
+    job.PATmatCtrl = {
+        'F:\Edgar\Data\PAT_Results_20130517\RS\2012-09-07-12-10-31_ctl01\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\2012-09-07-14-48-55_ctl02\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-18-31_ctl03\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DI_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DJ_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DL_RS3\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E10_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E11_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E12_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E13_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        };
+    job.PATmatNaCl = {
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DA_RS2\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DB_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DF_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DG_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DK_RS2\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E01_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E02_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E03_RS\GLMfcPAT\corrMap\hbo_hbr\PAT.mat'
+        };
+else
+    job.PATmatLPS = {
+        'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-16-25_toe04\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-17-27_toe05\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-23-04_toe08\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-23-51_toe09\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DC_RS1\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DE_RS2\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DH_RS\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E05_RS\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E06_RS\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E07_RS\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E08_RS\newROIs\PAT.mat'
+        };
+    job.PATmatCtrl = {
+        'F:\Edgar\Data\PAT_Results_20130517\RS\2012-09-07-12-10-31_ctl01\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\2012-09-07-14-48-55_ctl02\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\2012-11-09-16-18-31_ctl03\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DI_RS\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DJ_RS\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DL_RS3\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E10_RS\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E11_RS\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E12_RS\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E13_RS\newROIs\PAT.mat'
+        };
+    job.PATmatNaCl = {
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DA_RS2\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DB_RS\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DF_RS\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DG_RS\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\DK_RS2\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E01_RS\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E02_RS\newROIs\PAT.mat'
+        'F:\Edgar\Data\PAT_Results_20130517\RS\E03_RS\newROIs\PAT.mat'
+        };
+end
+
 % Full list
 job.PATmat = [job.PATmatLPS; job.PATmatCtrl; job.PATmatNaCl ];
 % PAT copy/overwrite method
 job.PATmatCopyChoice = pat_PATmatCopyChoice_cfg('SNR_test');
 % index of starting ROI
-startROI = 5;
+if ~useCortexROIs
+    startROI = 5;
+else
+    startROI = 11;
+end
 %% Main loop
 for c1=1:2
     for scanIdx = 1:length(job.PATmat)
