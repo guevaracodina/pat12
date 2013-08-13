@@ -140,8 +140,9 @@ semCorr = [nanstd(r015(:)) ./ sqrt(numel(r015(:))); nanstd(r30(:)) ./ sqrt(numel
     nanstd(r50(:)) ./ sqrt(numel(r50(:)))];
 errorbar(seedSize, avgCorr, semCorr, 'ko', 'LineWidth', 2);
 hold on
-xlabel('Seed Size (mm)','FontSize',12);
-ylabel('bilateral $\bar{r}$','FontSize',12,'Interpreter', 'latex');
+h = xlabel('Seed radius (mm)','FontSize',12);
+% ylabel('bilateral $\bar{r}$','FontSize',12,'Interpreter', 'latex','FontName','Helvetica');
+ylabel('bilateral correlation r','FontSize',12,'FontName','Helvetica');
 set(gca,'FontSize',12)
 rho2 = corr(seedSize, avgCorr) .^ 2;
 xlim([0 0.55]);
