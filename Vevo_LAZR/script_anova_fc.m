@@ -69,7 +69,7 @@ labelY = 'Bilateral correlations z(r)';
 ROIlabel = {'M' 'S1' 'S1BF'};
 fontSize = 12;
 ylimits = [-0.2 1];
-group = {'LPS'; 'Control'; 'NaCl (sham)'};
+group = {'LPS'; 'Control'; 'NaCl '};
 colormaps = {[1 1 1;0.75 0.75 0.75; 0.5 0.5 0.5], [1 1 1;0.75 0.75 0.75; 0.5 0.5 0.5],...
     [], [1 1 1;1 0 0;0.5 0 0], [1 1 1;0 0 1;0 0 0.5]};
 figSize = [0.1 0.1 3.5 3.5];
@@ -98,6 +98,45 @@ for c1 = [1 2 4 5],
     print(gcf, '-dpng', ...
         fullfile('D:\Edgar\Documents\Dropbox\Docs\PAT\Figures\HbOHbR_connectivity_ANOVA',...
         sprintf('ANOVA_%s',titleContrast{c1})), '-r300');
+end
+
+%% Plot only 2 groups
+close all
+titleContrast = {'HbT' 'SO_2' '' 'HbO_2' 'HbR'};
+labelY = 'Bilateral correlations z(r)';
+ROIlabel = {'M' 'S1' 'S1BF'};
+fontSize = 16;
+ylimits = [0 0.95];
+group = {'NaCl'; 'LPS'};
+colormaps = {flipud([1 1 1;0.5 0.5 0.5; 0.25 0.25 0.25]), flipud([1 1 1;0.75 0.75 0.75; 0.5 0.5 0.5]),...
+    [], flipud([1 1 1;1 0 0;0.5 0 0]), flipud([1 1 1;0 0 1;0 0 0.5])};
+figSize = [0.1 0.1 3.5 3.5];
+% Contrast
+for c1 = [1 2 4 5],
+    h = figure; set(gcf,'color','w')
+    % (SEM for display)
+    pat_barwitherr( [   stdsNaCl(:,c1)./sqrt(nNaCl)...
+                        stdsLPS(:,c1)./sqrt(nLPS)],...
+                    [   meansNaCl(:,c1)...
+                        meansLPS(:,c1)]);
+    
+    set(h, 'units', 'inches')
+    set(h, 'PaperPosition', figSize)
+    set(h, 'Position', figSize)
+    
+    axis tight
+    xlim([0.5 3.5]);
+    ylim(ylimits);
+    set(gca,'FontSize',fontSize);
+    set(gca,'xTickLabel',ROIlabel,'FontSize',fontSize);
+    ylabel(labelY,'FontSize',fontSize);
+%     title(titleContrast{c1},'FontSize',fontSize);
+    legend(group,'FontSize',fontSize)
+    colormap(colormaps{c1})
+    
+    print(gcf, '-dpng', ...
+        fullfile('D:\Edgar\Documents\Dropbox\Docs\PAT\Figures\HbOHbR_connectivity_LPS_NaCl',...
+        sprintf('groupCorr_Wtest_C1_(%s)',titleContrast{c1})), '-r300');
 end
 
 %% Performing multi-variate ANOVA

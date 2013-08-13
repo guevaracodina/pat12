@@ -14,6 +14,14 @@ LPScc = LPS;
 shamcc = CtrlInjected;
 % save figures
 job.save_figures = true;
+% legend
+job.optFig.legends.legendShow.legendStr = {'NaCl' 'LPS'};
+job.optFig.legends.legendShow.legendLocation = 'NorthEast';
+job.optFig.legends.legendShow.legendFontSize = 14;
+% figure size
+job.optFig.figSize = [4 3.25];
+% vertical limits
+job.optFig.yLimits.yLimManual.yLimValue = [0 72];
 % names of contrasts
 colorNames      = fieldnames(PAT.color);
 
@@ -61,12 +69,12 @@ starPosFactor   = 1.05;
 % Font Sizes
 axisFontSize    = 12;
 starFontSize    = 22;
-axMargin        = 0.5;
+axMargin        = 1;
 labelYaxis{1}   = 'HbT (a.u.)';
 labelYaxis{2}   = 'SO_2 (%)';
 statsNames = {'t' 'w'};
 statsID = {'T-test' 'Wilcoxon'};
-job.optFig.xAxisLabels = {'Left' 'cc' 'Right'};
+job.optFig.xAxisLabels = {'L' 'cc' 'R'};
 for iStats = 2:numel(statsNames)
     y = [mean(shamleft) mean(LPSleft); mean(shamcc) mean(LPScc); mean(shamright) mean(LPSright) ];
     e = [std(shamleft) std(LPSleft); std(shamcc) std(LPScc); std(shamright) std(LPSright) ];
@@ -105,16 +113,17 @@ for iStats = 2:numel(statsNames)
             otherwise
                 colormap(gray)
         end
-        
-        title(sprintf('C%d(%s) %s (*p<%.2g)',...
-            c1,colorNames{1+c1}, statsID{iStats}, job.optStat.alpha),'interpreter','none','FontSize',job.optFig.titleFontSize)
+%         
+%         title(sprintf('C%d(%s) %s (*p<%.2g)',...
+%             c1,colorNames{1+c1}, statsID{iStats}, job.optStat.alpha),'interpreter','none','FontSize',job.optFig.titleFontSize)
         set(gca,'FontSize',axisFontSize)
         ylabel(labelYaxis{c1},'FontSize',job.optFig.yLabelFontSize)
         set(gca,'XTickLabel',job.optFig.xAxisLabels,'FontWeight', 'b','FontSize',job.optFig.xLabelFontSize)
         if isfield(job.optFig.legends, 'legendShow')
             legend(job.optFig.legends.legendShow.legendStr,'FontSize',job.optFig.legends.legendShow.legendFontSize,'location',job.optFig.legends.legendShow.legendLocation)
         end
-        set(gca, 'xLim', [axMargin size(y,1) + axMargin]);
+%         set(gca, 'xLim', [1-axMargin size(y,1)+axMargin]);
+        set(gca, 'xLim', [0.5 3.5]);
         if isfield(job.optFig.yLimits, 'yLimManual')
             set(gca, 'ylim', job.optFig.yLimits.yLimManual.yLimValue)
         end
@@ -152,4 +161,38 @@ for iStats = 2:numel(statsNames)
 end % stats loop
 
 %% Find Fisher or x2 test sex confounding factor
+tblID = {   '',     '';
+            '',     '';
+            '',     '';
+            'NaCl', 'M';
+            'NaCl', 'M';
+            'NaCl', 'M';
+            'NaCl', 'F';
+            '',     'M';
+            '',     'F';
+            'NaCl', 'M';
+            '',     '';
+            'NaCl', 'M';
+            'NaCl', 'M';
+            'NaCl', 'M';
+            '',     'M';
+            '',     'M';
+            '',     'M';
+            '',     'M';
+            'LPS',  'F';
+            'LPS',  'M';
+            'LPS',  'M';
+            'LPS',  'M';
+            'LPS',  'M';
+            'LPS',  'M';
+            'LPS',  'M';
+            'LPS',  'F';
+            'LPS',  'F';
+            'LPS',  'F';
+            'LPS',  'F';};
+%       sham    LPS
+% M     7       6
+% F     1       5
+tbl2x2 = [7 6;1 5];
+Pm = pat_fisher_extest(tbl2x2, 'ne');
 % EOF
