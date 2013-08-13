@@ -290,8 +290,7 @@ save(fullfile(job.parent_results_dir{1},dataFileName),'AvgCtrl','AvgLPS',...
     'CtrlInjected','Ctrl','LPS','job','PAT')
 
 %% perform 1-Way ANOVA
-% load ('F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\LeftCortex\locoregional_SO2_data')
-% load ('F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\RightCortex\locoregional_SO2_data')
+% load('F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\CorpusCallosum\locoregional_SO2_data')
 close all
 
 criterionType = 'tukey-kramer';
