@@ -5,19 +5,20 @@ load('F:\Edgar\Data\PAT_Results_20130517\RS\DG_RS\GLMfcPAT\corrMap\PAT.mat')
 nColorLevels = 256;
 % Figures folder
 % figFolder = 'F:\Edgar\Data\PAT_Results_20130517\alignment\SO2\Ctrl';
-figFolder = 'F:\Edgar\Data\PAT_Results_20130517\alignment\SO2\LPS';
+% figFolder = 'F:\Edgar\Data\PAT_Results_20130517\alignment\SO2\LPS';
+figFolder = 'F:\Edgar\Data\PAT_Results_20130517\alignment\';
 % Average image
 % fName = fullfile(figFolder,'ROI05_Mean.img');
-fName = fullfile(figFolder,'ROI05_Mean.img');
+fName = fullfile(figFolder,'ROI05_SO2_pMap_alpha_FDR.nii');
 % ROI
 r1 = 5;
 % Contrast
 c1 = 2;
 DRAWCIRCLE = false;
 % Range of values to map to the full range of colormap: [minVal maxVal]
-fcMapRange = [0.3 1];
+fcMapRange = [0 0.05];
 % Range of values to map to display non-transparent pixels: [minVal maxVal]
-alphaRange = fcMapRange;
+alphaRange = [0 0.05];
 % ------------------------------------------------------------------------------
 % Define anonymous functions for affine transformations
 % ------------------------------------------------------------------------------
@@ -72,7 +73,8 @@ seedH = 2*PAT.res.ROI{r1}.radius./PAT.PAparam.pixDepth;
 
 %% Read files
 % Get anatomical image
-anatVol             = spm_vol(fullfile('F:\Edgar\Data\PAT_Results_20130517\alignment\','normalization_AVG_scale.nii'));;
+anatVol             = spm_vol(fullfile('F:\Edgar\Data\PAT_Results_20130517\alignment\',...
+    'normalization_AVG_scale.nii'));
 anatomical          = spm_read_vols(anatVol);
 
 
@@ -82,7 +84,13 @@ brainMask           = logical(spm_read_vols(maskVol));
 
 % Get functional image
 fcMapVol            = spm_vol(fName);
-fcMap               = 1 + spm_read_vols(fcMapVol);
+
+if all(fcMapVol.dt == [64 0])
+    fcMap               = spm_read_vols(fcMapVol);
+else
+    % Sum +1 only if data are not float64
+    fcMap               = 1 + spm_read_vols(fcMapVol);
+end
 
 % Orient images
 % anatomical          = fliplr(anatomical');
