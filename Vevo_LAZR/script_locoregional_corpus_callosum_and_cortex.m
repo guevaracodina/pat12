@@ -13,7 +13,7 @@ load('F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\CorpusCallosum\locoregi
 LPScc = LPS;
 shamcc = CtrlInjected;
 % save figures
-job.save_figures = true;
+job.save_figures = false;
 % legend
 job.optFig.legends.legendShow.legendStr = {'NaCl' 'LPS'};
 job.optFig.legends.legendShow.legendLocation = 'NorthEast';
@@ -195,4 +195,5 @@ tblID = {   '',     '';
 % F     1       5
 tbl2x2 = [7 6;1 5];
 Pm = pat_fisher_extest(tbl2x2, 'ne');
+fprintf('Fisher''s exact test for gender as a confounding factor p=%0.4f\n',Pm);
 % EOF
