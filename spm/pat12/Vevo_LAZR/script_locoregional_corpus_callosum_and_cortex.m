@@ -3,17 +3,19 @@ clear; clc
 % Only SO2 c1=2
 c1 = 2;
 % load data
-load ('F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\LeftCortex\locoregional_SO2_data')
+load ('E:\Edgar\Dropbox\Docs\PAT\locoregional\LeftCortex\locoregional_SO2_data')
 LPSleft = LPS;
 shamleft = CtrlInjected;
-load ('F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\RightCortex\locoregional_SO2_data')
+load ('E:\Edgar\Dropbox\Docs\PAT\locoregional\RightCortex\locoregional_SO2_data')
 LPSright = LPS;
 shamright = CtrlInjected;
-load('F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\CorpusCallosum\locoregional_SO2_data')
+load('E:\Edgar\Dropbox\Docs\PAT\locoregional\CorpusCallosum\locoregional_SO2_data')
 LPScc = LPS;
 shamcc = CtrlInjected;
+% Parent directory
+job.parent_results_dir{1} = 'E:\Edgar\Dropbox\Docs\PAT\locoregional\CorpusCallosum';
 % save figures
-job.save_figures = false;
+job.save_figures = true;
 % legend
 job.optFig.legends.legendShow.legendStr = {'NaCl' 'LPS'};
 job.optFig.legends.legendShow.legendLocation = 'NorthEast';
@@ -31,10 +33,10 @@ iROI = 1;
 [statTest(1).t(1).H(iROI), statTest(1).t(1).P(iROI), statTest(1).t(1).CI(iROI,:), ...
     statTest(1).t(1).STATS(iROI)] = ...
     ttest2(LPSleft, shamleft, job.optStat.alpha,'both');
-statTest(1).t(1).id{iROI} = 'Left Cortex Unpaired-sample t-test';
+statTest(1).t(1).id{iROI} = 'Left Cortex   Unpaired-sample t-test';
 [statTest(1).w(1).P(iROI), statTest(1).w(1).H(iROI), statTest(1).w(1).STATS(iROI)] =...
     ranksum (LPSleft, shamleft, job.optStat.alpha);
-statTest(1).w(1).id{iROI} = 'Left Cortex Wilcoxon rank sum test';
+statTest(1).w(1).id{iROI} = 'Left Cortex   Wilcoxon rank sum test';
 
 iROI = 2;
 [statTest(1).t(1).H(iROI), statTest(1).t(1).P(iROI), statTest(1).t(1).CI(iROI,:), ...
@@ -49,17 +51,19 @@ iROI = 3;
 [statTest(1).t(1).H(iROI), statTest(1).t(1).P(iROI), statTest(1).t(1).CI(iROI,:), ...
     statTest(1).t(1).STATS(iROI)] = ...
     ttest2(LPSright, shamright, job.optStat.alpha,'both');
-statTest(1).t(1).id{iROI} = 'Right Cortex Unpaired-sample t-test';
+statTest(1).t(1).id{iROI} = 'Right Cortex   Unpaired-sample t-test';
 [statTest(1).w(1).P(iROI), statTest(1).w(1).H(iROI), statTest(1).w(1).STATS(iROI)] =...
     ranksum (LPSright, shamright, job.optStat.alpha);
-statTest(1).w(1).id{iROI} = 'Right Cortex Wilcoxon rank sum test';
+statTest(1).w(1).id{iROI} = 'Right Cortex   Wilcoxon rank sum test';
 
 % FDR adjustment
-statTest(1).t(1).P = pat_fdr(statTest(1).t(1).P);
-statTest(1).w(1).P = pat_fdr(statTest(1).w(1).P);
+% statTest(1).t(1).Pfdr = pat_fdr(statTest(1).t(1).P);
+statTest(1).w(1).Pfdr = pat_fdr(statTest(1).w(1).P);
+statTest(1).w(1).PBonfe = pat_bonferroni(statTest(1).w(1).P);
+fprintf('Contrast (%s)\t\t\t\t\t\t\tP\t\tP(FDR)\tP(Bonferroni)\n',colorNames{1+c1});
 for iROI=1:3,
-    fprintf('%s: Contrast (%s) p=%0.4f\n',statTest(1).t(1).id{iROI}, colorNames{1+c1},statTest(1).t(1).P(iROI));
-    fprintf('%s: Contrast (%s) p=%0.4f\n',statTest(1).w(1).id{iROI}, colorNames{1+c1},statTest(1).w(1).P(iROI));
+%     fprintf('%s: Contrast (%s) p=%0.4f\n',statTest(1).t(1).id{iROI}, colorNames{1+c1},statTest(1).t(1).Pfdr(iROI));
+    fprintf('%s:\t%0.4f\t%0.4f\t%0.4f\n',statTest(1).w(1).id{iROI}, statTest(1).w(1).P(iROI),statTest(1).w(1).Pfdr(iROI), statTest(1).w(1).PBonfe(iROI));
 end
 
 %% Plot results
@@ -75,6 +79,7 @@ labelYaxis{2}   = 'SO_2 (%)';
 statsNames = {'t' 'w'};
 statsID = {'T-test' 'Wilcoxon'};
 job.optFig.xAxisLabels = {'L' 'cc' 'R'};
+% Only Wilcoxon
 for iStats = 2:numel(statsNames)
     y = [mean(shamleft) mean(LPSleft); mean(shamcc) mean(LPScc); mean(shamright) mean(LPSright) ];
     e = [std(shamleft) std(LPSleft); std(shamcc) std(LPScc); std(shamright) std(LPSright) ];
@@ -103,13 +108,13 @@ for iStats = 2:numel(statsNames)
         switch(c1)
             case 1
                 % HbT contrast
-                colormap([0.5 0.5 0.5; 1 1 1]);
+                colormap(flipud([0.5 0.5 0.5; 1 1 1]));
             case 2
                 % SO2 contrast
-                colormap([0.25 0.25 0.25; 1 1 1]);
+                colormap(flipud([0.25 0.25 0.25; 1 1 1]));
             case 3
                 % B-mode contrast
-                colormap([0 0 0; 1 1 1]);
+                colormap(flipud([0 0 0; 1 1 1]));
             otherwise
                 colormap(gray)
         end

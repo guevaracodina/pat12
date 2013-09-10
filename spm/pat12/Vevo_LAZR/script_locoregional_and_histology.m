@@ -3,13 +3,14 @@ clear; clc
 % Only SO2 c1=2
 c1 = 2;
 % load data
-load('D:\Edgar\Documents\Dropbox\Docs\PAT\Histo\AvgVesselLength.mat')
+load('E:\Edgar\Dropbox\Docs\PAT\Histo\AvgVesselLength.mat')
 load ('F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\LeftCortex\locoregional_SO2_data')
 LPSidx = [5:11];
 NaClidx = [4:7 10 12:14];
 LPSleft = LPS(LPSidx);
 shamleft = AvgCtrl(NaClidx,2);
-
+% Parent directory
+job.parent_results_dir{1} = 'E:\Edgar\Dropbox\Docs\PAT\Histo';
 % save figures
 job.save_figures = false;
 % legend
@@ -23,7 +24,7 @@ job.optFig.yLimits.yLimManual.yLimValue = [0 72];
 % names of contrasts
 colorNames      = fieldnames(PAT.color);
 
-%%
+%% Plot correlation between SO2 and histology measures
 close all
 h=figure; set(h,'color','w')
 % Font sizes
@@ -47,7 +48,7 @@ hold on
 
 plotType = 'ro';
 lineType = 'r:';
-plot(LPS_L, LPSleft, plotType, 'LineWidth', dottedLineWidth, 'MarkerSize', markSize)
+plot(LPS_L, LPSleft, plotType, 'LineWidth', dottedLineWidth, 'MarkerSize', markSize,'MarkerFaceColor','r')
 % Measure of correlation r^2
 [R(2) pVals(2)] = corr(LPS_L, LPSleft);
 R2(2) = R(2) .^ 2;
@@ -79,7 +80,7 @@ legend({'NaCl';'LPS';'Linear fit'})
 text(83, 57.3, sprintf('r^2=%0.4f *p=%0.4f', R2(3),pVals(3)),...
                     'FontSize', textFont, 'FontWeight', 'b', 'Color', 'k')
                 
-job.figSize = [3.25 3.25];
+job.figSize = [3.5 3.5];
 job.figRes = 300;
 
 % Specify window units
@@ -91,8 +92,7 @@ set(h, 'PaperPosition', [0.1 0.1 job.figSize(1) job.figSize(2)])
 %% Print
 % Save as PNG at the user-defined resolution
 print(h, '-dpng', ...
-    fullfile('D:\Edgar\Documents\Dropbox\Docs\PAT\Histo', 'length_vs_so2'),...
+    fullfile(job.parent_results_dir{1}, 'length_vs_so2'),...
     sprintf('-r%d',job.figRes));
 
-
-
+% EOF
