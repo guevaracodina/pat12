@@ -7,7 +7,9 @@ function q=pat_fdr(p,dim)
 
 if nargin<2, 
     if sum(size(p)>1)==1,dim=find(size(p)>1);
-    else, dim=1; end
+    else
+        dim=1; 
+    end
 end
 nd=length(size(p)); 
 if dim~=1, p=permute(p,[dim,1:dim-1,dim+1:nd]); end
