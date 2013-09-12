@@ -15,7 +15,7 @@ shamcc = CtrlInjected;
 % Parent directory
 job.parent_results_dir{1} = 'E:\Edgar\Dropbox\Docs\PAT\locoregional\CorpusCallosum';
 % save figures
-job.save_figures = true;
+job.save_figures = false;
 % legend
 job.optFig.legends.legendShow.legendStr = {'NaCl' 'LPS'};
 job.optFig.legends.legendShow.legendLocation = 'NorthEast';
