@@ -18,7 +18,7 @@ fclose(fid);
 v = spm_vol(nifti_filename);
 I = spm_read_vols(v);
 % ROI to plot
-r1 = 1;
+r1 = 11;
 % color to plot (1=HbT, 2=SO2)
 c1 = 2;
 % Convert to SO2 data
@@ -42,7 +42,7 @@ h = figure;
 % Black background
 set(h,'color','k')
 % whitebg('k')
-colormap(pat_get_colormap('flow'))
+colormap(pat_get_colormap('rwbdoppler'))
 % Allow printing of black background
 set(h, 'InvertHardcopy', 'off');
 nFrames = size(I,4);

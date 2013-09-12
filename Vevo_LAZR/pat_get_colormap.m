@@ -96,7 +96,7 @@ switch lower(map)
             0.286275    0.913725    0.27451;
             0.972549    1           0.0862745;
             1           0.1         0.1];
-    case {'rwbdoppler', 'so2'}
+    case 'rwbdoppler'
         % Red on blue, with white background for Doppler imaging
         % Also for SO2 contrast in photoacosutics
         minColor    = [0 0 1]; % blue
@@ -144,6 +144,20 @@ switch lower(map)
         minColor    = [1 0 0]; % red
         medianColor = [0 0 0]; % black
         maxColor    = [0 0 1]; % blue
+        
+        int1 = zeros(ColorMapSize,3);
+        int2 = zeros(ColorMapSize,3);
+        for k=1:3
+            int1(:,k) = linspace(minColor(k), medianColor(k), ColorMapSize);
+            int2(:,k) = linspace(medianColor(k), maxColor(k), ColorMapSize);
+        end
+        colormapOut = [int1(1:end-1,:); int2];
+        return
+    case 'so2'
+        % Red on blue, sO2 PAT imaging
+        minColor    = [0 0 1]; % blue
+        medianColor = [0.5 0 0.5]; % ??
+        maxColor    = [1 0 0]; % red
         
         int1 = zeros(ColorMapSize,3);
         int2 = zeros(ColorMapSize,3);
