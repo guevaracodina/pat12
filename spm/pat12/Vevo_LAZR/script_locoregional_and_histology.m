@@ -3,7 +3,7 @@ clear; clc
 % Only SO2 c1=2
 c1 = 2;
 % load data
-load('E:\Edgar\Dropbox\Docs\PAT\Histo\AvgVesselLength.mat')
+load('E:\Edgar\Dropbox\PhD\PAT\Histo\AvgVesselLength.mat')
 load ('F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\LeftCortex\locoregional_SO2_data')
 LPSidx = [5:11];
 NaClidx = [4:7 10 12:14];
@@ -34,9 +34,13 @@ axisLabelFont = 12;
 dottedLineWidth = 2;
 markSize = 10;
 
+%% Plot shams
 plotType = 'ks';
 lineType = 'k--';
-plot(NaCl_L, shamleft, plotType, 'LineWidth', dottedLineWidth, 'MarkerSize', markSize)
+% plot(NaCl_L, shamleft, plotType, 'LineWidth', dottedLineWidth, 'MarkerSize', markSize)
+lx = 5*ones(size(NaCl_L));
+ly = 0.3*ones(size(shamleft));
+pat_errorbarxy(NaCl_L, shamleft, lx, ly, [], [], plotType, 'k')
 % Measure of correlation r^2
 [R(1) pVals(1)] = corr(NaCl_L, shamleft);
 R2(1) = R(1) .^ 2;
@@ -44,11 +48,14 @@ R2(1) = R(1) .^ 2;
 pfit = polyfit(NaCl_L, shamleft,1);
 f = polyval(pfit, NaCl_L);
 hold on
-% plot(NaCl_L, f, lineType, 'LineWidth', dottedLineWidth)
 
+%% Plot LPS
 plotType = 'ro';
 lineType = 'r:';
-plot(LPS_L, LPSleft, plotType, 'LineWidth', dottedLineWidth, 'MarkerSize', markSize,'MarkerFaceColor','r')
+% plot(LPS_L, LPSleft, plotType, 'LineWidth', dottedLineWidth, 'MarkerSize', markSize,'MarkerFaceColor','r')
+lx = 5*ones(size(NaCl_L));
+ly = 0.3*ones(size(shamleft));
+pat_errorbarxy(LPS_L, LPSleft, lx, ly, [], [], plotType, 'r')
 % Measure of correlation r^2
 [R(2) pVals(2)] = corr(LPS_L, LPSleft);
 R2(2) = R(2) .^ 2;
@@ -56,33 +63,33 @@ R2(2) = R(2) .^ 2;
 pfit = polyfit(LPS_L, LPSleft,1);
 f = polyval(pfit, LPS_L);
 hold on
-% plot(LPS_L, f, lineType, 'LineWidth', dottedLineWidth)
 
-plotType = 'b^';
-lineType = 'b-';
+% Plot linear fit
+% plotType = 'b^';
+% lineType = 'b-';
+% % Measure of correlation r^2
+% [R(3) pVals(3)] = corr([NaCl_L; LPS_L], [shamleft; LPSleft]);
+% R2(3) = R(3) .^ 2;
+% % fit data to a 1st degree polynomial
+% pfit = polyfit([NaCl_L; LPS_L], [shamleft; LPSleft],1);
+% f = polyval(pfit, [NaCl_L; LPS_L]);
+% hold on
+% plot([NaCl_L; LPS_L], f, lineType, 'LineWidth', dottedLineWidth)
 
-% Measure of correlation r^2
-[R(3) pVals(3)] = corr([NaCl_L; LPS_L], [shamleft; LPSleft]);
-R2(3) = R(3) .^ 2;
-% fit data to a 1st degree polynomial
-pfit = polyfit([NaCl_L; LPS_L], [shamleft; LPSleft],1);
-f = polyval(pfit, [NaCl_L; LPS_L]);
-hold on
-plot([NaCl_L; LPS_L], f, lineType, 'LineWidth', dottedLineWidth)
-
-fprintf('\t\t r^2 \t\t p\n NaCl \t %0.4f \t %0.4f\n LPS  \t %0.4f \t %0.4f\n All  \t %0.4f \t %0.4f\n',...
-    R2(1),pVals(1),R2(2),pVals(2),R2(3),pVals(3));
+%% Echo r^2 computation
+% fprintf('\t\t r^2 \t\t p\n NaCl \t %0.4f \t %0.4f\n LPS  \t %0.4f \t %0.4f\n All  \t %0.4f \t %0.4f\n',...
+%     R2(1),pVals(1),R2(2),pVals(2),R2(3),pVals(3));
 set(gca,'FontSize',axisFont);
 xlabel('Average length (A.U.)','FontSize',axisLabelFont);
 ylabel('Average SO_2 (%)','FontSize',axisLabelFont);
-% legend({'NaCl';'NaCl fit';'LPS';'LPS fit';'All fit'})
-legend({'NaCl';'LPS';'Linear fit'})
-text(83, 57.3, sprintf('r^2=%0.4f *p=%0.4f', R2(3),pVals(3)),...
-                    'FontSize', textFont, 'FontWeight', 'b', 'Color', 'k')
-                
+% legend({'NaCl';'LPS';'Linear fit'})
+legend({'NaCl';'LPS'})
+% text(83, 57.3, sprintf('r^2=%0.4f *p=%0.4f', R2(3),pVals(3)),...
+%                     'FontSize', textFont, 'FontWeight', 'b', 'Color', 'k')
+
+% Figure window options
 job.figSize = [3.5 3.5];
 job.figRes = 300;
-
 % Specify window units
 set(h, 'units', 'inches')
 % Change figure and paper size

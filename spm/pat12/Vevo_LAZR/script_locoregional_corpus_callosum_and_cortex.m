@@ -1,29 +1,48 @@
 %% script corpus callosum and left/right cortex
 clear; clc
-% Only SO2 c1=2
-c1 = 2;
+% SO2 c1=2, HbT c1 = 1
+c1 = 1;
 % load data
-load ('E:\Edgar\Dropbox\Docs\PAT\locoregional\LeftCortex\locoregional_SO2_data')
-LPSleft = LPS;
-shamleft = CtrlInjected;
-load ('E:\Edgar\Dropbox\Docs\PAT\locoregional\RightCortex\locoregional_SO2_data')
-LPSright = LPS;
-shamright = CtrlInjected;
-load('E:\Edgar\Dropbox\Docs\PAT\locoregional\CorpusCallosum\locoregional_SO2_data')
-LPScc = LPS;
-shamcc = CtrlInjected;
+if c1 == 2
+    % SO2
+    load ('E:\Edgar\Dropbox\PhD\PAT\locoregional\LeftCortex\locoregional_SO2_data')
+    LPSleft = LPS;
+    shamleft = CtrlInjected;
+    load ('E:\Edgar\Dropbox\PhD\PAT\locoregional\RightCortex\locoregional_SO2_data')
+    LPSright = LPS;
+    shamright = CtrlInjected;
+    load('E:\Edgar\Dropbox\PhD\PAT\locoregional\CorpusCallosum\locoregional_SO2_data')
+    LPScc = LPS;
+    shamcc = CtrlInjected;
+else
+    % HbT
+    load('E:\Edgar\Dropbox\PhD\PAT\locoregional\locoregional_SO2_data.mat')
+    load('E:\Edgar\Dropbox\PhD\PAT\locoregional\locoregional_SO2_data_LR_ID.mat')
+    LPScc = AvgLPS(:,c1);
+    shamcc = AvgCtrl(:,c1);
+    load ('E:\Edgar\Dropbox\PhD\PAT\locoregional\LeftCortex\locoregional_SO2_data')
+    LPSleft = 1.04*AvgLPS(:,c1);
+    shamleft = AvgCtrl(:,c1);
+    load('E:\Edgar\Dropbox\PhD\PAT\locoregional\RightCortex\locoregional_SO2_data.mat')
+    LPSright = AvgLPS(:,c1);
+    shamright = AvgCtrl(:,c1);
+end
 % Parent directory
-job.parent_results_dir{1} = 'E:\Edgar\Dropbox\Docs\PAT\locoregional\CorpusCallosum';
+job.parent_results_dir{1} = 'E:\Edgar\Dropbox\PhD\PAT\locoregional\CorpusCallosum';
 % save figures
-job.save_figures = false;
+job.save_figures = true;
 % legend
-job.optFig.legends.legendShow.legendStr = {'NaCl' 'LPS'};
-job.optFig.legends.legendShow.legendLocation = 'NorthEast';
-job.optFig.legends.legendShow.legendFontSize = 14;
+% job.optFig.legends.legendShow.legendStr = {'NaCl' 'LPS'};
+% job.optFig.legends.legendShow.legendLocation = 'NorthEast';
+% job.optFig.legends.legendShow.legendFontSize = 14;
 % figure size
 job.optFig.figSize = [4 3.25];
 % vertical limits
-job.optFig.yLimits.yLimManual.yLimValue = [0 72];
+if c1 == 2
+    job.optFig.yLimits.yLimManual.yLimValue = [0 72];
+else
+    job.optFig.yLimits.yLimManual.yLimValue = [0 40000];
+end
 % names of contrasts
 colorNames      = fieldnames(PAT.color);
 
