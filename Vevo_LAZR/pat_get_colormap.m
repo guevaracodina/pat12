@@ -2,7 +2,7 @@ function colormapOut = pat_get_colormap(map)
 % Creates colormaps that are adequate to display images in SS-OCT system. Also
 % creates maps adequate for photoacoustic tomography.
 % SYNTAX:
-% colormapOut = get_colormaps(map)
+% colormapOut = pat_get_colormap(map)
 % INPUTS:
 % map           String that describes the colormap to retrieve:
 %               'octgold'
