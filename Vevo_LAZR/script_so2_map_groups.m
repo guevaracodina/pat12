@@ -1,24 +1,37 @@
-%% script_so2_map - Now computes grand average of both sO2 and HbT
+%% script_so2_map - Now computes grand average sO2
 clear all; clc
-
-%% Read average maps
-v = spm_vol(nifti_filename);
+% Only sO2
+c1 = 2;
+isSham = true;
+% Read average maps
+v = spm_vol('F:\Edgar\Data\PAT_Results_20130517\alignment\Average_Maps\SO2\LPS\SO2_LPS.img');
 fcMapLPS_All = spm_read_vols(v);
-v = spm_vol(nifti_filename);
+v = spm_vol('F:\Edgar\Data\PAT_Results_20130517\alignment\Average_Maps\SO2\NaCl\SO2_NaCl.img');
 fcMapCtrl_All = spm_read_vols(v);
+% Brain mask
+v = spm_vol('F:\Edgar\Data\PAT_Results_20130517\alignment\brain_mask.nii');
+brainMask = spm_read_vols(v);
+% Anatomical image
+v = spm_vol('F:\Edgar\Data\PAT_Results_20130517\alignment\normalization_AVG_scale.nii');
+anatomical = spm_read_vols(v);
+
+%% Compute average
+fcMapLPS = median(fcMapLPS_All,3);
+fcMapCtrl = median(fcMapCtrl_All,3);
+% Convert to %
+fcMapLPS = 1000*pat_raw2so2(fcMapLPS);
+fcMapCtrl = 1000*pat_raw2so2(fcMapCtrl);
 
 %% Display options
-if c1 == 2
-    % Range of values to map to the full range of colormap: [minVal maxVal]
-    fcMapRange      = [20 60];
-    % Range of values to map to display non-transparent pixels: [minVal maxVal]
-    alphaRange      = [0 60];
+if isSham
+    fcMap = fcMapLPS;
 else
-    % Range of values to map to the full range of colormap: [minVal maxVal]
-    fcMapRange      = [2000 45000];
-    % Range of values to map to display non-transparent pixels: [minVal maxVal]
-    alphaRange      = [0 45000];   
+    fcMap = fcMapCtrl;
 end
+% Range of values to map to the full range of colormap: [minVal maxVal]
+fcMapRange      = [0 100];
+% Range of values to map to display non-transparent pixels: [minVal maxVal]
+alphaRange      = [0 100];
 % ------------------------------------------------------------------------------
 % Define anonymous functions for affine transformations
 % ------------------------------------------------------------------------------
@@ -27,8 +40,7 @@ roty = @(theta) [cos(theta) 0 sin(theta) 0; 0 1 0 0; -sin(theta) 0 cos(theta) 0;
 rotz = @(theta) [cos(theta) -sin(theta) 0 0; sin(theta) cos(theta) 0 0; 0 0 1 0; 0 0 0 1];
 translate = @(a,b) [1 0 a 0; 0 1 b 0; 0 0 1 0; 0 0 0 1];
 % ------------------------------------------------------------------------------
-
-figFolder = output_dir;
+figFolder = 'F:\Edgar\Data\PAT_Results_20130517\alignment\Average_Maps';
 % ------------------------------------------------------------------------------
 % Define matlab batch job with the required fields
 % ------------------------------------------------------------------------------
@@ -77,6 +89,7 @@ fcMapBlend(anatomicalGray<0.5) = 2.*anatomicalGray(anatomicalGray<0.5).*fcMapRGB
 
 %% Generate/Print figures
 if job.generate_figures
+    load('F:\Edgar\Data\PAT_Results_20130517\RS\DG_RS\PAT.mat');
     close all
     h = figure;
     h = imshow(fcMapBlend, 'InitialMagnification', 'fit', 'border', 'tight');
@@ -107,7 +120,7 @@ dispLimits = fcMapRange;
 % SO2 threshold
 so2threshold = 0;
 % Brain brainMask
-Ithreshold = Imean;
+Ithreshold = fcMap;
 Ithreshold(~logical(brainMask) | (Ithreshold<so2threshold)) = nan;
 
 if job.generate_figures
