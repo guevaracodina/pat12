@@ -65,7 +65,7 @@ for iSubject = 1:numel(job.PATmatCtrl)
     % Brain mask
     v = spm_vol(PAT.fcPAT.mask.fname);
     brainMask = spm_read_vols(v);
-    % Anatomical brainMask
+    % Anatomical image
     v = spm_vol(PAT.res.file_anat);
     anatomical = spm_read_vols(v);
     % Convert to SO2 data
