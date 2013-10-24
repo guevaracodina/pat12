@@ -12,8 +12,8 @@ fcMapCtrl_All = spm_read_vols(v);
 v = spm_vol('F:\Edgar\Data\PAT_Results_20130517\alignment\brain_mask.nii');
 brainMask = spm_read_vols(v);
 % Anatomical image
-v = spm_vol('F:\Edgar\Data\PAT_Results_20130517\alignment\normalization_AVG_scale.nii');
-anatomical = spm_read_vols(v);
+anatVol = spm_vol('F:\Edgar\Data\PAT_Results_20130517\alignment\normalization_AVG_scale.nii');
+anatomical = spm_read_vols(anatVol);
 
 %% Compute average
 fcMapLPS = median(fcMapLPS_All,3);
@@ -29,9 +29,9 @@ else
     fcMap = fcMapCtrl;
 end
 % Range of values to map to the full range of colormap: [minVal maxVal]
-fcMapRange      = [0 100];
+fcMapRange      = [20 90];
 % Range of values to map to display non-transparent pixels: [minVal maxVal]
-alphaRange      = [0 100];
+alphaRange      = [20 90];
 % ------------------------------------------------------------------------------
 % Define anonymous functions for affine transformations
 % ------------------------------------------------------------------------------
@@ -92,6 +92,7 @@ if job.generate_figures
     load('F:\Edgar\Data\PAT_Results_20130517\RS\DG_RS\PAT.mat');
     close all
     h = figure;
+    set(h,'Name',figName)
     h = imshow(fcMapBlend, 'InitialMagnification', 'fit', 'border', 'tight');
     set(gca,'DataAspectRatio',[1 PAT.PAparam.pixWidth/PAT.PAparam.pixDepth 1])
     hFig = gcf;
@@ -127,7 +128,7 @@ if job.generate_figures
     h = figure;
     % Black background
     set(h,'color','k')
-    % whitebg('k')
+    set(h,'Name',figName)
     colormap(fcColorMap)
     % Allow printing of black background
     set(h, 'InvertHardcopy', 'off');
@@ -135,7 +136,6 @@ if job.generate_figures
     xLimits = PAT.PAparam.WidthAxis([1,end]);
     % xLimits = [2.3 10.8];
     yLimits = PAT.PAparam.DepthAxis([1,end]);
-    
     imagesc(PAT.PAparam.WidthAxis, PAT.PAparam.DepthAxis, Ithreshold,dispLimits);
     axis image
     hbar = colorbar;
@@ -148,11 +148,68 @@ if job.generate_figures
     if job.save_figures
         % Save as PNG at the user-defined resolution
         print(h, '-dpng', ...
-            fullfile(job.parent_results_dir{1} ,'sO2_avg_colorbar'),...
+            fullfile([figName '_colorbar']),...
             sprintf('-r%d',job.figRes));
         % Return the property to its default
         set(hFig, 'units', 'pixels')
         close(hFig)
+    end
+end
+
+%% Statistical test
+%% Mask out non-brain elements
+fcMapCtrl_All(~repmat(brainMask,[1 1 size(fcMapCtrl_All,3)])) =  nan;
+fcMapLPS_All(~repmat(brainMask,[1 1 size(fcMapLPS_All,3)])) =  nan;
+
+%% Fisher's transform
+% zctrl = pat_fisherz(fcMapCtrl_All);
+% zLPS = pat_fisherz(fcMapCtrl_All);
+zctrl = (fcMapCtrl_All);
+zLPS = (fcMapLPS_All);
+
+
+%% standardization by mean & std
+meanctrl = nanmean(zctrl(:));
+stdctrl = nanstd(zctrl(:));
+
+meanLPS = nanmean(zLPS(:));
+stdLPS = nanstd(zLPS(:));
+
+zctrl = (zctrl - meanctrl) ./ stdctrl;
+zLPS = (zLPS - meanLPS) ./ stdLPS;
+
+%% t-test statistics across the scans
+hMap = zeros([size(zLPS,1) size(zLPS,2)]);
+pMap = zeros([size(zLPS,1) size(zLPS,2)]);
+alphaVal = 0.05;
+pat_text_waitbar(0, 'Please wait...');
+for iRows = 1:size(zLPS,1)
+    for iCols = 1:size(zLPS,2)
+        [hMap(iRows, iCols) pMap(iRows, iCols)] = ttest2(squeeze(zctrl(iRows, iCols, :)), squeeze(zLPS(iRows, iCols, :)), alphaVal, 'both', 'unequal');
+    end
+    pat_text_waitbar(iRows/size(zLPS,1), sprintf('Processing t-test %d from %d', iRows, size(zLPS,1)));
+end
+pat_text_waitbar('Clear');
+
+%% FDR-correction
+pMapFDR = pat_fdr(pMap(:));
+pMapFDR = reshape(pMapFDR, size(pMap));
+
+%% Apply threshold
+pMapAlpha = nan(size(pMap));
+pMapFDRalpha = pMapAlpha;
+pMapAlpha(pMap <= alphaVal) = pMap(pMap <= alphaVal);
+pMapFDRalpha(pMapFDR <= alphaVal) = pMapFDR(pMapFDR <= alphaVal);
+
+%% Display p-maps
+if job.generate_figures
+    figure; imagesc(-log(pMapAlpha)); title('uncorrected p-values'); colorbar
+    figure; imagesc(-log(pMapFDRalpha)); title('FDR adjusted p-values'); colorbar
+    if job.save_figures
+        hdr = pat_create_vol(fullfile(figFolder,...
+            'SO2_pMap_alpha.nii'), anatVol.dim, [64 0], anatVol.pinfo, anatVol.mat, 1, pMapAlpha);
+        hdr = pat_create_vol(fullfile(figFolder,...
+            'SO2_pMap_alpha_FDR.nii'), anatVol.dim, [64 0], anatVol.pinfo, anatVol.mat, 1, pMapFDRalpha);
     end
 end
 % EOF
