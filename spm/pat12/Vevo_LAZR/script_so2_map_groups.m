@@ -19,8 +19,8 @@ anatomical = spm_read_vols(anatVol);
 fcMapLPS = median(fcMapLPS_All,3);
 fcMapCtrl = median(fcMapCtrl_All,3);
 % Convert to %
-fcMapLPS = 1000*pat_raw2so2(fcMapLPS);
-fcMapCtrl = 1000*pat_raw2so2(fcMapCtrl);
+% fcMapLPS = 1000*pat_raw2so2(fcMapLPS);
+% fcMapCtrl = 1000*pat_raw2so2(fcMapCtrl);
 
 %% Display options
 if isSham
@@ -29,9 +29,9 @@ else
     fcMap = fcMapCtrl;
 end
 % Range of values to map to the full range of colormap: [minVal maxVal]
-fcMapRange      = [20 90];
+fcMapRange      = [20 60];
 % Range of values to map to display non-transparent pixels: [minVal maxVal]
-alphaRange      = [20 90];
+alphaRange      = [20 60];
 % ------------------------------------------------------------------------------
 % Define anonymous functions for affine transformations
 % ------------------------------------------------------------------------------
