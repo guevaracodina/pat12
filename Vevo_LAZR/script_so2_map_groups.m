@@ -51,7 +51,7 @@ job(1).figSize                                  = [3 3];    % inches
 job(1).figRes                                   = 300;          % in dpi.
 job.parent_results_dir{1}                       = fullfile(figFolder,'overlay');
 job.generate_figures                            = true;         % display figure
-job.save_figures                                = false;        % save figure
+job.save_figures                                = true;        % save figure
 % ------------------------------------------------------------------------------
 fcColorMap                                      = job(1).figCmap;
 nColorLevels                                    = 256;
@@ -90,7 +90,6 @@ fcMapBlend(anatomicalGray<0.5) = 2.*anatomicalGray(anatomicalGray<0.5).*fcMapRGB
 %% Generate/Print figures
 if job.generate_figures
     load('F:\Edgar\Data\PAT_Results_20130517\RS\DG_RS\PAT.mat');
-    close all
     h = figure;
     set(h,'Name',figName)
     h = imshow(fcMapBlend, 'InitialMagnification', 'fit', 'border', 'tight');

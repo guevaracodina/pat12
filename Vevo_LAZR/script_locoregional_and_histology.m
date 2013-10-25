@@ -1,16 +1,19 @@
-%% script corpus callosum and left/right cortex
+%% script_locoregional_and_histology
+% Plot correlation between SO2 and histology measures in Left Cortex, used in
+% figure 2 of PLoS ONE
 clear; clc
 % Only SO2 c1=2
 c1 = 2;
-% load data
+% load histology data (angiotool)
 load('E:\Edgar\Dropbox\PhD\PAT\Histo\AvgVesselLength.mat')
-load ('F:\Edgar\Data\PAT_Results_20130517\RS\locoregional\LeftCortex\locoregional_SO2_data')
+% Load average sO2 data
+load ('E:\Edgar\Dropbox\PhD\PAT\locoregional\LeftCortex\locoregional_SO2_data')
 LPSidx = [5:11];
 NaClidx = [4:7 10 12:14];
 LPSleft = LPS(LPSidx);
 shamleft = AvgCtrl(NaClidx,2);
 % Parent directory
-job.parent_results_dir{1} = 'E:\Edgar\Dropbox\Docs\PAT\Histo';
+job.parent_results_dir{1} = 'E:\Edgar\Dropbox\PhD\PAT\Histo';
 % save figures
 job.save_figures = false;
 % legend
@@ -23,6 +26,8 @@ job.optFig.figSize = [4 3.25];
 job.optFig.yLimits.yLimManual.yLimValue = [0 72];
 % names of contrasts
 colorNames      = fieldnames(PAT.color);
+% Load standard deviation and SEM of sO2 data
+load('E:\Edgar\Dropbox\PhD\PAT\locoregional\LeftCortex\locoregional_SO2_data_SEM.mat','NaCl', 'LPS')
 
 %% Plot correlation between SO2 and histology measures
 close all
@@ -39,14 +44,14 @@ plotType = 'ks';
 lineType = 'k--';
 % plot(NaCl_L, shamleft, plotType, 'LineWidth', dottedLineWidth, 'MarkerSize', markSize)
 lx = 5*ones(size(NaCl_L));
-ly = 0.3*ones(size(shamleft));
+ly = NaCl.sd;
 pat_errorbarxy(NaCl_L, shamleft, lx, ly, [], [], plotType, 'k')
 % Measure of correlation r^2
-[R(1) pVals(1)] = corr(NaCl_L, shamleft);
-R2(1) = R(1) .^ 2;
+% [R(1) pVals(1)] = corr(NaCl_L, shamleft);
+% R2(1) = R(1) .^ 2;
 % fit data to a 1st degree polynomial
-pfit = polyfit(NaCl_L, shamleft,1);
-f = polyval(pfit, NaCl_L);
+% pfit = polyfit(NaCl_L, shamleft,1);
+% f = polyval(pfit, NaCl_L);
 hold on
 
 %% Plot LPS
@@ -54,14 +59,14 @@ plotType = 'ro';
 lineType = 'r:';
 % plot(LPS_L, LPSleft, plotType, 'LineWidth', dottedLineWidth, 'MarkerSize', markSize,'MarkerFaceColor','r')
 lx = 5*ones(size(NaCl_L));
-ly = 0.3*ones(size(shamleft));
+ly = LPS.sd;
 pat_errorbarxy(LPS_L, LPSleft, lx, ly, [], [], plotType, 'r')
 % Measure of correlation r^2
-[R(2) pVals(2)] = corr(LPS_L, LPSleft);
-R2(2) = R(2) .^ 2;
+% [R(2) pVals(2)] = corr(LPS_L, LPSleft);
+% R2(2) = R(2) .^ 2;
 % fit data to a 1st degree polynomial
-pfit = polyfit(LPS_L, LPSleft,1);
-f = polyval(pfit, LPS_L);
+% pfit = polyfit(LPS_L, LPSleft,1);
+% f = polyval(pfit, LPS_L);
 hold on
 
 % Plot linear fit
@@ -83,10 +88,11 @@ set(gca,'FontSize',axisFont);
 xlabel('Average length (A.U.)','FontSize',axisLabelFont);
 ylabel('Average SO_2 (%)','FontSize',axisLabelFont);
 % legend({'NaCl';'LPS';'Linear fit'})
-legend({'NaCl';'LPS'})
+% legend({'NaCl';'';'LPS'})
 % text(83, 57.3, sprintf('r^2=%0.4f *p=%0.4f', R2(3),pVals(3)),...
 %                     'FontSize', textFont, 'FontWeight', 'b', 'Color', 'k')
-
+xlim([75 145]);
+ylim([40 62]);
 % Figure window options
 job.figSize = [3.5 3.5];
 job.figRes = 300;
