@@ -31,8 +31,6 @@ try
                 PAT.nifti_files = cell(length(files),3);
                 PAT.nifti_files = cell(length(files),3);
             end
-            % Extract only raw.pamode files
-            files = dir(fullfile(PAT.input_dir,'*.raw.bmode'));
             for fileIdx = 1:length(files)
                 [bmode_nifti_filename affine_mat_filename PAT.bModeParam] = pat_raw2nifti_bmode(...
                     fullfile(PAT.input_dir,files(fileIdx).name), PAT.output_dir);
