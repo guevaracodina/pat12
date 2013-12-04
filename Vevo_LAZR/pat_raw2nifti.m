@@ -15,13 +15,20 @@ function [nifti_filename affine_mat_filename param] = pat_raw2nifti(fileName, ou
 %                    École Polytechnique de Montréal
 %_______________________________________________________________________________
 
-% Acquisition done at a single wavelength.
+% This code needs to be improved to accomodate for all the cases:
+% <parameter name="Pa-Mode/Acquisition-Mode" value="Oxy-Hemo"/>
+% <parameter name="Pa-Mode/Acquisition-Mode" value="Standard"/>
+% <parameter name="Pa-Mode/Acquisition-Mode" value="NanoStepper"/>
+% Currently it works only for HbT/sO2, for the other cases the data reading is
+% ok, but the images are saved into a single file, with the wrong color index.
+% Acquisition done at a single wavelength. //EGC
 SINGLEWAVELENGTH = true;
 
 if ~SINGLEWAVELENGTH
-    % read RAW PA-mode images, Dimensions: [nDepth nWidth 1 nFrames]
+    % read RAW PA-mode Oxy-Hemo images, Dimensions: [nDepth nWidth 1 nFrames]
     [rawDataSO2, rawDataHbT, param] = pat_VsiOpenRawPa_multi(fileName);
 else
+    % Single-wavelength or nano-stepper images
     [rawDataHbT, param] = pat_VsiOpenRawPa_singleWL_multi(fileName);
     rawDataSO2 = rawDataHbT;
 end
