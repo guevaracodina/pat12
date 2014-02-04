@@ -5,30 +5,30 @@ c1 = 1;
 % load data
 if c1 == 2
     % SO2
-    load ('E:\Edgar\Dropbox\PhD\PAT\locoregional\LeftCortex\locoregional_SO2_data')
+    load ('F:\Edgar\Dropbox\PhD\PAT\locoregional\LeftCortex\locoregional_SO2_data')
     LPSleft = LPS;
     shamleft = CtrlInjected;
-    load ('E:\Edgar\Dropbox\PhD\PAT\locoregional\RightCortex\locoregional_SO2_data')
+    load ('F:\Edgar\Dropbox\PhD\PAT\locoregional\RightCortex\locoregional_SO2_data')
     LPSright = LPS;
     shamright = CtrlInjected;
-    load('E:\Edgar\Dropbox\PhD\PAT\locoregional\CorpusCallosum\locoregional_SO2_data')
+    load('F:\Edgar\Dropbox\PhD\PAT\locoregional\CorpusCallosum\locoregional_SO2_data')
     LPScc = LPS;
     shamcc = CtrlInjected;
 else
     % HbT
-    load('E:\Edgar\Dropbox\PhD\PAT\locoregional\locoregional_SO2_data.mat')
-    load('E:\Edgar\Dropbox\PhD\PAT\locoregional\locoregional_SO2_data_LR_ID.mat')
+    load('F:\Edgar\Dropbox\PhD\PAT\locoregional\locoregional_SO2_data.mat')
+    load('F:\Edgar\Dropbox\PhD\PAT\locoregional\locoregional_SO2_data_LR_ID.mat')
     LPScc = AvgLPS(:,c1);
     shamcc = AvgCtrl(:,c1);
-    load ('E:\Edgar\Dropbox\PhD\PAT\locoregional\LeftCortex\locoregional_SO2_data')
+    load ('F:\Edgar\Dropbox\PhD\PAT\locoregional\LeftCortex\locoregional_SO2_data')
     LPSleft = 1.04*AvgLPS(:,c1);
     shamleft = AvgCtrl(:,c1);
-    load('E:\Edgar\Dropbox\PhD\PAT\locoregional\RightCortex\locoregional_SO2_data.mat')
+    load('F:\Edgar\Dropbox\PhD\PAT\locoregional\RightCortex\locoregional_SO2_data.mat')
     LPSright = AvgLPS(:,c1);
     shamright = AvgCtrl(:,c1);
 end
 % Parent directory
-job.parent_results_dir{1} = 'E:\Edgar\Dropbox\PhD\PAT\locoregional\CorpusCallosum';
+job.parent_results_dir{1} = 'F:\Edgar\Dropbox\PhD\PAT\locoregional\CorpusCallosum';
 % save figures
 job.save_figures = true;
 % legend

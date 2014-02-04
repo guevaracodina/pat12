@@ -1,5 +1,5 @@
 %% Correlation example toe09
-load('E:\Edgar\Data\PAT_Results\2012-11-09-16-23-51_toe09\Bmode\BrainMask\ROI\LPF\ROItimeCourse\BPF\GLMfcPAT\PAT.mat')
+load('F:\Edgar\Data\PAT_Results\2012-11-09-16-23-51_toe09\Bmode\BrainMask\ROI\LPF\ROItimeCourse\BPF\GLMfcPAT\PAT.mat')
 load(PAT.ROI.ROIfname)
 load(PAT.fcPAT.filtNdown.fname)
 load(PAT.fcPAT.SPM.fnameROIregress)
@@ -17,8 +17,8 @@ for c1 = 1:2
 end
 
 % ctl03
-% load('E:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03\GLMfcPAT\PAT.mat');
-load('E:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03\newROIs\PAT.mat')
+% load('F:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03\GLMfcPAT\PAT.mat');
+load('F:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03\newROIs\PAT.mat')
 load(PAT.ROI.ROIfname)
 load(PAT.fcPAT.filtNdown.fname)
 load(PAT.fcPAT.SPM.fnameROIregress)

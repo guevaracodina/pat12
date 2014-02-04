@@ -5,15 +5,15 @@ clear; clc
 % Only SO2 c1=2
 c1 = 2;
 % load histology data (angiotool)
-load('E:\Edgar\Dropbox\PhD\PAT\Histo\AvgVesselLength.mat')
+load('F:\Edgar\Dropbox\PhD\PAT\Histo\AvgVesselLength.mat')
 % Load average sO2 data
-load ('E:\Edgar\Dropbox\PhD\PAT\locoregional\LeftCortex\locoregional_SO2_data')
+load ('F:\Edgar\Dropbox\PhD\PAT\locoregional\LeftCortex\locoregional_SO2_data')
 LPSidx = [5:11];
 NaClidx = [4:7 10 12:14];
 LPSleft = LPS(LPSidx);
 shamleft = AvgCtrl(NaClidx,2);
 % Parent directory
-job.parent_results_dir{1} = 'E:\Edgar\Dropbox\PhD\PAT\Histo';
+job.parent_results_dir{1} = 'F:\Edgar\Dropbox\PhD\PAT\Histo';
 % save figures
 job.save_figures = false;
 % legend
@@ -27,7 +27,7 @@ job.optFig.yLimits.yLimManual.yLimValue = [0 72];
 % names of contrasts
 colorNames      = fieldnames(PAT.color);
 % Load standard deviation and SEM of sO2 data
-load('E:\Edgar\Dropbox\PhD\PAT\locoregional\LeftCortex\locoregional_SO2_data_SEM.mat','NaCl', 'LPS')
+load('F:\Edgar\Dropbox\PhD\PAT\locoregional\LeftCortex\locoregional_SO2_data_SEM.mat','NaCl', 'LPS')
 
 %% Plot correlation between SO2 and histology measures
 close all

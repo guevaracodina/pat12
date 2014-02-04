@@ -29,7 +29,7 @@ colormap([0.5 0.5 0.5])
 figSize = [0.1 0.1 10 5];
 set(h, 'units', 'inches')
 set(h, 'Position', figSize); set(h, 'PaperPosition', figSize);
-dirName = 'E:\Edgar\Data\PAT_Results\PAS2013\regressionTest';
+dirName = 'F:\Edgar\Data\PAT_Results\PAS2013\regressionTest';
 newName = 'PAS2013_bilateral_correlation_hist';
 set(h,'Name',newName);
 print(h, '-dpng', fullfile(dirName,newName), sprintf('-r%d',300));

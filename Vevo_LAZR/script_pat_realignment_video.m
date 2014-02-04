@@ -1,8 +1,8 @@
 %% script_realignment_video
-load('E:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03\PAT.mat')
-HbT_vol = spm_vol('E:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03\2012-11-09-16-18-31_RS_CTL3_12_11_09-2012-11-09-10-07-10_1.raw.bmode.nii');
+load('F:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03\PAT.mat')
+HbT_vol = spm_vol('F:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03\2012-11-09-16-18-31_RS_CTL3_12_11_09-2012-11-09-10-07-10_1.raw.bmode.nii');
 HbT = spm_read_vols(HbT_vol);
-HbT_vol_R = spm_vol('E:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03\align2012-11-09-16-18-31_RS_CTL3_12_11_09-2012-11-09-10-07-10_1.raw.bmode.nii');
+HbT_vol_R = spm_vol('F:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03\align2012-11-09-16-18-31_RS_CTL3_12_11_09-2012-11-09-10-07-10_1.raw.bmode.nii');
 HbT_R = spm_read_vols(HbT_vol_R);
 
 %%
@@ -13,7 +13,7 @@ minVal = min(min(min(HbT)));
 maxVal = max(max(max(HbT)));
 nFrames = size(HbT,4);
 % Prepare the new video file.
-fName = 'E:\Edgar\Data\PAT_Results\video\US.avi';
+fName = 'F:\Edgar\Data\PAT_Results\video\US.avi';
 aviobj = avifile(fName);
 aviobj.KeyFramePerSec = 10;
 aviobj.compression = 'none';

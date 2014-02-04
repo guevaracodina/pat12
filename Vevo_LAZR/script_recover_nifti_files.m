@@ -3,7 +3,7 @@ clear; clc;
 fprintf('Manual coregistration PA-mode to B-mode\n')
 % PAT list (56 subjects [21 OS + 28 RS] )
 job.PATmat = {  
-%                 'E:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03\PAT.mat'
+%                 'F:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03\PAT.mat'
 %                 % Alignment error in 2012-11-09-16-18-31_ctl03 
                 'F:\Edgar\Data\PAT_Results_20130517\RS\2012-09-07-10-40-07_toe10\PAT.mat'
                 'F:\Edgar\Data\PAT_Results_20130517\RS\2012-09-07-11-04-40_toe04\PAT.mat'

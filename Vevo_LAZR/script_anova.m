@@ -5,7 +5,7 @@ alphaVal = 0.05;
 criterionType = 'tukey-kramer';
 %% Test HbT one seed pair
 % strength = [82 86 79 83 84 85 86 87; 74 82 78 75 76 77 NaN NaN; 79 79 77 78 82 79 NaN NaN]';
-load('E:\Edgar\Data\PAT_Results\networks\resultsROI_Condition01_HbT.mat');
+load('F:\Edgar\Data\PAT_Results\networks\resultsROI_Condition01_HbT.mat');
 z_seed12_tmp = squeeze(Z(1,2,:));
 z_seed12 = nan([7, 3]);
 z_seed12(1:5, 1) = z_seed12_tmp(1:5);
