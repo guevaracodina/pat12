@@ -7,7 +7,7 @@ clc;
 fprintf('Bilateral correlation without global signal regression\n')
 
 %% 2012-09-07-14-48-55_ctl02 7:8, 175:180, 192:200
-load('E:\Edgar\Data\PAT_Results\2012-09-07-14-48-55_ctl02\seedRadius14\BPF\PAT.mat')
+load('F:\Edgar\Data\PAT_Results\2012-09-07-14-48-55_ctl02\seedRadius14\BPF\PAT.mat')
 load(PAT.fcPAT.filtNdown.fname)
 % scan name
 [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
@@ -37,7 +37,7 @@ for iROI=1:2:18,
 end
 
 %% 2012-11-09-16-18-31_ctl03 122:127, 190:193
-load('E:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03\seedRadius10\PAT.mat')
+load('F:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03\seedRadius10\PAT.mat')
 load(PAT.fcPAT.filtNdown.fname)
 % scan name
 [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
@@ -67,7 +67,7 @@ for iROI=1:2:18,
 end
 
 %% 2012-11-09-16-21-53_ctl01 194:199, 213
-load('E:\Edgar\Data\PAT_Results\2012-11-09-16-21-53_ctl01\seedRadius10\PAT.mat')
+load('F:\Edgar\Data\PAT_Results\2012-11-09-16-21-53_ctl01\seedRadius10\PAT.mat')
 load(PAT.fcPAT.filtNdown.fname)
 % scan name
 [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
@@ -97,7 +97,7 @@ for iROI=1:2:18,
 end
 
 %% 2012-11-09-16-23-04_toe08 None
-load('E:\Edgar\Data\PAT_Results\2012-11-09-16-23-04_toe08\seedRadius10\PAT.mat')
+load('F:\Edgar\Data\PAT_Results\2012-11-09-16-23-04_toe08\seedRadius10\PAT.mat')
 load(PAT.fcPAT.filtNdown.fname)
 % scan name
 [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
@@ -127,7 +127,7 @@ for iROI=1:2:18,
 end
 
 %% 2012-11-09-16-23-51_toe09 4:5, 50, 74:76, 107
-load('E:\Edgar\Data\PAT_Results\2012-11-09-16-23-51_toe09\seedRadius10\PAT.mat')
+load('F:\Edgar\Data\PAT_Results\2012-11-09-16-23-51_toe09\seedRadius10\PAT.mat')
 load(PAT.fcPAT.filtNdown.fname)
 % scan name
 [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
@@ -157,7 +157,7 @@ for iROI=1:2:18,
 end
 
 %% 2012-11-09-16-16-25_toe04	115:116, 189:190, 221:222, 263
-load('E:\Edgar\Data\PAT_Results\2012-11-09-16-16-25_toe04\seedRadius10\PAT.mat')
+load('F:\Edgar\Data\PAT_Results\2012-11-09-16-16-25_toe04\seedRadius10\PAT.mat')
 load(PAT.fcPAT.filtNdown.fname)
 % scan name
 [~, ~, ~, ~, ~, ~, splitStr] = regexp(PAT.input_dir,'\\');
@@ -220,7 +220,7 @@ ylim([-0.4 0.9]);
 %% Print figure
 set(h, 'units', 'inches')
 set(h, 'Position', figSize); set(h, 'PaperPosition', figSize);
-dirName = 'E:\Edgar\Data\PAT_Results\PAS2013\interp6rats';
+dirName = 'F:\Edgar\Data\PAT_Results\PAS2013\interp6rats';
 newName = 'PAS2013_bilateral_correlation_noregress';
 set(h,'Name',newName);
 print(h, '-dpng', fullfile(dirName,newName), sprintf('-r%d',300));

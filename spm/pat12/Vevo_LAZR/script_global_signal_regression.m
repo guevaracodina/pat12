@@ -30,7 +30,7 @@ gSignal = DCglobal + B*sin(2*pi*fGlobal*t + randPhase) + noisePer*randn(size(t))
 measRoi = roi + gSignal;
 
 %% Global signal regression
-ROIdir = 'E:\Edgar\Data\PAT_Results\PAS2013\regressionTest';
+ROIdir = 'F:\Edgar\Data\PAT_Results\PAS2013\regressionTest';
 % Initialize single voxel
 measRoi4d = zeros([1 1 1 numel(measRoi)]);
 % Single frame dimensions: [nDepth nWidth 1]

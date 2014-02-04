@@ -1,8 +1,8 @@
-uiopen('E:\Edgar\Dropbox\Docs\PAT\Figures\PLoS One\DG_RS_C2(SO2)_R00_fig_scrub.fig',1)
+uiopen('F:\Edgar\Dropbox\Docs\PAT\Figures\PLoS One\DG_RS_C2(SO2)_R00_fig_scrub.fig',1)
 h = gcf;
 job.figSize = [7 5];
 job.figRes = 300;
-job.parent_results_dir{1} = 'E:\Edgar\Dropbox\Docs\PAT\Figures\PLoS One';
+job.parent_results_dir{1} = 'F:\Edgar\Dropbox\Docs\PAT\Figures\PLoS One';
 % Specify window units
 set(h, 'units', 'inches')
 % Change figure and paper size

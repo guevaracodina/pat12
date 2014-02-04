@@ -1,6 +1,6 @@
 %% load data
-load('E:\Edgar\Data\PAT_Results\ctl01_ISO\BPF\PAT.mat')
-load('E:\Edgar\Data\PAT_Results\ctl01_ISO\BPF\ROIregress.mat')
+load('F:\Edgar\Data\PAT_Results\ctl01_ISO\BPF\PAT.mat')
+load('F:\Edgar\Data\PAT_Results\ctl01_ISO\BPF\ROIregress.mat')
 
 %% Time vector
 TR = pat_get_TR(PAT);
@@ -29,6 +29,6 @@ fprintf('Correlation coefficient between %06.2f and %06.2f s. r = %0.4f Seeds: %
 
 %% Print figure
 % set(h, 'Position', [0.1 0.1 5 3]); set(h, 'PaperPosition', [0.1 0.1 5 3]);
-% print(2, '-dpng', fullfile('E:\Edgar\Data\PAT_Results\ctl01_ISO\BPF','correlation.png'), sprintf('-r%d',300));
+% print(2, '-dpng', fullfile('F:\Edgar\Data\PAT_Results\ctl01_ISO\BPF','correlation.png'), sprintf('-r%d',300));
 
 % EOF

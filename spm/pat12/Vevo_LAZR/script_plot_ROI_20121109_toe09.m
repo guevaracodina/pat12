@@ -21,7 +21,7 @@ job.save_figures = true;
 job.extractBrainMask = true;
 job.plotfiltNdown = true;
 job.legendShow = false;
-job.PATmat = {'E:\Edgar\Data\PAT_Results\2012-11-09-16-23-51_toe09\Bmode\BrainMask\ROI\LPF\ROItimeCourse\BPF\PAT.mat'};
+job.PATmat = {'F:\Edgar\Data\PAT_Results\2012-11-09-16-23-51_toe09\Bmode\BrainMask\ROI\LPF\ROItimeCourse\BPF\PAT.mat'};
 % PAT copy/overwrite method
 job.PATmatCopyChoice        = pat_PATmatCopyChoice_cfg('plotROI');
 
