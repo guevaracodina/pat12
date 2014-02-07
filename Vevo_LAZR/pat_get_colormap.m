@@ -16,6 +16,8 @@ function colormapOut = pat_get_colormap(map)
 %               'robdoppler'
 %               'bordoppler'
 %               'redmap'
+%               'greenmap'
+%               'bluemap'
 %               'so2'
 % OUTPUTS:
 % colormapOut   3 columns matrix, which values are in the range from 0 to 1.
@@ -169,11 +171,40 @@ switch lower(map)
         return
     case 'redmap'
         % Red map for HbT contrast in PAT, from VisualSonics
-        colormapOut = [1 0 0];
+        minColor    = [0 0 0]; % black
+        medianColor = [1 0 0]; % red
+        maxColor    = [1 1 1]; % white
+        for k=1:3
+            int1(:,k) = linspace(minColor(k), medianColor(k), ColorMapSize);
+            int2(:,k) = linspace(medianColor(k), maxColor(k), ColorMapSize);
+        end
+        colormapOut = [int1(1:end-1,:); int2];
+        return
+    case 'greenmap'
+        % Green map
+        minColor    = [0 0 0]; % black
+        medianColor = [0 1 0]; % green
+        maxColor    = [1 1 1]; % white
+        for k=1:3
+            int1(:,k) = linspace(minColor(k), medianColor(k), ColorMapSize);
+            int2(:,k) = linspace(medianColor(k), maxColor(k), ColorMapSize);
+        end
+        colormapOut = [int1(1:end-1,:); int2];
+        return
+    case 'bluemap'
+        % Blue map
+        minColor    = [0 0 0]; % black
+        medianColor = [0 0 1]; % blue
+        maxColor    = [1 1 1]; % white
+        for k=1:3
+            int1(:,k) = linspace(minColor(k), medianColor(k), ColorMapSize);
+            int2(:,k) = linspace(medianColor(k), maxColor(k), ColorMapSize);
+        end
+        colormapOut = [int1(1:end-1,:); int2];
         return
     otherwise
         % Inverted linear gray colormap
-        colormapOut = flipud(colormap(gray(255)));
+        colormapOut = flipud(colormap(gray(2*ColorMapSize)));
         return
 end
 
