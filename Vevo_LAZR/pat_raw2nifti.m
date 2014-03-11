@@ -21,6 +21,7 @@ function [nifti_filename affine_mat_filename param] = pat_raw2nifti(fileName, ou
 % <parameter name="Pa-Mode/Acquisition-Mode" value="NanoStepper"/>
 % Currently it works only for HbT/sO2, for the other cases the data reading is
 % ok, but the images are saved into a single file, with the wrong color index.
+
 % Acquisition done at a single wavelength. //EGC
 SINGLEWAVELENGTH = true;
 
@@ -30,6 +31,8 @@ if ~SINGLEWAVELENGTH
 else
     % Single-wavelength or nano-stepper images
     [rawDataHbT, param] = pat_VsiOpenRawPa_singleWL_multi(fileName);
+    % Log image
+    rawDataHbT = 20*log10(rawDataHbT);
     rawDataSO2 = rawDataHbT;
 end
 % Number of frames
@@ -61,6 +64,7 @@ matRotation(1,1) = 0;
 matRotation(1,2) = 1;
 matRotation(2,1) = -1;
 matRotation(2,2) = 0;
+
 % Affine transformation matrix: Translation
 matTranslation = eye(4);
 matTranslation(2,4) = -param.PaDepthOffset;
