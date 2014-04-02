@@ -53,6 +53,9 @@ if numel(alphaRange) ~= 2 && numel(alphaRange) ~= 4
 end
 
 %% Prepare anatomical and functional images
+if any(size(fcMap) ~= size(anatomical))
+    fcMap = imresize(fcMap, size(anatomical));
+end
 % Convert anatomical image to grayscale (weighted by figIntensity)
 anatomicalGray      = figIntensity .* mat2gray(anatomical);
 anatomicalGray      = repmat(anatomicalGray,[1 1 3]);
