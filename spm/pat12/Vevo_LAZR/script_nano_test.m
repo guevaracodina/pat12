@@ -1,22 +1,30 @@
 %% script_nano_test
 clear; close all; clc
 % Wavelengths
-wl(1) = 680;
-wl(2) = 750;
-wl(3) = 800;
-wl(4) = 901;
-wl(5) = 970;
-% Read PAT matrix
-% load('F:\Edgar\Data\nanoPAT\PAT_Results\2013-12-03-13-34-41_TmDMSOIntralipid\PAT.mat')
-% load('F:\Edgar\Data\nanoPAT\PAT_Results\2013-12-03-13-34-41_TmDMSOWater\PAT.mat')
-load('F:\Edgar\Data\nanoPAT\PAT_Results\2013-12-03-13-34-41_TmWaterIntralipid\PAT.mat')
-% load('F:\Edgar\Data\nanoPAT\PAT_Results\2013-12-03-13-34-41_TMWaterWater\PAT.mat')
+wl(1,1) = 680;
+% wl(2,1) = 700;
+% Read PAT matrix (change as needed)
+load('D:\Edgar\Data\PAT_results\20140401\AT_680nm\PAT.mat')
+% Image display limits (colormap)
+imMin = 20;
+imMax = 70;
+% If image was flipped L-R during acquisition
+FLIPIMAGE = true;
 
 %% Load data
 vol = spm_vol(PAT.nifti_files{1});
 PAT_images = spm_read_vols(vol);
+if FLIPIMAGE
+    for iFrames = 1:size(PAT_images,4)
+        PAT_images(:,:,1,iFrames) = fliplr(squeeze(PAT_images(:,:,1,iFrames)));
+    end
+end
 vol = spm_vol(PAT.nifti_files{3});
 bMode =  spm_read_vols(vol);
+bMode = mean(squeeze(bMode),3);
+if FLIPIMAGE
+    bMode = fliplr(bMode);
+end
 nWl = numel(wl);
 for iWl = 1:nWl,
     PAT_nano{iWl} = PAT_images(:, :, 1, iWl:nWl:end);
@@ -29,16 +37,24 @@ for iWl = 1:nWl,
 end
 
 %% ROI selection
-% Wavelength index
-iWl = 5;
-% figure; imagesc(PAT.PAparam.WidthAxis, PAT.PAparam.DepthAxis, squeeze(20*log10(PAT_avg(:,:,iWl))), [20 70]);
-% colormap(jet(256)); colorbar; axis image
-figure; imagesc(PAT.bModeParam.WidthAxis, PAT.bModeParam.DepthAxis, squeeze(bMode(:,:,1,1)));
+% Choose wavelength index (in case of multiple wavelengths)
+iWl = 1;
+h1 = figure; set(h1,'Color','w')
+set(h1,'Name','Only PAT (colorbar)')
+imagesc(PAT.PAparam.WidthAxis, PAT.PAparam.DepthAxis, squeeze((PAT_avg(:,:,iWl))), [imMin imMax]);
+colormap(jet(256)); colorbar; axis image
+xlabel('Width(mm)'); ylabel('Depth{mm}')
+h2 = figure;  set(h2,'Color','w')
+set(h2,'Name','UltraSound')
+imagesc(PAT.bModeParam.WidthAxis, PAT.bModeParam.DepthAxis, bMode);
 colormap(gray); axis image
-% figure;
-% [fcMapBlend h] = pat_overlay_blend(squeeze(bMode(:,:,1,1)), 20*log10(PAT_avg(:,:,iWl)), [], [20 70]);
-% set(gca,'DataAspectRatio',[1 PAT.bModeParam.pixWidth/PAT.bModeParam.pixDepth 1]);
+xlabel('Width(mm)'); ylabel('Depth{mm}')
+h3 = figure; set(h3,'Color','k')
+set(h3,'Name','PAT overlaid US')
+[fcMapBlend h] = pat_overlay_blend(bMode, (PAT_avg(:,:,iWl)), [], [imMin imMax]);
+set(gca,'DataAspectRatio',[1 PAT.bModeParam.pixWidth/PAT.bModeParam.pixDepth 1]);
 % Binary mask
+figure(h1)
 title('Choose ROI over tube')
 roiMask = roipoly;
 title('Choose ROI over background')
@@ -51,32 +67,27 @@ for iWl = 1:nWl,
     ROI(iWl, 2) = std2(currentImage(repmat(roiMask,[1 1 nFrames])));
     ROIBgnd(iWl, 1) = mean2(currentImage(repmat(roiMaskBgnd,[1 1 nFrames])));
     ROIBgnd(iWl, 2) = std2(currentImage(repmat(roiMaskBgnd,[1 1 nFrames])));
-    % Not necessary to loop over frames, just to confirm processing
-%     for iFrames = 1:nFrames,
-%         currentFrame = squeeze(currentImage(:,:,iFrames));
-%         ROI2(iWl, 1, iFrames) = mean2(currentFrame(roiMask));
-%         ROI2(iWl, 2, iFrames) = std2(currentFrame(roiMask));
-%     end
-%     ROI2mean = mean(ROI2,3);
 end
+
 %% ROI display (mean + std dev)
-figure;
+h4 = figure; set(h4,'Color','w')
+set(h4,'Name','ROI measurements')
 pat_barwitherr([ROI(:,2)  ROIBgnd(:,2)], [ROI(:,1) ROIBgnd(:,1)])
-ylabel('PA amplitude (a.u.)', 'FontSize', 14)
+ylabel('PA amplitude (dB)', 'FontSize', 14)
 xlabel('\lambda (nm)', 'FontSize', 14)
-ylim([0 1800])
+ylim([0 1.2*imMax])
 set(gca,'XTickLabel', cellfun(@(x) num2str(x), num2cell([wl; wl]), 'UniformOutput',false))
 colormap([1 1 1;0 0 0;0.5 0.5 0.5]);
-legend({'Tube' 'Background'}, 'FontSize', 14)
+legend({'Tube';'Background'}, 'FontSize', 14)
 
 %% Animation
-figure;
-iWl = 4;
+figure; set(gcf,'Color','w')
+set(gcf,'Name','Animation')
 for iFrames = 1:nFrames
-    imagesc(PAT.PAparam.WidthAxis, PAT.PAparam.DepthAxis, squeeze((PAT_nano{iWl}(:,:,iFrames))), [10 800]);
+    imagesc(PAT.PAparam.WidthAxis, PAT.PAparam.DepthAxis, squeeze((PAT_nano{iWl}(:,:,iFrames))), [imMin imMax]);
     colorbar
-    title(sprintf('%d', iFrames))
-    pause(0.1)
+    title(sprintf('Frame: %d', iFrames))
+    pause(0.05)
 end
 
 % EOF
