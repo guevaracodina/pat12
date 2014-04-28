@@ -1,18 +1,21 @@
 %% script_so2_map - Now computes grand average sO2
 clear all; clc
-% Only sO2
+% Only sO2 (c1=2)
 c1 = 2;
-isSham = true;
+% Choose control (true) or LPS (false)
+isSham = false;
+% Folder with figures
+figFolder = 'F:\Edgar\Dropbox\PhD\PAT\PLoS ONE\Average_Maps';
 % Read average maps
-v = spm_vol('F:\Edgar\Data\PAT_Results_20130517\alignment\Average_Maps\SO2\LPS\SO2_LPS.img');
+v = spm_vol(fullfile(figFolder, 'SO2_LPS.img'));
 fcMapLPS_All = spm_read_vols(v);
-v = spm_vol('F:\Edgar\Data\PAT_Results_20130517\alignment\Average_Maps\SO2\NaCl\SO2_NaCl.img');
+v = spm_vol(fullfile(figFolder, 'SO2_NaCl.img'));
 fcMapCtrl_All = spm_read_vols(v);
 % Brain mask
-v = spm_vol('F:\Edgar\Data\PAT_Results_20130517\alignment\brain_mask.nii');
+v = spm_vol(fullfile(figFolder, 'brain_mask.nii'));
 brainMask = spm_read_vols(v);
 % Anatomical image
-anatVol = spm_vol('F:\Edgar\Data\PAT_Results_20130517\alignment\normalization_AVG_scale.nii');
+anatVol = spm_vol(fullfile(figFolder, 'normalization_AVG_scale.nii'));
 anatomical = spm_read_vols(anatVol);
 
 %% Compute average
@@ -29,9 +32,9 @@ else
     fcMap = fcMapCtrl;
 end
 % Range of values to map to the full range of colormap: [minVal maxVal]
-fcMapRange      = [20 60];
+fcMapRange      = [30 60];
 % Range of values to map to display non-transparent pixels: [minVal maxVal]
-alphaRange      = [20 60];
+alphaRange      = [30 60];
 % ------------------------------------------------------------------------------
 % Define anonymous functions for affine transformations
 % ------------------------------------------------------------------------------
@@ -40,18 +43,16 @@ roty = @(theta) [cos(theta) 0 sin(theta) 0; 0 1 0 0; -sin(theta) 0 cos(theta) 0;
 rotz = @(theta) [cos(theta) -sin(theta) 0 0; sin(theta) cos(theta) 0 0; 0 0 1 0; 0 0 0 1];
 translate = @(a,b) [1 0 a 0; 0 1 b 0; 0 0 1 0; 0 0 0 1];
 % ------------------------------------------------------------------------------
-figFolder = 'F:\Edgar\Data\PAT_Results_20130517\alignment\Average_Maps';
-% ------------------------------------------------------------------------------
 % Define matlab batch job with the required fields
 % ------------------------------------------------------------------------------
-job(1).figCmap                                  = pat_get_colormap('flow');     % colormap
+job(1).figCmap                                  = pat_get_colormap('linlhot');     % colormap
 job(1).figIntensity                             = 0.7;          % [0 - 1] anatomical
 job(1).transM                                   = rotz(pi);     % affine transform
 job(1).figSize                                  = [3 3];    % inches
 job(1).figRes                                   = 300;          % in dpi.
 job.parent_results_dir{1}                       = fullfile(figFolder,'overlay');
 job.generate_figures                            = true;         % display figure
-job.save_figures                                = true;        % save figure
+job.save_figures                                = false;        % save figure
 % ------------------------------------------------------------------------------
 fcColorMap                                      = job(1).figCmap;
 nColorLevels                                    = 256;
@@ -89,7 +90,8 @@ fcMapBlend(anatomicalGray<0.5) = 2.*anatomicalGray(anatomicalGray<0.5).*fcMapRGB
 
 %% Generate/Print figures
 if job.generate_figures
-    load('F:\Edgar\Data\PAT_Results_20130517\RS\DG_RS\PAT.mat');
+%     load('F:\Edgar\Data\PAT_Results_20130517\RS\DG_RS\PAT.mat');
+    load(fullfile(figFolder, 'PAT.mat'));
     h = figure;
     set(h,'Name',figName)
     h = imshow(fcMapBlend, 'InitialMagnification', 'fit', 'border', 'tight');
@@ -108,6 +110,8 @@ if job.generate_figures
         print(hFig, '-dpng', ...
             figName,...
             sprintf('-r%d',job.figRes));
+        % Save as a figure
+        saveas(hFig, figName, 'fig');
         % Return the property to its default
         set(hFig, 'units', 'pixels')
         close(hFig)
@@ -149,6 +153,8 @@ if job.generate_figures
         print(h, '-dpng', ...
             fullfile([figName '_colorbar']),...
             sprintf('-r%d',job.figRes));
+        % Save as a figure
+        saveas(h, fullfile([figName '_colorbar']), 'fig');
         % Return the property to its default
         set(hFig, 'units', 'pixels')
         close(hFig)
