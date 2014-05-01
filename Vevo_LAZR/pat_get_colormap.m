@@ -18,6 +18,7 @@ function colormapOut = pat_get_colormap(map)
 %               'redmap'
 %               'greenmap'
 %               'bluemap'
+%               'purplemap'
 %               'so2'
 %               'bipolar'
 %               'warm'
@@ -107,6 +108,12 @@ switch lower(map)
             0.286275    0.913725    0.27451;
             0.972549    1           0.0862745;
             1           0.1         0.1];
+    case 'purplemap'
+        % Single color luminance changes from purple to white
+        x = [0 255] + 1;
+        rgb = [...
+            0.3412      0           0.4980;
+            1           1           1];
     case 'rwbdoppler'
         % Red on blue, with white background for Doppler imaging
         % Also for SO2 contrast in photoacosutics
