@@ -18,6 +18,9 @@ function colormapOut = pat_get_colormap(map)
 %               'redmap'
 %               'greenmap'
 %               'bluemap'
+%               'kredmap'
+%               'kgreenmap'
+%               'kbluemap'
 %               'purplemap'
 %               'so2'
 %               'bipolar'
@@ -218,6 +221,24 @@ switch lower(map)
         end
         colormapOut = [int1(1:end-1,:); int2];
         return
+    case 'kredmap'
+        % % Single color luminance changes from black to red
+        x = [0 255] + 1;
+        rgb = [...
+            0           0           0;
+            1           0           0];
+    case 'kgreenmap'
+        % % Single color luminance changes from black to green
+        x = [0 255] + 1;
+        rgb = [...
+            0           0           0;
+            0           1           0];
+    case 'kbluemap'
+        % % Single color luminance changes from black to blue
+        x = [0 255] + 1;
+        rgb = [...
+            0           0           0;
+            0           0           1];
     case 'bipolar'
         colormapOut = bipolar(2*ColorMapSize, 1/3);
         return
