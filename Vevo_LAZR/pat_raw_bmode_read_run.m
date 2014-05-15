@@ -26,6 +26,10 @@ try
             tic
             % Extract only raw.bmode files
             files = dir(fullfile(PAT.input_dir,'*.raw.bmode'));
+            if isempty(files)
+                % Try 3D raw files
+                files = dir(fullfile(PAT.input_dir,'*.raw.3d.bmode'));
+            end
             % Preallocate cell with filenames
             if ~isfield(PAT, 'nifti_files')
                 PAT.nifti_files = cell(length(files),3);

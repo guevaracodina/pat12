@@ -23,7 +23,7 @@ function [nifti_filename affine_mat_filename param] = pat_raw2nifti(fileName, ou
 % ok, but the images are saved into a single file, with the wrong color index.
 
 % Acquisition done at a single wavelength. //EGC
-SINGLEWAVELENGTH = true;
+SINGLEWAVELENGTH = false;
 
 if ~SINGLEWAVELENGTH
     % read RAW PA-mode Oxy-Hemo images, Dimensions: [nDepth nWidth 1 nFrames]
