@@ -37,6 +37,10 @@ try
         filesdir = job.input_dir{scanIdx};
         % Extract only raw.pamode files
         files = dir(fullfile(filesdir,'*.raw.pamode'));
+        if isempty(files)
+            % Try 3D raw files
+            files = dir(fullfile(filesdir,'*.raw.3d.pamode'));
+        end
         % Find backslashes
         filesepIdx = regexp(job.input_dir{scanIdx},['\' filesep]);
         [pathstr, ~] = fileparts(filesdir);

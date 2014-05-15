@@ -37,6 +37,8 @@ framesVector = optArgs{:};
 % Set up file names
 [pathString fnameBase ModeName] = fileparts(fileName);
 fnameBase = fullfile(pathString, fnameBase);
+% Remove '.3d' from base name
+fnameBase = regexprep(fnameBase,'\.3d','');
 fnameXml = [fnameBase '.xml'];
 
 %%
