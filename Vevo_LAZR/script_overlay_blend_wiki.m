@@ -17,9 +17,11 @@ brainMask = brainMask';
 anatomical = anatomical';
 
 %% Open figures
+close all
 figure; imagesc(brainMask); colormap(gray); colorbar
 figure; imagesc(anatomical); colormap(gray); colorbar
 figure; imagesc(fcMap, fcMapRange); colormap(fcColorMap); colorbar
+figure;
 [fcMapBlend h] = pat_overlay_blend(anatomical, fcMap, brainMask, fcMapRange,alphaRange, fcColorMap, figIntensity);
 
 % EOF
