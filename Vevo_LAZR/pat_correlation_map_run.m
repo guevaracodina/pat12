@@ -438,6 +438,7 @@ if isfield(job.drawCircle,'drawCircle_On')
 end
 % Handle of current figure;
 h = figure(999);
+
 % Change background to black
 set(h,'color','k')
 % Allow printing of black background
@@ -452,6 +453,7 @@ end
 
 % ------------------------- Create overlay object ------------------------------
 slObj = slover(char(imagesOverlay));
+slObj.figure = h;                           % Draw object in figure h
 slObj.slices = 1;                           % For PAT images only 1 slice (2D)
                                             % Automatic range for image 1 (anatomy)
 slObj.img(2).range = mapRange{1};           % Range for positive map
