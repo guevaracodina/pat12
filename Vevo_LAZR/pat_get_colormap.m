@@ -1,8 +1,8 @@
-function colormapOut = pat_get_colormap(map)
+function colormapOut = pat_get_colormap(map, varargin)
 % Creates colormaps that are adequate to display images in SS-OCT system. Also
-% creates maps adequate for photoacoustic tomography and NIRS.
+% creates maps adequate for photoacoustic tomography, OIS & NIRS.
 % SYNTAX:
-% colormapOut = pat_get_colormap(map)
+% colormapOut = pat_get_colormap(map, nColors)
 % INPUTS:
 % map           String that describes the colormap to retrieve:
 %               'octgold'
@@ -33,6 +33,8 @@ function colormapOut = pat_get_colormap(map)
 %               'edge' 
 %               'cubicyf' 
 %               'linearl'
+% nColors       Integer number of RGB triplets to be generated, default is
+%               256 color levels
 % OUTPUTS:
 % colormapOut   3 columns matrix, which values are in the range from 0 to 1.
 %_______________________________________________________________________________
@@ -40,8 +42,26 @@ function colormapOut = pat_get_colormap(map)
 %                    École Polytechnique de Montréal
 % Edgar Guevara
 % 2013/05/22
+% ------------------------------------------------------------------------------
+% Optional inputs handling
+% ------------------------------------------------------------------------------
+% only want 1 optional input at most
+numvarargs                  = length(varargin);
+if numvarargs > 1
+    error('ioi_get_colormap', ...
+        'Requires at most 2 optional inputs');
+end
+% set defaults for optional inputs
+optargs                     = { 256 };
+% now put these defaults into the optargs cell array, and overwrite the ones
+% specified in varargin.
+optargs(1:numvarargs)       = varargin;
+% Place optional args in memorable variable names
+ColorMapSize   = optargs{:};
+% ------------------------------------------------------------------------------
 
-ColorMapSize = 128;
+ColorMapSize = fix(ColorMapSize/2);
+% ColorMapSize = 256/2;
 
 switch lower(map)
     case 'octgold'
