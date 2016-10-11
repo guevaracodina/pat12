@@ -1,11 +1,13 @@
 clear all; close all; clc;
 
-baseDir = 'C:\Users\cwarre\Desktop\code to send\test data';
+baseDir = 'D:\Edgar\PAT_test_data';
 baseFilename = 'Air-750nm';
 
 bBMode = false;
 bPAMode = false;
 bCombined = true;
+
+%%
 
 % Get Physio and Event Data
 Physio = VsiReadPhysio(baseDir, baseFilename);
@@ -182,10 +184,10 @@ for i = 1:numFrames
     im = frame2im(frame);
     [imind,cm] = rgb2ind(im,256);
     if i == 1;
-        imwrite(imind, cm, [baseFilename '_co' '.gif'], 'gif', ...
+        imwrite(imind, cm, fullfile(baseDir, [baseFilename '_co' '.gif']), 'gif', ...
             'DelayTime', 0.03, 'Loopcount', inf);
     else
-        imwrite(imind, cm, [baseFilename '_co' '.gif'], 'gif', ...
+        imwrite(imind, cm, fullfile(baseDir, [baseFilename '_co' '.gif']), 'gif', ...
             'DelayTime', 0.03, 'WriteMode', 'append');
     end
 end

@@ -1,214 +1,126 @@
-% VsiParseXml.m
-% Copyright VisualSonics 1999-2010
-% A. Needles, J. Mehi, G. Sundar
-% Revision: 1.3 Dec 7 2010
-% A function to parse xml parameter files from IQ data export on the Vevo 2100
-% and read selected parameters
+function [ReturnParam] = VsiParseXml(baseFolder, baseFilename, modeName)
+% A function to parse the xml parameter files exported from the Vevo 2100
+% and read selected parameters.
+%
+% Input:
+%   baseFolder = Folder containing the data
+%   baseFilename = Filename of the xml file (extension required)
+%   modeName = Mode name to get the correct list of parameters. Valid
+%       values: {'.bmode', '.3d.bmode', '.color', '.3d.color', '.pw',
+%       '.3d.pw', '.pamode', '.3d.pamode'
+%
+% Output:
+%   ReturnParam = A structure containing the fields related to the
+%       requested mode. Structure fields names depends on the mode.
 
-function [ReturnParam] = ParseXml_allModes(filename, ModeName)
+ReturnParam = [];
 
 try
-   xDoc = xmlread(filename);
-catch
-   error('Failed to read XML file %s.',filename);
-end
-
-AllParameters = xDoc.getElementsByTagName('parameter');
-
-switch ModeName
-    case '.bmode'
-        RxFreqModeName = 'B-Mode';
- for k = 0:AllParameters.getLength-1
-    node = AllParameters.item(k);
-    switch char(node.getAttribute('name'));        
-    case 'B-Mode/Samples';
-        javaNsamples = node.getAttribute('value');
-        BmodeNumSamples = str2num(char(javaNsamples));       
-    case 'B-Mode/Lines';
-        javaNlines = node.getAttribute('value');
-        BmodeNumLines = str2num(char(javaNlines));        
-    case 'B-Mode/Depth-Offset';
-        javaDepthOffset = node.getAttribute('value');
-        BmodeDepthOffset = str2num(char(javaDepthOffset));        
-    case 'B-Mode/Depth';
-        javaDepth = node.getAttribute('value');
-        BmodeDepth = str2num(char(javaDepth));       
-    case 'B-Mode/Width';
-        javaWidth = node.getAttribute('value');
-        BmodeWidth = str2num(char(javaWidth));       
-    case 'B-Mode/RX-Frequency'
-        javaRxFrequency = node.getAttribute('value');
-        BmodeRxFrequency = str2num(char(javaRxFrequency));       
-    case 'B-Mode/TX-Frequency'
-        javaTxFrequency = node.getAttribute('value');
-        BmodeTxFrequency = str2num(char(javaTxFrequency));       
-    case 'Power-Mode/RX-Frequency'
-        javaRxFrequency = node.getAttribute('value');
-        BmodeRxFrequency = str2num(char(javaRxFrequency));        
-    case 'B-Mode/Quad-2X';
-        javaQuad2x = node.getAttribute('value');
-        BmodeQuad2x = char(javaQuad2x);       
-    case 'B-Mode/Focal-Zones-Count';
-        javaNumFocalZones = node.getAttribute('value');
-        BmodeNumFocalZones = str2num(char(javaNumFocalZones));  
-    end
- end
-ReturnParam = struct('BmodeNumSamples', BmodeNumSamples, 'BmodeNumLines', BmodeNumLines, 'BmodeDepthOffset', BmodeDepthOffset,...
-    'BmodeDepth', BmodeDepth,'BmodeWidth', BmodeWidth, 'BmodeRxFrequency', BmodeRxFrequency, 'BmodeTxFrequency', BmodeTxFrequency,...
-    'BmodeQuad2x', BmodeQuad2x, 'BmodeNumFocalZones', BmodeNumFocalZones);
-
-    case '.color'
-            RxFreqModeName = 'Color-Mode';  Quad2x = 'null'; FocalZones = 1;
-
-for k = 0:AllParameters.getLength-1
-    node = AllParameters.item(k); 
-    switch char(node.getAttribute('name'));       
-    case 'Color-Mode/Samples';
-        javaNsamples = node.getAttribute('value');
-        ColorNumSamples = str2num(char(javaNsamples));
-    case 'Color-Mode/Lines';
-        javaNlines = node.getAttribute('value');
-        ColorNumLines = str2num(char(javaNlines));     
-    case 'Color-Mode/Depth-Offset';
-        javaDepthOffset = node.getAttribute('value');
-        ColorDepthOffset = str2num(char(javaDepthOffset));       
-    case 'Color-Mode/TX-Frequency'
-        javaTxFrequency = node.getAttribute('value');
-        ColorTxFrequency = str2num(char(javaTxFrequency));        
-    case 'Color-Mode/RX-Frequency'
-        javaRxFrequency = node.getAttribute('value');
-        ColorRxFrequency = str2num(char(javaRxFrequency));        
-    case 'Color-Mode/Ensemble-n';
-        javaEnsemble_n = node.getAttribute('value');
-        ColorNumEnsemble = str2num(char(javaEnsemble_n));      
-    case 'Color-Mode/Ensemble-Extra';
-        javaEnsembleExtra = node.getAttribute('value');
-        ColorEnsembleExtra = str2num(char(javaEnsembleExtra));        
-    case 'Color-Mode/Lines-Extra-Blank';
-        javaLinesExtra = node.getAttribute('value');
-        ColorLinesExtra = str2num(char(javaLinesExtra));   
-    case 'Color-Mode/Steering-Angle';
-        javaSteeringAngle = node.getAttribute('value');
-        ColorSteeringAngle = str2num(char(javaSteeringAngle));   
-    case 'B-Mode/Samples';
-        javaNsamples = node.getAttribute('value');
-        BmodeNumSamples = str2num(char(javaNsamples));       
-    case 'B-Mode/Lines';
-        javaNlines = node.getAttribute('value');
-        BmodeNumLines = str2num(char(javaNlines));        
-    case 'B-Mode/Depth-Offset';
-        javaDepthOffset = node.getAttribute('value');
-        BmodeDepthOffset = str2num(char(javaDepthOffset));        
-    case 'B-Mode/Depth';
-        javaDepth = node.getAttribute('value');
-        BmodeDepth = str2num(char(javaDepth));       
-    case 'B-Mode/Width';
-        javaWidth = node.getAttribute('value');
-        BmodeWidth = str2num(char(javaWidth));       
-    end
-    
-end
-ReturnParam = struct('ColorNumSamples', ColorNumSamples, 'ColorNumLines', ColorNumLines, 'ColorDepthOffset', ColorDepthOffset, ...
-    'ColorRxFrequency', ColorRxFrequency, 'ColorNumEnsemble', ColorNumEnsemble, 'ColorTxFrequency', ColorTxFrequency, ...
-    'ColorEnsembleExtra', ColorEnsembleExtra, 'ColorLinesExtra',ColorLinesExtra, 'ColorSteeringAngle',ColorSteeringAngle,...
-    'BmodeNumSamples', BmodeNumSamples, 'BmodeNumLines', BmodeNumLines,'BmodeDepthOffset', BmodeDepthOffset,...
-    'BmodeDepth', BmodeDepth,'BmodeWidth', BmodeWidth);
-
- case '.pw'
-            RxFreqModeName = 'Pw-Mode';  Quad2x = 'null'; FocalZones = 1; Nlines=1;
-
-for k = 0:AllParameters.getLength-1
-    node = AllParameters.item(k); 
-    switch char(node.getAttribute('name'));       
-    case 'Pw-Mode/Samples';
-        javaNsamples = node.getAttribute('value');
-        PwNsamples = str2num(char(javaNsamples));
-    case 'Pw-Mode/TX-Frequency'
-        javaTxFrequency = node.getAttribute('value');
-        PwTxFrequency = str2num(char(javaTxFrequency));        
-    case 'Pw-Mode/RX-Frequency'
-        javaRxFrequency = node.getAttribute('value');
-        PwRxFrequency = str2num(char(javaRxFrequency));        
-    case 'Pw-Mode/Steering-Angle';
-        javaSteeringAngle = node.getAttribute('value');
-        PwSteeringAngle = str2num(char(javaSteeringAngle));   
-    case 'Pw-Mode/TX-PRF';
-        javaTxPrf = node.getAttribute('value');
-        PwTxPrf = str2num(char(javaTxPrf));   
-    case 'Pw-Mode/Spectral-Size';
-        javaSpectralSize = node.getAttribute('value');
-        PwSpectralSize = str2num(char(javaSpectralSize));   
-    case 'Pw-Mode/Spectral-Spacing';
-        javaSpectralSpacing = node.getAttribute('value');
-        PwSpectralSpacing = str2num(char(javaSpectralSpacing));   
-    case 'Pw-Mode/Display-Gain';
-        javaDisplayGain = node.getAttribute('value');
-        PwDisplayGain = str2num(char(javaDisplayGain));   
-    case 'Pw-Mode/Display-Range';
-        javaDisplayRange = node.getAttribute('value');
-        PwDisplayRange = str2num(char(javaDisplayRange));   
-    case 'Pw-Mode/Y-Offset';
-        javaYOffset = node.getAttribute('value');
-        PwYOffset = str2num(char(javaYOffset));   
-    case 'Pw-Mode/V-Offset';
-        javaVOffset = node.getAttribute('value');
-        PwVOffset = str2num(char(javaVOffset));   
-    end
+  filename = [baseFolder '/' baseFilename];
+  
+  if (~exist(filename, 'file'))
+    error('File (%s) not found', filename);
+  end
+  
+  % paramList represents the nodes to read from the xml.
+  %   Column 1: Node name
+  %   Column 2: Structure name for the return parameter
+  %   Column 3: Type of data ('double' or 'char')
+  switch (modeName)
+    case {'.bmode', '.3d.bmode'}
+      paramList = {
+        'B-Mode/Samples',       'BmodeNumSamples',  'double';
+        'B-Mode/Lines',         'BmodeNumLines',    'double';
+        'B-Mode/Depth-Offset',  'BmodeDepthOffset', 'double';
+        'B-Mode/Depth',         'BmodeDepth',       'double';
+        'B-Mode/Width',         'BmodeWidth',       'double';
+        'B-Mode/Centre',        'BmodeCentre',      'double';
+        'B-Mode/RX-Frequency',  'BmodeRxFrequency', 'double';
+        'B-Mode/TX-Frequency',  'BmodeTxFrequency', 'double';
+        'B-Mode/Quad-2X',       'BmodeQuad2x',      'char';
+        'B-Mode/Focal-Zones-Count', 'BmodeNumFocalZones', 'double'};
+    case {'.color', '.3d.color'}
+      paramList = {
+        'Color-Mode/Samples',       'ColorNumSamples',  'double';
+        'Color-Mode/Lines',         'ColorNumLines',    'double';
+        'Color-Mode/Depth-Offset',  'ColorDepthOffset', 'double';
+        'Color-Mode/TX-Frequency',  'ColorTxFrequency', 'double';
+        'Color-Mode/RX-Frequency',  'ColorRxFrequency', 'double';
+        'Color-Mode/Ensemble-n',    'ColorNumEnsemble', 'double';
+        'Color-Mode/Ensemble-Extra',    'ColorEnsembleExtra', 'double';
+        'Color-Mode/Lines-Extra-Blank', 'ColorLinesExtra',    'double';
+        'Color-Mode/Steering-Angle',    'ColorSteeringAngle', 'double';
+        'B-Mode/Samples',           'BmodeNumSamples',  'double';
+        'B-Mode/Lines',             'BmodeNumLines',    'double';
+        'B-Mode/Depth-Offset',      'BmodeDepthOffset', 'double';
+        'B-Mode/Depth',             'BmodeDepth',       'double';
+        'B-Mode/Width',             'BmodeWidth',       'double'};
+    case {'.pw'}
+      paramList = {
+        'Pw-Mode/Samples',          'PwNsamples',       'double';
+        'Pw-Mode/TX-Frequency',     'PwTxFrequency',    'double';
+        'Pw-Mode/RX-Frequency',     'PwRxFrequency',    'double';
+        'Pw-Mode/Steering-Angle',   'PwSteeringAngle',  'double';
+        'Pw-Mode/TX-PRF',           'PwTxPrf',          'double';
+        'Pw-Mode/Spectral-Size',    'PwSpectralSize',   'double';
+        'Pw-Mode/Spectral-Spacing', 'PwSpectralSpacing', 'double';
+        'Pw-Mode/Display-Gain',     'PwDisplayGain',    'double';
+        'Pw-Mode/Display-Range',    'PwDisplayRange',   'double';
+        'Pw-Mode/Y-Offset',         'PwYOffset',        'double';
+        'Pw-Mode/V-Offset',         'PwVOffset',        'double'};
+    case {'.pamode', '.3d.pamode'}
+      paramList = {
+        'Pa-Mode/Samples',      'PaNumSamples',     'double';
+        'Pa-Mode/Lines',        'PaNumLines',       'double';
+        'Pa-Mode/Depth-Offset', 'PaDepthOffset',    'double';
+        'Pa-Mode/Depth',        'PaDepth',          'double';
+        'Pa-Mode/Width',        'PaWidth',          'double';
+        'Pa-Mode/Centre',       'PaCentre',         'double';
+        'B-Mode/Samples',       'BmodeNumSamples',  'double';
+        'B-Mode/Lines',         'BmodeNumLines',    'double';
+        'B-Mode/Depth-Offset',  'BmodeDepthOffset', 'double';
+        'B-Mode/Depth',         'BmodeDepth',       'double';
+        'B-Mode/Width',         'BmodeWidth',       'double';
+        'B-Mode/RX-Frequency',  'BmodeRxFrequency', 'double'};
+    otherwise
+      error('Mode (%s) not supported', modeName);
+  end
+  
+  if (isempty(paramList))
+    error('Parameter list is empty')
+  end
+  
+  iCount = 0;
+  
+  xDoc = xmlread(filename);
+  AllParameters = xDoc.getElementsByTagName('parameter');
+  for i = 0:AllParameters.getLength-1
+    node = AllParameters.item(i);
+    for j = 1:size(paramList,1)
+      if (strcmp(char(node.getAttribute('name')), paramList(j, 1)))
+        switch (paramList{j,3})
+          case 'double'
+            javaTmp = node.getAttribute('value');
+            ReturnParam.(paramList{j,2}) = str2double(javaTmp);
+          case 'char'
+            javaTmp = node.getAttribute('value');
+            ReturnParam.(paramList{j,2}) = char(javaTmp);
+          otherwise
+            warning('Unhandled conversion to %s', paramList{j,3});
+        end
         
-end
-
-ReturnParam = struct('PwNsamples', PwNsamples, 'PwRxFrequency', PwRxFrequency, ...
-    'PwTxPrf',PwTxPrf, 'PwSpectralSize',PwSpectralSize,...
-    'PwSpectralSpacing',PwSpectralSpacing,'PwDisplayGain',PwDisplayGain,'PwDisplayRange'...
-    ,PwDisplayRange,'PwYOffset',PwYOffset,'PwVOffset',PwVOffset);
-
-case '.pamode'
-
-for k = 0:AllParameters.getLength-1
-    node = AllParameters.item(k); 
-    switch char(node.getAttribute('name'));       
-    case 'Pa-Mode/Samples';
-        javaNsamples = node.getAttribute('value');
-        PaNumSamples = str2num(char(javaNsamples));
-    case 'Pa-Mode/Lines';
-        javaNlines = node.getAttribute('value');
-        PaNumLines = str2num(char(javaNlines));     
-    case 'Pa-Mode/Depth-Offset';
-        javaDepthOffset = node.getAttribute('value');
-        PaDepthOffset = str2num(char(javaDepthOffset));
-    case 'Pa-Mode/Depth';
-        javaDepth = node.getAttribute('value');
-        PaDepth = str2num(char(javaDepth));       
-    case 'Pa-Mode/Width';
-        javaWidth = node.getAttribute('value');
-        PaWidth = str2num(char(javaWidth));          
-    case 'B-Mode/Samples';
-        javaNsamples = node.getAttribute('value');
-        BmodeNumSamples = str2num(char(javaNsamples));       
-    case 'B-Mode/Lines';
-        javaNlines = node.getAttribute('value');
-        BmodeNumLines = str2num(char(javaNlines));        
-    case 'B-Mode/Depth-Offset';
-        javaDepthOffset = node.getAttribute('value');
-        BmodeDepthOffset = str2num(char(javaDepthOffset));        
-    case 'B-Mode/Depth';
-        javaDepth = node.getAttribute('value');
-        BmodeDepth = str2num(char(javaDepth));       
-    case 'B-Mode/Width';
-        javaWidth = node.getAttribute('value');
-        BmodeWidth = str2num(char(javaWidth));
-    case 'B-Mode/RX-Frequency'
-        javaRxFrequency = node.getAttribute('value');
-        BmodeRxFrequency = str2num(char(javaRxFrequency)); 
+        iCount = iCount + 1;
+        break;
+      end
     end
-    
+  end
+  
+  if (iCount ~= size(paramList,1))
+    error('Number of specified and recorded parameters not equal')
+  end
+  
+catch err
+  rethrow(err)
 end
-ReturnParam = struct('PaNumSamples', PaNumSamples, 'PaNumLines', PaNumLines, 'PaDepthOffset', PaDepthOffset, ...
-    'PaDepth', PaDepth, 'PaWidth', PaWidth, 'BmodeNumSamples', BmodeNumSamples, 'BmodeNumLines', BmodeNumLines, ...
-    'BmodeDepthOffset', BmodeDepthOffset, 'BmodeDepth', BmodeDepth,'BmodeWidth', BmodeWidth, 'BmodeRxFrequency', BmodeRxFrequency);
 
 end
-
-
-
-

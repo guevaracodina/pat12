@@ -1,7 +1,7 @@
 close all; clear all; clc;
 %#ok<*UNRCH> Unreachable code
 
-baseDir = 'C:\Users\cwarre\Desktop\code to send\test data';
+baseDir = 'D:\Edgar\PAT_test_data';
 baseFilename{1} = 'Air-750nm';
 baseFilename{2} = 'Air-850nm';
 
@@ -9,6 +9,7 @@ bBMode = false;
 bPAMode = false;
 bCombined = true;
 
+%%
 % Wavelengths used
 lambda = [750; 850];
 
@@ -209,10 +210,10 @@ if (bCombined)
     im = frame2im(frame);
     [imind,cm] = rgb2ind(im,256);
     if i == 1;
-      imwrite(imind, cm, [baseFilename{1} '_so2' '.gif'], 'gif', ...
+      imwrite(imind, cm, fullfile(baseDir, [baseFilename{1} '_so2' '.gif']), 'gif', ...
         'DelayTime', 0.03, 'Loopcount', inf);
     else
-      imwrite(imind, cm, [baseFilename{1} '_so2' '.gif'], 'gif', ...
+      imwrite(imind, cm, fullfile(baseDir, [baseFilename{1} '_so2' '.gif']), 'gif', ...
         'DelayTime', 0.03, 'WriteMode', 'append');
     end
   end
