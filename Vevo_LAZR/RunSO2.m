@@ -8,8 +8,9 @@ baseFilename{2} = 'Air-850nm';
 bBMode = false;
 bPAMode = false;
 bCombined = true;
+writeGIF = false;
 
-%%
+%% Read data
 % Wavelengths used
 lambda = [750; 850];
 
@@ -199,6 +200,10 @@ if (bCombined)
       max(BMode{1}.Data{FrameOrder_BMode{1}(i)}(:));
 
     Combined.Data{i}(SO2Img > threshold) = SO2Img(SO2Img > threshold);
+    
+    % Include full data //EGC
+    Combined.Bmode{i} = BMode{1}.Data{FrameOrder_BMode{1}(i)};
+    Combined.SO2{i} = SO2Img;
 
     % Create gif
     imagesc(Combined.Width, Combined.Depth, Combined.Data{i}, [0 2]);
@@ -209,13 +214,17 @@ if (bCombined)
     frame = getframe;
     im = frame2im(frame);
     [imind,cm] = rgb2ind(im,256);
-    if i == 1;
-      imwrite(imind, cm, fullfile(baseDir, [baseFilename{1} '_so2' '.gif']), 'gif', ...
-        'DelayTime', 0.03, 'Loopcount', inf);
-    else
-      imwrite(imind, cm, fullfile(baseDir, [baseFilename{1} '_so2' '.gif']), 'gif', ...
-        'DelayTime', 0.03, 'WriteMode', 'append');
+    if writeGIF
+        if i == 1;
+            imwrite(imind, cm, fullfile(baseDir, [baseFilename{1} '_so2' '.gif']), 'gif', ...
+                'DelayTime', 0.03, 'Loopcount', inf);
+        else
+            imwrite(imind, cm, fullfile(baseDir, [baseFilename{1} '_so2' '.gif']), 'gif', ...
+                'DelayTime', 0.03, 'WriteMode', 'append');
+        end
     end
   end
 end
+
+%% ROI process
 
