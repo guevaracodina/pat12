@@ -193,7 +193,7 @@ if (bCombined)
         SO2ImgTmp = F(X_b,Y_b);
         SO2ImgTmp(SO2ImgTmp < 0) = 0;
         SO2ImgTmp(SO2ImgTmp > 1) = 1;
-%         SO2ImgTmp = SO2ImgTmp + 1;
+        %         SO2ImgTmp = SO2ImgTmp + 1;
         SO2Img = SO2ImgTmp;
         
         threshold = 1.0;
@@ -206,16 +206,18 @@ if (bCombined)
         Combined.Bmode{i} = BMode{1}.Data{FrameOrder_BMode{1}(i)};
         Combined.SO2{i} = SO2Img;
         
-        % Create gif
-        imagesc(Combined.Width, Combined.Depth, Combined.Data{i}, [0 2]);
-        colormap([gray(128) ; so2Map(1:2:end,:)])
+        Combined.cmap = [gray(128) ; so2Map(1:2:end,:)];
         
-        drawnow;
-        
-        frame = getframe;
-        im = frame2im(frame);
-        [imind,cm] = rgb2ind(im,256);
         if writeGIF
+            % Create gif
+            imagesc(Combined.Width, Combined.Depth, Combined.Data{i}, [0 2]);
+            colormap(Combined.cmap)
+            drawnow;
+            
+            frame = getframe;
+            im = frame2im(frame);
+            [imind,cm] = rgb2ind(im,256);
+            
             if i == 1;
                 imwrite(imind, cm, fullfile(baseDir, [baseFilename{1} '_so2' '.gif']), 'gif', ...
                     'DelayTime', 0.03, 'Loopcount', inf);
@@ -227,7 +229,9 @@ if (bCombined)
     end
 end
 
-%% reshape cells
+%% reshape cells into arrays [nX nY nT]
 Combined.Bmode = reshape(cell2mat(Combined.Bmode), [numel(Combined.Depth) numel(Combined.Width) numFrames]);
 Combined.SO2 = reshape(cell2mat(Combined.SO2), [numel(Combined.Depth) numel(Combined.Width) numFrames]);
+Combined.Data = reshape(cell2mat(Combined.Data), [numel(Combined.Depth) numel(Combined.Width) numFrames]);
 
+% EOF
