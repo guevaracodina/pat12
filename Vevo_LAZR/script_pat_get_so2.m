@@ -20,7 +20,7 @@ nSubjects = size(baseFilename, 1);
 
 
 %% Subjects loop
-for iSubjects = 1:nSubjects
+for iSubjects = 2:nSubjects
     %% Run function
     Combined(iSubjects) = pat_get_SO2(baseDir, baseFilename(iSubjects,:));
     

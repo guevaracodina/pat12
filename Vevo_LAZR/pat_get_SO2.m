@@ -196,7 +196,7 @@ if (bCombined)
         %         SO2ImgTmp = SO2ImgTmp + 1;
         SO2Img = SO2ImgTmp;
         
-        threshold = 1.0;
+        threshold = 0.0;
         Combined.Data{i} = BMode{1}.Data{FrameOrder_BMode{1}(i)} / ...
             max(BMode{1}.Data{FrameOrder_BMode{1}(i)}(:));
         
@@ -208,6 +208,12 @@ if (bCombined)
         
         Combined.cmap = [gray(128) ; so2Map(1:2:end,:)];
         
+%         //EGC Check so2 values, should be ~ 60-80%
+%         figure; imagesc(SO2.Data{i}); colorbar
+%         figure; imagesc(SO2ImgTmp); colorbar
+%         figure; imagesc(SO2Img); colorbar
+
+
         if writeGIF
             % Create gif
             imagesc(Combined.Width, Combined.Depth, Combined.Data{i}, [0 2]);
