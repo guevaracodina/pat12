@@ -81,13 +81,13 @@ for fileIdx = 1:numFiles
     ECG = zeros(1, numEl);
     Resp = zeros(1, numEl);
     PhysioTime = zeros(1, numEl);
-    for i = 1:numFrame
+    for iFrames = 1:numFrame
         iRange = iStartIdx:(iStartIdx + numFrameEl - 1);
         
-        ECG(iRange) = Physio.ECG{i};
-        Resp(iRange) = Physio.Resp{i};
+        ECG(iRange) = Physio.ECG{iFrames};
+        Resp(iRange) = Physio.Resp{iFrames};
         PhysioTime(iRange) = ...
-            (Physio.Timestamp(i):physioFactor:(Physio.Timestamp(i) + (numFrameEl - 1)*physioFactor))/1000;
+            (Physio.Timestamp(iFrames):physioFactor:(Physio.Timestamp(iFrames) + (numFrameEl - 1)*physioFactor))/1000;
         
         iStartIdx = iStartIdx + numFrameEl;
     end
@@ -138,8 +138,8 @@ for fileIdx = 1:numFiles
         end
         
         % Remap PAMode frames
-        for i = 1:numel(PAMode{fileIdx}.FrameNum)
-            FrameOrder_PAMode{fileIdx}(FrameOrder_PAMode{fileIdx} == PAMode{fileIdx}.FrameNum(i)) = i;
+        for iFrames = 1:numel(PAMode{fileIdx}.FrameNum)
+            FrameOrder_PAMode{fileIdx}(FrameOrder_PAMode{fileIdx} == PAMode{fileIdx}.FrameNum(iFrames)) = iFrames;
         end
     end
 end
@@ -168,8 +168,8 @@ if (bBMode || bCombined)
     end
     
     % Remap BMode frames
-    for i = 1:numel(BMode{1}.FrameNum)
-        FrameOrder_BMode{1}(FrameOrder_BMode{1} == BMode{1}.FrameNum(i)) = i;
+    for iFrames = 1:numel(BMode{1}.FrameNum)
+        FrameOrder_BMode{1}(FrameOrder_BMode{1} == BMode{1}.FrameNum(iFrames)) = iFrames;
     end
 end
 
@@ -187,24 +187,28 @@ if (bCombined)
     
     [X_b, Y_b] = meshgrid(BMode{1}.Width, BMode{1}.Depth);
     [X_pa, Y_pa] = meshgrid(SO2.Width, SO2.Depth);
-    for i = 1:numFrames
-        F = TriScatteredInterp(X_pa(:), Y_pa(:), SO2.Data{i}(:));
-        
-        SO2ImgTmp = F(X_b,Y_b);
+    for iFrames = 1:numFrames
+%         F = TriScatteredInterp(X_pa(:), Y_pa(:), SO2.Data{i}(:));
+%         F = scatteredInterpolant(X_pa(:), Y_pa(:), SO2.Data{iFrames}(:));
+
+%         SO2ImgTmp = F(X_b,Y_b);
+        SO2ImgTmp = imresize(SO2.Data{iFrames}, size(BMode{1}.Data{1}));
         SO2ImgTmp(SO2ImgTmp < 0) = 0;
         SO2ImgTmp(SO2ImgTmp > 1) = 1;
-        %         SO2ImgTmp = SO2ImgTmp + 1;
         SO2Img = SO2ImgTmp;
+        SO2ImgTmp = SO2ImgTmp + 1;
         
-        threshold = 0.0;
-        Combined.Data{i} = BMode{1}.Data{FrameOrder_BMode{1}(i)} / ...
-            max(BMode{1}.Data{FrameOrder_BMode{1}(i)}(:));
+
+        threshold = 1;
+        Combined.Data{iFrames} = BMode{1}.Data{FrameOrder_BMode{1}(iFrames)} / ...
+            max(BMode{1}.Data{FrameOrder_BMode{1}(iFrames)}(:));
         
-        Combined.Data{i}(SO2Img > threshold) = SO2Img(SO2Img > threshold);
+        Combined.Data{iFrames}(SO2ImgTmp > threshold) = SO2ImgTmp(SO2ImgTmp > threshold);
+%         Combined.Data{i}(SO2Img > threshold) = SO2Img(SO2Img > threshold) + 1;
         
         % Include full data //EGC
-        Combined.Bmode{i} = BMode{1}.Data{FrameOrder_BMode{1}(i)};
-        Combined.SO2{i} = SO2Img;
+        Combined.Bmode{iFrames} = BMode{1}.Data{FrameOrder_BMode{1}(iFrames)};
+        Combined.SO2{iFrames} = SO2Img;
         
         Combined.cmap = [gray(128) ; so2Map(1:2:end,:)];
         
@@ -216,7 +220,7 @@ if (bCombined)
 
         if writeGIF
             % Create gif
-            imagesc(Combined.Width, Combined.Depth, Combined.Data{i}, [0 2]);
+            imagesc(Combined.Width, Combined.Depth, Combined.Data{iFrames}, [0 2]);
             colormap(Combined.cmap)
             drawnow;
             
@@ -224,7 +228,7 @@ if (bCombined)
             im = frame2im(frame);
             [imind,cm] = rgb2ind(im,256);
             
-            if i == 1;
+            if iFrames == 1;
                 imwrite(imind, cm, fullfile(baseDir, [baseFilename{1} '_so2' '.gif']), 'gif', ...
                     'DelayTime', 0.03, 'Loopcount', inf);
             else

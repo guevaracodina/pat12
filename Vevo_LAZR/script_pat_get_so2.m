@@ -31,6 +31,7 @@ nSubjects = size(baseFilename, 1);
 
 %% Subjects loop
 for iSubjects = 1:nSubjects
+    disp(['Processing' baseFilename(iSubjects,:)])
     % Run function
     Combined(iSubjects) = pat_get_SO2(baseDir, baseFilename(iSubjects,:));
     % [XMIN YMIN WIDTH HEIGHT]
@@ -40,24 +41,29 @@ for iSubjects = 1:nSubjects
     roi(iSubjects).maxX = max(Combined(iSubjects).Width);
     roi(iSubjects).maxY = max(Combined(iSubjects).Depth);
     
-    % Create ROI
-    clc; close all
-    if mod(iSubjects,2), % odd image
-        img = mean(Combined(iSubjects).Data, 3);
-        % h_im = imshow(img);
-        h = figure; h_im = imagesc(Combined(iSubjects).Width, Combined(iSubjects).Depth, img, [0 1]);
+    close all
+    % Create ROI loop
+%     if mod(iSubjects,2), % odd image
+%         img = mean(Combined(iSubjects).Data, 3);      % Combinada
+        img = mean(Combined(iSubjects).Bmode, 3);
+        h = figure; cla;
+        h_im = imagesc(Combined(iSubjects).Width, Combined(iSubjects).Depth, img);
         axis image
-        % pat_get_colormap('so2')
-        set(h, 'color', 'w'); colormap(Combined(iSubjects).cmap); colorbar
+        set(h, 'color', 'w'); 
+%         colormap(Combined(iSubjects).cmap); 
+        % colormap(pat_get_colormap('so2'));
+        colormap(pat_get_colormap('wob'));
+        colorbar
         title(baseFilename{iSubjects, 2})
         xlabel('Width [mm]'); ylabel('Depth [mm]');
         % 2 x 2 mm at (-2,10)mm
+        clear myEllipse
         myEllipse = imellipse(gca, round([-3.5 8.5 1 1]));
-        pause;
+        position = wait(myEllipse);
         roi(iSubjects).Mask = createMask(myEllipse, h_im);
-    else % even image
-        roi(iSubjects).Mask = roi(iSubjects-1).Mask;
-    end
+%     else % even image
+%         roi(iSubjects).Mask = roi(iSubjects-1).Mask;
+%     end
     roi(iSubjects).Mask3D = repmat(roi(iSubjects).Mask, [1 1 roi(iSubjects).nFrames]);
     
     % Extract ROI
