@@ -1,6 +1,5 @@
 %% load data to compute SNR for HbT, SO2
 load('F:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03\GLMfcPAT\PAT.mat')
-F:\Edgar
 HbT = spm_read_vols(volHbT);
 HbTimg = squeeze(HbT(:,:,1,1));
 volSO2 = spm_vol(fullfile('F:\Edgar\Data\PAT_Results\2012-11-09-16-18-31_ctl03','2012-11-09-16-18-31_RS_CTL3_12_11_09-2012-11-09-10-07-10_1.raw.SO2.nolpf.nii'));
